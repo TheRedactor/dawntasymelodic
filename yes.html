@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Best Thing Ever!</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #0a0a23;
+            overflow: hidden;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+        }
+        .container {
+            text-align: center;
+            animation: fadeIn 2s ease-in;
+        }
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        .magic-button {
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, #ff0066, #ffcc00, #33ccff);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.7);
+        }
+        .magic-button:hover {
+            transform: scale(1.1);
+        }
+        .magic-blast {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: magicBlast 1s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes magicBlast {
+            from { opacity: 1; transform: scale(0.5); }
+            to { opacity: 0; transform: scale(20); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>READY FOR MAGIC?!</h1>
+        <button class="magic-button">Click for Magic!</button>
+    </div>
+
+    <script>
+        document.querySelector('.magic-button').addEventListener('click', function (e) {
+            const blast = document.createElement('div');
+            blastX = e.clientX;
+            blastY = e.clientY;
+
+            const magicBlast = document.createElement('div');
+            magicBlast.classList.add('magic-blast');
+            magicBlast.style.left = `${e.clientX - 5}px`;
+            magicBlast.style.top = `${e.clientY - 5}px`;
+            document.body.appendChild(magicBlast);
+
+            setTimeout(() => {
+                magicBlast.remove();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
