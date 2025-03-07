@@ -2,13 +2,11 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { fileURLToPath, URL } from 'url';
 import compression from 'vite-plugin-compression';
-import ssr from 'vite-plugin-ssr/plugin';
 
 export default defineConfig({
   plugins: [
     vue(),
     compression({ algorithm: 'brotliCompress', deleteOriginFile: false }), // ✅ Enables Brotli compression
-    ssr(), // ✅ Enables SSR for SEO boost
   ],
   resolve: {
     alias: {
@@ -42,5 +40,5 @@ export default defineConfig({
     },
     assetsInlineLimit: 8192, // ✅ Optimizes asset loading
   },
-  base: '/', // ✅ Ensures correct routing in production
+  base: '/app.html/', // ✅ Fixes the routing issue
 });
