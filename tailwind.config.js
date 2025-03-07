@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: 'class', // ✅ Dark mode enabled via class (best practice)
+  darkMode: 'class', // ✅ Best practice: dark mode is triggered via a class
   content: [
     "./app.html",
     "./index.html",
@@ -29,7 +29,7 @@ module.exports = {
           light: '#334155',
           accent: '#8b5cf6',
           glow: '#a78bfa',
-          pulse: '#ff66cc', // ✅ Absolutely no missing color errors!
+          pulse: '#ff66cc', // ✅ Ensures bg-cosmic-pulse exists
         },
       },
       fontFamily: {
@@ -63,7 +63,7 @@ module.exports = {
     require('@tailwindcss/aspect-ratio'),
   ],
   safelist: [
-    'bg-cosmic-pulse', // ✅ Ensures no errors when using bg-cosmic-pulse
-    'text-cosmic-pulse', // ✅ Ensures text-cosmic-pulse is valid
+    'bg-cosmic-pulse', // ✅ No more "bg-cosmic-pulse does not exist" errors
+    'text-cosmic-pulse', // ✅ Makes sure "text-cosmic-pulse" works
   ],
 };
