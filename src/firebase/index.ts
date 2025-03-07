@@ -16,14 +16,15 @@ const firebaseConfig = {
 // 🔥 **Prevent re-initialization issues in hot-reloads**
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// 🔒 **Authentication - Persistent Login**
-const auth = getAuth(app);
-setPersistence(auth, browserLocalPersistence).catch((err) => {
-  console.error("⚠️ Firebase Auth Persistence Error:", err);
-});
-
 // 🔥 **Optimized Firestore Instance**
 const firestore = getFirestore(app);
 
 // 🚀 **Exported for global usage**
-export { app, auth, firestore };
+export const auth = getAuth(app);
+export const db = getFirestore(app)
+
+// 🔒 **Authentication - Persistent Login**
+setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.error("⚠️ Firebase Auth Persistence Error:", err);
+});
+
