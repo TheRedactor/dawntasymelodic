@@ -1,15 +1,17 @@
 RewriteEngine On
 
-# Set the base directory (Make sure this matches your setup)
+# Set the base directory for app.html
 RewriteBase /
 
-# Allow direct access to app.html (prevents infinite redirect loops)
+# Allow direct access to the app.html file (prevents infinite loops)
 RewriteRule ^app\.html$ - [L]
 
-# Redirect all requests (except real files & directories) to app.html
+# Ensure Vue handles deep links correctly
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^app\.html/(.*)$ /app.html [QSA,L]
-
-# Prevents direct access to internal Vue routes without breaking deep links
 RewriteRule ^(home|register|login|chats|chat/.*|settings|profile)$ /app.html [QSA,L]
+
+# Redirect all unmatched URLs to app.html (so Vue can handle them)
+RewriteCond %{REQUEST_URI} !^/app.html
+RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|otf|eot|json)$
+RewriteRule ^.*$ /app.html [L,QSA]
