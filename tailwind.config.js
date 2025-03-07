@@ -3,6 +3,7 @@ module.exports = {
   darkMode: 'class',
   content: [
     "./app.html",
+    "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
     "./components/**/*.{vue,js,ts,jsx,tsx}",
     "./views/**/*.{vue,js,ts,jsx,tsx}"
@@ -35,6 +36,12 @@ module.exports = {
         sans: ['Inter', 'sans-serif'],
         display: ['Orbitron', 'sans-serif'],
       },
+      animation: {
+        'messageAiFadeIn': 'messageAiFadeIn 0.3s ease-out',
+        'messageUserFadeIn': 'messageUserFadeIn 0.3s ease-out',
+        'notificationSlide': 'notificationSlide 0.5s ease-out',
+        'shake': 'shake 0.6s ease-in-out',
+      },
     },
   },
   plugins: [
@@ -42,4 +49,13 @@ module.exports = {
     require('@tailwindcss/typography'),
     require('@tailwindcss/aspect-ratio'),
   ],
+  safelist: [
+    'space-y-3',
+    'space-y-4',
+    'space-y-5',
+    'space-y-6',
+    'space-x-3',
+    'space-x-4', 
+    'space-x-5',
+  ]
 };

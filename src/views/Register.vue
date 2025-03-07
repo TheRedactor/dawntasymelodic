@@ -2,31 +2,39 @@
   <div class="min-h-screen bg-gradient-to-br from-indigo-950 via-cosmic-dark to-purple-900 flex items-center justify-center">
     <form @submit.prevent="register" class="w-full max-w-md bg-white dark:bg-cosmic-dark shadow-2xl rounded-xl p-10 cosmic-card-animation">
       <h1 class="text-3xl font-display font-bold cosmic-glow text-center mb-6">🚀 Join Dawntasy AI 🚀</h1>
-
+      
       <!-- Error Message -->
       <div v-if="error" class="bg-red-500 bg-opacity-20 text-red-300 p-3 rounded-lg shadow-lg mb-4 animate-shake">
         {{ error }}
       </div>
-
+      
       <!-- Name Field -->
-      <input v-model="name" required placeholder="Your Name" type="text"
-             class="input cosmic-input mb-4" />
-
+      <div class="mb-4">
+        <input v-model="name" required placeholder="Your Name" type="text"
+               class="input cosmic-input w-full" />
+      </div>
+      
       <!-- Email Field -->
-      <input v-model="email" type="email" required placeholder="Email Address" class="input mb-4" />
-
+      <div class="mb-4">
+        <input v-model="email" type="email" required placeholder="Email Address" class="input w-full" />
+      </div>
+      
       <!-- Password Field -->
-      <input v-model="password" required type="password" placeholder="Create Password" class="input" />
-
+      <div class="mb-4">
+        <input v-model="password" required type="password" placeholder="Create Password" class="input w-full" />
+      </div>
+      
       <!-- Confirm Password -->
-      <input v-model="confirmPassword" required type="password" placeholder="Confirm Password" class="input mt-4" />
-
+      <div class="mb-4">
+        <input v-model="confirmPassword" required type="password" placeholder="Confirm Password" class="input w-full" />
+      </div>
+      
       <!-- Submit Button -->
       <button type="submit" :disabled="loading"
         class="btn-primary w-full py-3 mt-6 cosmic-btn transition-transform hover:scale-105 shadow-cosmic-glow">
         {{ loading ? "Launching..." : "Create Account 🚀" }}
       </button>
-
+      
       <!-- Redirect to Login -->
       <p class="mt-4 text-center text-gray-400">
         Already cosmic? 
@@ -62,7 +70,7 @@ async function register() {
     error.value = 'Password must be at least 6 characters!';
     return;
   }
-
+  
   loading.value = true;
   try {
     await authStore.register(email.value, password.value, name.value);
@@ -73,12 +81,11 @@ async function register() {
     loading.value = false;
   }
 }
-
 </script>
 
 <style scoped>
 form {
-  @apply flex flex-col space-y-3 max-w-md w-full bg-cosmic-light bg-opacity-50 backdrop-blur-lg p-8 rounded-xl shadow-xl;
+  @apply flex flex-col max-w-md w-full bg-cosmic-light bg-opacity-50 backdrop-blur-lg p-8 rounded-xl shadow-xl;
   animation: floatForm 6s infinite alternate ease-in-out;
 }
 
