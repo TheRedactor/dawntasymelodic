@@ -74,10 +74,6 @@ async function register() {
   }
 }
 
-// Auth store and router
-import { useAuthStore } from '../stores/auth';
-import { useRouter } from 'vue-router';
-const authStore = useAuthStore();
 </script>
 
 <style scoped>
