@@ -4,20 +4,16 @@
   <meta charset="utf-8">
   <title>DawntasyAI</title>
   <script>
-    // Single Page App Redirect Script
-    // This script redirects to the root index.html for SPA routing
-    // when deployed on static file hosting like GitHub Pages
-    
-    // Get the current path (excluding base URL)
-    const segment = location.pathname.split('/').pop();
-    
-    // Redirect to the index.html with the path as a hash
-    const redirectURL = location.origin + 
-                       location.pathname.replace(segment, '') + 
-                       'index.html' + 
-                       (segment ? '#/' + segment : '');
-    
-    location.replace(redirectURL);
+    // Single Page App Redirect Script (For Vue Router History Mode)
+    // Ensures the correct page loads when refreshing a deep link
+
+    (function() {
+      const base = "/app.html"; // Ensures Vue loads inside app.html
+      const path = window.location.pathname.replace(/\/$/, '');
+      const redirectURL = window.location.origin + base + "#!" + path;
+      
+      window.location.replace(redirectURL);
+    })();
   </script>
 </head>
 <body>
