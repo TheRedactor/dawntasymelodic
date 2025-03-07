@@ -57,5 +57,7 @@ module.exports = {
     'space-x-3',
     'space-x-4', 
     'space-x-5',
+    'bg-cosmic-pulse',
+    'text-cosmic-pulse',
   ]
 };
