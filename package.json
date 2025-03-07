@@ -26,7 +26,7 @@
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
     "@tailwindcss/aspect-ratio": "^0.4.2",
-    "@tailwindcss/postcss": "^4.0.11",
+    "@tailwindcss/postcss": "^4.0.11", // Make sure this is the correct version
     "@tailwindcss/typography": "^0.5.16",
     "@vitejs/plugin-vue": "^5.2.1",
     "autoprefixer": "^10.4.20",
