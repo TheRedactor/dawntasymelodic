@@ -1,9 +1,9 @@
 <template>
-  <div class="flex flex-col h-screen bg-gradient-to-b from-cosmic-dark to-gray-900">
+  <div class="flex flex-col h-screen bg-gradient-to-b from-cosmic-dark to-gray-900 relative overflow-hidden">
     <!-- Chat Header -->
-    <header class="bg-cosmic-dark text-white shadow-lg px-6 py-3 flex items-center justify-between">
-      <button @click="goBack" class="text-gray-300 hover:text-white transition-all duration-300">
-        <i class="ri-arrow-left-line text-3xl cosmic-glow"></i>
+    <header class="bg-cosmic-dark text-white shadow-lg px-6 py-3 flex items-center justify-between z-10">
+      <button @click="goBack" class="text-gray-300 hover:text-white transition-all duration-300 cosmic-glow">
+        <i class="ri-arrow-left-line text-3xl"></i>
       </button>
       <h1 class="text-2xl font-display font-extrabold cosmic-glow">
         {{ currentChat?.title || "New Conversation" }}
@@ -11,19 +11,19 @@
     </header>
 
     <!-- Chat Messages -->
-    <div ref="chatContainer" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-      <TransitionGroup name="fade" tag="div">
+    <div ref="chatContainer" class="flex-1 overflow-y-auto px-6 py-4 space-y-4 animate-fade-in">
+      <TransitionGroup name="message-pop" tag="div">
         <div
           v-for="(message, index) in currentChat?.messages"
           :key="index"
-          class="flex"
+          class="flex transition-all duration-300"
           :class="{ 'justify-end': message.role === 'user', 'justify-start': message.role === 'assistant' }"
         >
           <div
-            class="max-w-[75%] p-4 rounded-lg shadow-md transition-all duration-300"
+            class="max-w-[75%] p-4 rounded-lg shadow-md transition-all duration-500 transform hover:scale-[1.02]"
             :class="message.role === 'user'
               ? 'bg-cosmic-accent text-white shadow-cosmic-glow'
-              : 'bg-gray-200 dark:bg-cosmic-light text-gray-900 shadow-md hover:scale-[1.02] hover:shadow-lg'"
+              : 'bg-gray-200 dark:bg-cosmic-light text-gray-900 shadow-md'"
           >
             <p class="text-lg leading-relaxed">{{ message.content }}</p>
             <span class="text-xs opacity-75 block mt-1">{{ formatTimestamp(message.timestamp) }}</span>
@@ -42,7 +42,7 @@
     </div>
 
     <!-- Chat Input -->
-    <div class="bg-gray-100 dark:bg-cosmic-light p-4 flex items-center border-t border-gray-300 dark:border-gray-700">
+    <div class="bg-gray-100 dark:bg-cosmic-light p-4 flex items-center border-t border-gray-300 dark:border-gray-700 fixed bottom-0 w-full">
       <input
         v-model="newMessage"
         @keydown.enter="sendMessage"
@@ -75,7 +75,24 @@ const newMessage = ref("");
 const isTyping = ref(false);
 const chatContainer = ref<HTMLElement | null>(null);
 
-// Scroll to bottom on new messages smoothly
+// 🚀 Ensure the user is authenticated before fetching chat
+onMounted(async () => {
+  if (!authStore.isAuthenticated) {
+    router.push("/login");
+    return;
+  }
+
+  const chatId = route.params.id as string;
+  try {
+    await chatStore.fetchChat(chatId);
+    currentChat.value = chatStore.currentChat;
+  } catch (error) {
+    console.error("Chat fetch error:", error);
+    router.push("/chats");
+  }
+});
+
+// 🔥 Smooth Scroll to Bottom on New Messages
 watch(
   () => currentChat.value?.messages.length,
   async () => {
@@ -87,14 +104,7 @@ watch(
   { deep: true }
 );
 
-// Fetch chat data
-onMounted(async () => {
-  const chatId = route.params.id as string;
-  await chatStore.fetchChat(chatId);
-  currentChat.value = chatStore.currentChat;
-});
-
-// Send Message with OpenAI Streaming Response
+// 🚀 Optimized AI Streaming Message Handling
 async function sendMessage() {
   if (!newMessage.value.trim()) return;
 
@@ -102,42 +112,47 @@ async function sendMessage() {
   newMessage.value = "";
   isTyping.value = true;
 
-  // Add user message to Firestore
+  // Store user message
   await chatStore.sendMessage(content);
 
-  // AI response streaming - letter by letter effect
+  // AI response streaming - Efficient DOM updating
   let aiResponse = "";
   const stream = await chatStore.streamChatResponse(content, currentChat.value?.messages || []);
 
   for await (const chunk of stream) {
     aiResponse += chunk;
-    currentChat.value?.messages.push({
-      role: "assistant",
-      content: aiResponse,
-      timestamp: new Date(),
-    });
+
+    // Instead of pushing a new message every loop, update the last message
+    if (currentChat.value?.messages.length && currentChat.value.messages[currentChat.value.messages.length - 1].role === "assistant") {
+      currentChat.value.messages[currentChat.value.messages.length - 1].content = aiResponse;
+    } else {
+      currentChat.value?.messages.push({
+        role: "assistant",
+        content: aiResponse,
+        timestamp: new Date(),
+      });
+    }
   }
 
-  // Save final AI response
   await chatStore.sendMessage(aiResponse);
   isTyping.value = false;
 }
 
-// Format Timestamp
+// 🕒 Format Timestamp
 function formatTimestamp(timestamp: Timestamp | Date) {
   return timestamp instanceof Timestamp
     ? timestamp.toDate().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     : new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-// Go Back to Chats List
+// 🔙 Go Back to Chats List
 function goBack() {
   router.push("/chats");
 }
 </script>
 
 <style scoped>
-/* Typing dots animation */
+/* 🔥 Typing Dots Animation */
 .dot {
   display: inline-block;
   width: 6px;
@@ -157,15 +172,16 @@ function goBack() {
   50% { opacity: 1; transform: translateY(-3px); }
 }
 
-/* Smooth fade animations */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
+/* 🔥 Smooth Pop-In Animations */
+.message-pop-enter-active, .message-pop-leave-active {
+  transition: transform 0.4s ease, opacity 0.4s ease;
 }
-.fade-enter-from, .fade-leave-to {
+.message-pop-enter-from, .message-pop-leave-to {
   opacity: 0;
+  transform: scale(0.9);
 }
 
-/* Glowing Effects */
+/* 🌌 Cosmic Effects */
 .cosmic-glow {
   text-shadow: 0 0 10px rgba(139, 92, 246, 0.9);
 }
