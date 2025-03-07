@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '../stores/auth'; // 🆕 Import authentication store
 import Home from '../views/Home.vue';
 import Login from '../views/Login.vue';
-import Register from '../views/Register.vue'; // Register component
+import Register from '../views/Register.vue';
 import Chat from '../views/Chat.vue';
 import ChatList from '../views/ChatList.vue';
 import Settings from '../views/Settings.vue';
@@ -12,62 +13,61 @@ const routes = [
     path: '/',
     name: 'Home',
     component: Home,
-    meta: { requiresAuth: true },
-    redirect: '/register', // Redirect to register if not authenticated
+    meta: { requiresAuth: true }, // Home requires authentication
   },
   {
     path: '/login',
     name: 'Login',
     component: Login,
-    meta: { requiresAuth: false }, // No authentication required for login page
+    meta: { requiresAuth: false }, // Open to guests
   },
   {
     path: '/register',
     name: 'Register',
     component: Register,
-    meta: { requiresAuth: false }, // No authentication required for register page
+    meta: { requiresAuth: false }, // Open to guests
   },
   {
     path: '/chat/:id',
     name: 'Chat',
     component: Chat,
-    meta: { requiresAuth: true }, // Requires authentication for chat page
+    meta: { requiresAuth: true }, // Requires login
   },
   {
     path: '/chats',
     name: 'ChatList',
     component: ChatList,
-    meta: { requiresAuth: true }, // Requires authentication for chat list page
+    meta: { requiresAuth: true }, // Requires login
   },
   {
     path: '/settings',
     name: 'Settings',
     component: Settings,
-    meta: { requiresAuth: true }, // Requires authentication for settings page
+    meta: { requiresAuth: true }, // Requires login
   },
   {
     path: '/profile',
     name: 'Profile',
     component: Profile,
-    meta: { requiresAuth: true }, // Requires authentication for profile page
+    meta: { requiresAuth: true }, // Requires login
   },
 ];
 
 const router = createRouter({
-  history: createWebHistory(), // Adjusted for correct route history
+  history: createWebHistory(), // ✅ Uses clean URL paths
   routes,
 });
 
-router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore(); // Assuming you're using Pinia for store
-  authStore.initAuth().then(() => {
-    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-      // Redirect to login if the page requires authentication and user is not authenticated
-      next('/login');
-    } else {
-      next(); // Allow navigation
-    }
-  });
+// 🛡️ AUTH GUARD: Prevents access to pages if not logged in
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  await authStore.initAuth(); // Ensure auth state is loaded
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next('/login'); // Redirect to login if not authenticated
+  } else {
+    next(); // Proceed normally
+  }
 });
 
 export default router;
