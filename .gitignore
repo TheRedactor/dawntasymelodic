@@ -20,3 +20,61 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Build output
+dist/
+build/
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Optional Prettier cache
+.prettiercache
+
+# Mac system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux system files
+*~
+
+# Netlify folder
+.netlify
+
+# Parcel cache
+.cache/
+.parcel-cache/
+
+# Next.js build output
+.next/
+
+# Nuxt.js build output
+.nuxt/
+
+# Svelte build output
+.svelte-kit/
+
+# Temporary folders
+tmp/
+temp/
