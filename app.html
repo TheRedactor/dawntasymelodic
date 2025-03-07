@@ -4,9 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DawntasyAI</title>
+
+  <!-- ✅ SEO, Social Media & PWA Meta Tags -->
+  <meta name="description" content="DawntasyAI - Your ultimate AI assistant for creativity and coding.">
+  <meta property="og:title" content="DawntasyAI">
+  <meta property="og:description" content="Your AI-powered companion for intelligent conversations.">
+  <meta property="og:image" content="/assets/dawntasy-logo.png">
+  <meta property="og:url" content="https://dawntasy.com">
+  <link rel="manifest" href="/manifest.json"> <!-- PWA Support -->
+
+  <!-- ✅ Ensures correct routing -->
+  <base href="/">
+
 </head>
 <body>
-  <div id="app"></div> <!-- This is where Vue will mount -->
-  <script type="module" src="/src/main.js"></script> <!-- Vue's main entry point -->
+  <!-- ✅ Loading indicator (prevents blank screen) -->
+  <div id="app">
+    <p>Loading DawntasyAI...</p>
+  </div>
+
+  <!-- ✅ Vue’s main entry point -->
+  <script type="module" src="/src/main.js"></script>
+
+  <!-- ✅ Noscript fallback (for users with JS disabled) -->
+  <noscript>
+    <p>Please enable JavaScript to use DawntasyAI.</p>
+  </noscript>
 </body>
 </html>
