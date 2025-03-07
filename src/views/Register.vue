@@ -84,6 +84,10 @@ async function register() {
 </script>
 
 <style scoped>
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 form {
   @apply flex flex-col max-w-md w-full bg-cosmic-light bg-opacity-50 backdrop-blur-lg p-8 rounded-xl shadow-xl;
   animation: floatForm 6s infinite alternate ease-in-out;
@@ -95,6 +99,12 @@ form {
 
 button {
   @apply bg-indigo-600 text-white py-3 rounded-lg shadow-md hover:bg-indigo-500 transition-all duration-300 cosmic-pulse;
+}
+
+@layer utilities {
+  .cosmic-pulse {
+    @apply text-cosmic-pulse animate-[cosmic-pulse_1.5s_infinite];
+  }
 }
 
 @keyframes cosmic-pulse {
