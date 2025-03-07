@@ -14,7 +14,7 @@ export default defineConfig({
     }
   },
   server: {
-    middlewareMode: true,
+    // Removed deprecated middlewareMode
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
@@ -40,5 +40,6 @@ export default defineConfig({
     },
     assetsInlineLimit: 8192
   },
-  base: '/app.html/'
+  // Keep app.html as base as requested, but use the proper path format
+  base: '/app/' 
 });
