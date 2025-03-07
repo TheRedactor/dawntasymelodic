@@ -6,9 +6,7 @@ module.exports = {
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
     "./components/**/*.{vue,js,ts,jsx,tsx}",
-    "./views/**/*.{vue,js,ts,jsx,tsx}",
-    // Explicitly include Tailwind directives
-    './src/**/*.vue',
+    "./views/**/*.{vue,js,ts,jsx,tsx}"
   ],
   theme: {
     extend: {
@@ -38,34 +36,11 @@ module.exports = {
         sans: ['Inter', 'sans-serif'],
         display: ['Orbitron', 'sans-serif'],
       },
-      animation: {
-        shimmer: 'shimmer 2s linear infinite',
-        pulseSlow: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        fadeIn: 'fadeIn 0.5s ease-in-out',
-      },
-      keyframes: {
-        shimmer: {
-          '0%, 100%': { opacity: 1 },
-          '50%': { opacity: 0.7 },
-        },
-        fadeIn: {
-          '0%': { opacity: 0 },
-          '100%': { opacity: 1 },
-        },
-      },
-      boxShadow: {
-        cosmic: '0 0 15px rgba(139, 92, 246, 0.5)',
-        cosmicLg: '0 0 25px rgba(139, 92, 246, 0.6)',
-      },
     },
   },
   plugins: [
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
     require('@tailwindcss/aspect-ratio'),
-  ],
-  safelist: [
-    'bg-cosmic-pulse',
-    'text-cosmic-pulse',
   ],
 };
