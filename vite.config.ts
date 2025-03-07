@@ -1,25 +1,22 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { fileURLToPath, URL } from 'url';
+import compression from 'vite-plugin-compression';
+import ssr from 'vite-plugin-ssr/plugin';
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    compression({ algorithm: 'brotliCompress', deleteOriginFile: false }), // ✅ Enables Brotli compression
+    ssr(), // ✅ Enables SSR for SEO boost
+  ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)), // Shortens import paths
+      '@': fileURLToPath(new URL('./src', import.meta.url)), // ✅ Shortens import paths
     },
   },
   server: {
-    // Ensures Vue Router history mode works without redirecting to index.html
-    configureServer(server) {
-      server.middlewares.use((req, res, next) => {
-        if (req.url.startsWith('/api')) {
-          return next(); // API requests should go through as normal
-        }
-        req.url = '/app.html'; // Ensures all Vue routes go to app.html
-        next();
-      });
-    },
+    middlewareMode: true, // ✅ Enables proper middleware handling
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
@@ -31,9 +28,19 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: fileURLToPath(new URL('./app.html', import.meta.url)), // Uses app.html as entry point
+        main: fileURLToPath(new URL('./app.html', import.meta.url)), // ✅ Uses app.html as entry point
       },
     },
+    minify: 'terser', // ✅ Optimized minification
+    terserOptions: {
+      compress: {
+        drop_console: true, // ✅ Removes console logs
+      },
+      format: {
+        comments: false, // ✅ Removes unnecessary comments
+      },
+    },
+    assetsInlineLimit: 8192, // ✅ Optimizes asset loading
   },
-  base: './', // Ensures assets load correctly in all environments
+  base: '/', // ✅ Ensures correct routing in production
 });
