@@ -17,7 +17,9 @@ import {
   Timestamp,
   arrayUnion
 } from 'firebase/firestore';
-import { sendChatMessage } from '../../server/api/openai'; // FIXED PATH!!
+import { useOpenAI } from '../../server/api/openai';
+
+const { sendChatMessage } = useOpenAI();
 
 export interface Message {
   id?: string;
