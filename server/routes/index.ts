@@ -4,9 +4,10 @@ import Home from '../views/Home.vue';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import Chat from '../views/Chat.vue';
-import ChatList from '../views/ChatList.vue';
 import Settings from '../views/Settings.vue';
-import Profile from '../views/Profile.vue';
+import AIComponent from '../views/AIComponent.vue'; // ✅ Added AIComponent
+import Header from '../components/Header.vue'; // ✅ Added Header
+import Sidebar from '../components/Sidebar.vue'; // ✅ Added Sidebar
 
 const routes = [
   {
@@ -34,22 +35,20 @@ const routes = [
     meta: { requiresAuth: true }, // Requires login
   },
   {
-    path: '/chats',
-    name: 'ChatList',
-    component: ChatList,
-    meta: { requiresAuth: true }, // Requires login
-  },
-  {
     path: '/settings',
     name: 'Settings',
     component: Settings,
     meta: { requiresAuth: true }, // Requires login
   },
   {
-    path: '/profile',
-    name: 'Profile',
-    component: Profile,
+    path: '/ai',
+    name: 'AIComponent',
+    component: AIComponent,
     meta: { requiresAuth: true }, // Requires login
+  },
+  {
+    path: '/:pathMatch(.*)*', // 🚨 Catch-all for unknown routes (404)
+    redirect: '/',
   },
 ];
 
@@ -58,10 +57,10 @@ const router = createRouter({
   routes,
 });
 
-// 🛡️ AUTH GUARD: Prevents access to pages if not logged in
+// 🛡️ AUTH GUARD: Prevents unauthorized access
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  await authStore.initAuth(); // Ensure auth state is loaded
+  await authStore.initAuth(); // Ensure auth state is loaded before checking
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login'); // Redirect to login if not authenticated
