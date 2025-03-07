@@ -13,10 +13,7 @@ import Sidebar from '../components/Sidebar.vue';
 const routes = [
   {
     path: '/',
-    redirect: () => {
-      const authStore = useAuthStore();
-      return authStore.isAuthenticated ? '/home' : '/register'; // Smart redirect based on login state
-    }
+    redirect: '/register' // Default to register; smart redirect handled in guard
   },
   {
     path: '/register',
@@ -67,17 +64,22 @@ const router = createRouter({
   routes
 });
 
-// 🔒 **Authentication Guard** → Prevents unauthorized access!
+// 🔒 **AUTH GUARD** (Handles authentication & redirects)
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  await authStore.initAuth(); // Ensure auth state is loaded
+  
+  // **Ensure authentication state is loaded before proceeding**
+  if (!authStore.authInitialized) {
+    console.log('⏳ Waiting for authentication state to initialize...');
+    await authStore.initAuth();
+  }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    console.warn(`🚨 Access denied to ${to.path}. Redirecting to /login.`);
+    console.warn(`🚨 Unauthorized access to ${to.path}. Redirecting to /login.`);
     return next('/login'); // Redirect to login instead of register for better UX
   }
 
-  next(); // Proceed normally
+  next(); // 🚀 Proceed as normal
 });
 
 export default router;
