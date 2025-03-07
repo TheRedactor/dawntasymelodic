@@ -4,56 +4,214 @@
 
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 transform hover:scale-105;
   }
   
   .btn-primary {
-    @apply bg-cosmic-accent text-white hover:bg-cosmic-glow focus:ring-cosmic-accent;
+    @apply bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-xl hover:shadow-2xl hover:bg-indigo-700 focus:ring-indigo-500;
+    animation: pulseGlow 2s infinite alternate;
   }
   
   .btn-secondary {
-    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600;
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600;
+    animation: subtleHover 3s infinite ease-in-out;
   }
-  
+
   .input {
-    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-cosmic-accent focus:ring focus:ring-cosmic-accent focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white;
+    @apply block w-full rounded-md border-gray-300 shadow-sm bg-gray-50 focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white;
+    transition: all 0.3s ease-in-out;
   }
   
   .card {
-    @apply bg-white dark:bg-cosmic-light rounded-lg shadow-md overflow-hidden;
+    @apply bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl;
+    transition: box-shadow 0.5s ease;
   }
-  
+
   .cosmic-glow {
     @apply transition-all duration-300;
     text-shadow: 0 0 10px rgba(139, 92, 246, 0.7);
   }
-  
+
   .cosmic-glow:hover {
-    text-shadow: 0 0 15px rgba(139, 92, 246, 1);
+    text-shadow: 0 0 20px rgba(139, 92, 246, 1), 0 0 30px rgba(255,255,255,0.9);
   }
-  
+
   .sidebar-icon {
-    @apply relative flex items-center justify-center h-12 w-12 mt-2 mb-2 mx-auto shadow-lg
-    bg-gray-800 text-cosmic-glow hover:bg-cosmic-accent hover:text-white
-    rounded-3xl hover:rounded-xl transition-all duration-300 ease-linear
-    cursor-pointer;
+    @apply flex items-center justify-center h-12 w-12 mx-auto shadow-lg bg-gray-800 text-indigo-500 hover:bg-indigo-600 hover:text-white rounded-3xl hover:rounded-xl transition-all duration-300 ease-linear cursor-pointer transform hover:scale-110;
   }
-  
+
   .sidebar-tooltip {
-    @apply absolute w-auto p-2 m-2 min-w-max left-14
-    rounded-md shadow-md text-white bg-gray-900
-    text-xs font-bold transition-all duration-100 scale-0 origin-left;
+    @apply absolute w-auto p-2 m-2 min-w-max left-14 rounded-md shadow-md text-white bg-gray-900 text-xs font-bold transition-all duration-200 scale-0 origin-left;
   }
-  
+
   .sidebar-icon:hover .sidebar-tooltip {
     @apply scale-100;
   }
-  
+
   .message-ai {
-    @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg mb-4 max-w-3xl;
+    @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg mb-4 max-w-3xl shadow-md animate-messageAiFadeIn;
   }
-  
+
   .message-user {
-    @apply bg-cosmic-accent bg-opacity-20 p-4 rounded-lg mb-4 ml-auto max-w-3xl;
+    @apply bg-indigo-500 bg-opacity-20 p-4 rounded-lg mb-4 ml-auto max-w-3xl shadow-md animate-messageUserFadeIn;
   }
+}
+
+/* --- LEGENDARY ANIMATIONS --- */
+
+/* Button Pulse Glow */
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 5px #a78bfa, 0 0 10px #8b5cf6;
+  }
+  100% {
+    box-shadow: 0 0 20px #8b5cf6, 0 0 30px #c084fc;
+  }
+}
+
+/* Subtle Hover Animation */
+@keyframes subtleHover {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Message FadeIn Animations */
+@keyframes messageAiFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes messageUserFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Cosmic Background Animation */
+body {
+  background-image: radial-gradient(circle at top left, #4338ca, #1e3a8a, #111827);
+  background-size: 400% 400%;
+  animation: cosmicShift 15s infinite ease-in-out alternate;
+  color: #fff;
+}
+
+/* Cosmic Shift Background */
+@keyframes cosmicShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #111827;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #8b5cf6, #6366f1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #c084fc, #a78bfa);
+}
+
+/* Footer Animation */
+.footer {
+  @apply text-center py-4;
+  animation: footerGlow 6s infinite ease-in-out;
+}
+
+@keyframes footerGlow {
+  0%, 100% { color: #a78bfa; }
+  50% { color: #8b5cf6; }
+}
+
+/* Header Legendary Effect */
+.header-title {
+  font-size: 3rem;
+  font-weight: bold;
+  text-align: center;
+  animation: headerAnimation 8s infinite alternate;
+}
+
+@keyframes headerAnimation {
+  0% {
+    text-shadow: 0 0 10px #8b5cf6;
+  }
+  100% {
+    text-shadow: 0 0 30px #c084fc;
+  }
+}
+
+/* Legendary Input Hover Effect */
+.input:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+}
+
+/* Loader Animation */
+.loader {
+  border: 8px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 8px solid #8b5cf6;
+  width: 60px;
+  height: 60px;
+  animation: spinLoader 1.5s linear infinite;
+}
+
+@keyframes spinLoader {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Notification Animations */
+.notification {
+  @apply fixed top-4 right-4 bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-xl animate-notificationSlide;
+}
+
+@keyframes notificationSlide {
+  from { opacity: 0; transform: translateX(100px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Epic Avatar Effect */
+.avatar {
+  @apply w-20 h-20 rounded-full border-4 border-indigo-500 shadow-xl;
+  animation: avatarBounce 4s infinite alternate;
+}
+
+@keyframes avatarBounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-10px); }
+}
+
+/* Legendary Form Glow */
+.form-legendary {
+  @apply bg-gray-900 p-8 rounded-xl shadow-xl;
+  animation: formGlow 10s infinite alternate;
+}
+
+@keyframes formGlow {
+  0% { box-shadow: 0 0 15px #8b5cf6; }
+  100% { box-shadow: 0 0 30px #c084fc; }
 }
