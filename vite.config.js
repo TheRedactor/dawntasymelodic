@@ -6,40 +6,48 @@ import compression from 'vite-plugin-compression';
 export default defineConfig({
   plugins: [
     vue(),
-    compression({ algorithm: 'brotliCompress', deleteOriginFile: false })
+    compression({ algorithm: 'brotliCompress', deleteOriginFile: false }),
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@assets': fileURLToPath(new URL('./src/assets', import.meta.url)), // ✅ Alias for assets
+      '@components': fileURLToPath(new URL('./src/components', import.meta.url)), // ✅ Alias for components
+      '@views': fileURLToPath(new URL('./src/views', import.meta.url)), // ✅ Alias for views
+    },
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@import "@/assets/main.css";`, // ✅ Ensures `main.css` is included
+      },
+    },
   },
   server: {
-    // Removed deprecated middlewareMode
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
-    }
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
   },
   build: {
     rollupOptions: {
       input: {
-        main: fileURLToPath(new URL('./app.html', import.meta.url))
-      }
+        main: fileURLToPath(new URL('./app.html', import.meta.url)),
+      },
     },
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true
+        drop_console: true,
       },
       format: {
-        comments: false
-      }
+        comments: false,
+      },
     },
-    assetsInlineLimit: 8192
+    assetsInlineLimit: 8192,
   },
-  // Keep app.html as base as requested, but use the proper path format
-  base: '/app/' 
+  base: '/app/', // ✅ Ensure base URL is correct
 });
