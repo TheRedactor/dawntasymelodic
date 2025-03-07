@@ -1,13 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import Home from '../views/Home.vue';
-import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
 import Chat from '../views/Chat.vue';
 import ChatList from '../views/ChatList.vue';
 import Settings from '../views/Settings.vue';
 import Profile from '../views/Profile.vue';
-import Layout from '../components/Layout.vue';
 
 const routes = [
   {
@@ -15,65 +13,60 @@ const routes = [
     redirect: () => {
       const authStore = useAuthStore();
       return authStore.isAuthenticated ? '/home' : '/register';
-    }
+    },
   },
   {
     path: '/register',
     name: 'Register',
     component: Register,
-    meta: { requiresAuth: false }
+    meta: { requiresGuest: true },
   },
   {
     path: '/login',
     name: 'Login',
-    component: Login,
-    meta: { requiresAuth: false }
+    component: () => import('../views/Login.vue'),
+    meta: { guestOnly: true },
   },
   {
     path: '/home',
-    component: Layout,
+    component: Home,
+    meta: { requiresAuth: true },
     children: [
-      { path: '', component: Home },
-      { path: 'chats', component: ChatList },
-      { path: 'chat/:id', component: Chat },
-      { path: 'settings', component: Settings },
-      { path: 'profile', component: Profile }
+      { path: '', name: 'Home', component: Home },
+      { path: 'chats', name: 'ChatList', component: ChatList },
+      { path: 'chat/:id', name: 'Chat', component: Chat },
+      { path: 'settings', name: 'Settings', component: Settings },
+      { path: 'profile', name: 'Profile', component: Profile },
     ],
-    meta: { requiresAuth: true }
-  }
+  },
+  { path: '/:pathMatch(.*)*', redirect: '/home' }, // Catch-all redirect to /home
 ];
 
 const router = createRouter({
-  history: createWebHistory('/app.html'), // ✅ Fixes the index.html redirect issue
-  routes
+  history: createWebHistory('/app.html'), // ✅ FINAL FIX: Vue app runs inside app.html
+  routes,
+  scrollBehavior() {
+    return { top: 0 };
+  },
 });
 
-// 🚀 Navigation Guard with Debugging
-router.beforeEach((to, from, next) => {
-  console.log(`🚦 Navigating from ${from.path} to ${to.path}`);
-
+// 🔐 Auth Guard Logic
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  
+
   if (!authStore.authInitialized) {
-    console.log('⏳ Waiting for authentication state to initialize...');
-    authStore.initAuth().then(() => {
-      checkAuthGuard(to, next);
-    });
-  } else {
-    checkAuthGuard(to, next);
+    await authStore.initAuth();
   }
-});
-
-function checkAuthGuard(to, next) {
-  const authStore = useAuthStore();
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    console.warn(`🚨 Unauthorized access to ${to.path}. Redirecting to /login.`);
-    return next('/login');
+    return next('/register');
   }
-  
-  console.log(`✅ Access granted to ${to.path}`);
+
+  if (to.meta.guestOnly && authStore.isAuthenticated) {
+    return next('/home');
+  }
+
   next();
-}
+});
 
 export default router;
