@@ -17,7 +17,7 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 // 🔥 **Optimized Firestore Instance**
-const firestore = getFirestore(app);
+export const firestore = getFirestore(app);
 
 // 🚀 **Exported for global usage**
 export const auth = getAuth(app);
