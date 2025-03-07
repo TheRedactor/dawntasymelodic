@@ -1,14 +1,9 @@
 module.exports = {
-  publicPath: '/',
+  publicPath: '/app.html/', // ✅ Ensures all routes are under app.html
   outputDir: 'dist',
   assetsDir: 'assets',
+
   devServer: {
-    historyApiFallback: {
-      // Rewrite all routes to app.html, allowing Vue Router to handle them
-      rewrites: [
-        { from: /^(?!\/app.html$)/, to: '/app.html' } // Rewrite to app.html instead of index.html for all non-app.html routes
-      ]
-    },
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
@@ -17,6 +12,15 @@ module.exports = {
       }
     }
   },
+
+  pages: {
+    index: {
+      entry: 'src/main.ts',
+      filename: 'app.html', // ✅ Generates app.html instead of index.html
+      title: 'Dawntasy AI'
+    }
+  },
+
   chainWebpack: config => {
     if (process.env.NODE_ENV === 'production') {
       config.plugin('copy').tap(args => {
