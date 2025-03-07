@@ -4,14 +4,10 @@
   <meta charset="utf-8">
   <title>DawntasyAI</title>
   <script>
-    // Single Page App Redirect Script (For Vue Router History Mode)
-    // Ensures the correct page loads when refreshing a deep link
-
     (function() {
-      const base = "/app.html"; // Ensures Vue loads inside app.html
+      const base = "/app.html";
       const path = window.location.pathname.replace(/\/$/, '');
       const redirectURL = window.location.origin + base + "#!" + path;
-      
       window.location.replace(redirectURL);
     })();
   </script>
