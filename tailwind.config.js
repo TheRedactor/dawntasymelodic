@@ -1,12 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: 'class', // ✅ Ensures dark mode works by using a "class" switch instead of media query
+  darkMode: 'class', // ✅ Enables dark mode with a class switch
   content: [
-    "./app.html", // ✅ Include app.html for scanning Tailwind classes
-    "./index.html", // ✅ Ensures Tailwind sees the main index.html if needed
-    "./src/**/*.{vue,js,ts,jsx,tsx}", // ✅ Scan all Vue, JS, TS files in src
-    "./components/**/*.{vue,js,ts,jsx,tsx}", // ✅ Ensure Tailwind scans components folder
-    "./views/**/*.{vue,js,ts,jsx,tsx}" // ✅ Include views folder in scanning
+    "./app.html", 
+    "./index.html",
+    "./src/**/*.{vue,js,ts,jsx,tsx}",
+    "./components/**/*.{vue,js,ts,jsx,tsx}",
+    "./views/**/*.{vue,js,ts,jsx,tsx}"
   ],
   theme: {
     extend: {
@@ -29,6 +29,7 @@ module.exports = {
           light: '#334155',
           accent: '#8b5cf6',
           glow: '#a78bfa',
+          pulse: '#ff66cc', // ✅ FIX: Added missing cosmic-pulse color
         },
       },
       fontFamily: {
@@ -38,14 +39,14 @@ module.exports = {
       animation: {
         shimmer: 'shimmer 2s linear infinite',
         pulseSlow: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        fadeIn: 'fadeIn 0.5s ease-in-out', // ✅ Added fade-in animation
+        fadeIn: 'fadeIn 0.5s ease-in-out',
       },
       keyframes: {
         shimmer: {
           '0%, 100%': { opacity: 1 },
           '50%': { opacity: 0.7 },
         },
-        fadeIn: { // ✅ Keyframes for fade-in animation
+        fadeIn: {
           '0%': { opacity: 0 },
           '100%': { opacity: 1 },
         },
@@ -59,6 +60,6 @@ module.exports = {
   plugins: [
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'), // ✅ Improves typography styles
-    require('@tailwindcss/aspect-ratio'), // ✅ Fixes issues with responsive aspect ratios
+    require('@tailwindcss/aspect-ratio'), // ✅ Fixes issues with aspect ratios
   ],
 };
