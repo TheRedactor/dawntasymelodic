@@ -67,12 +67,10 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue';
 import { useAuthStore } from '../stores/auth';
-import { useThemeStore } from '../stores/theme';
 import { useRouter } from 'vue-router';
 
 // Stores
 const authStore = useAuthStore();
-const themeStore = useThemeStore();
 const router = useRouter();
 
 // Theme settings
@@ -88,14 +86,7 @@ const notificationsEnabled = ref(false);
 
 // Watch theme changes
 watchEffect(() => {
-  selectedTheme.value = themeStore.currentTheme;
 });
-
-// Set theme
-function setTheme(themeId: string) {
-  selectedTheme.value = themeId;
-  themeStore.setTheme(themeId);
-}
 
 // Logout function
 async function logout() {
