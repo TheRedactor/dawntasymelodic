@@ -63,6 +63,10 @@ useHead({
 </script>
 
 <style scoped>
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* 🎨 Page Transition Animations */
 .page-slide-enter-active, .page-slide-leave-active {
   transition: opacity 0.5s ease, transform 0.5s ease;
