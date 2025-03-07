@@ -49,5 +49,5 @@ export default defineConfig({
     },
     assetsInlineLimit: 8192,
   },
-  base: '/app/', // ✅ Ensure base URL is correct
+  base: '/', // ✅ Ensure base URL is correct
 });
