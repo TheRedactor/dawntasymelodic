@@ -1,8 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class', // ✅ Ensures dark mode works by using a "class" switch instead of media query
   content: [
-    "./app.html", // Include app.html for scanning Tailwind classes
-    "./src/**/*.{vue,js,ts,jsx,tsx}", // Scan all Vue, JS, TS files in the src folder
+    "./app.html", // ✅ Include app.html for scanning Tailwind classes
+    "./index.html", // ✅ Ensures Tailwind sees the main index.html if needed
+    "./src/**/*.{vue,js,ts,jsx,tsx}", // ✅ Scan all Vue, JS, TS files in src
+    "./components/**/*.{vue,js,ts,jsx,tsx}", // ✅ Ensure Tailwind scans components folder
+    "./views/**/*.{vue,js,ts,jsx,tsx}" // ✅ Include views folder in scanning
   ],
   theme: {
     extend: {
@@ -32,22 +36,29 @@ module.exports = {
         display: ['Orbitron', 'sans-serif'],
       },
       animation: {
-        'shimmer': 'shimmer 2s linear infinite',
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        shimmer: 'shimmer 2s linear infinite',
+        pulseSlow: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        fadeIn: 'fadeIn 0.5s ease-in-out', // ✅ Added fade-in animation
       },
       keyframes: {
         shimmer: {
           '0%, 100%': { opacity: 1 },
           '50%': { opacity: 0.7 },
         },
+        fadeIn: { // ✅ Keyframes for fade-in animation
+          '0%': { opacity: 0 },
+          '100%': { opacity: 1 },
+        },
       },
       boxShadow: {
-        'cosmic': '0 0 15px rgba(139, 92, 246, 0.5)',
-        'cosmic-lg': '0 0 25px rgba(139, 92, 246, 0.6)',
+        cosmic: '0 0 15px rgba(139, 92, 246, 0.5)',
+        cosmicLg: '0 0 25px rgba(139, 92, 246, 0.6)',
       },
     },
   },
   plugins: [
     require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'), // ✅ Improves typography styles
+    require('@tailwindcss/aspect-ratio'), // ✅ Fixes issues with responsive aspect ratios
   ],
-}
+};
