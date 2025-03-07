@@ -1,9 +1,8 @@
-// ✅ Import Firebase functions
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// 🔥 Firebase configuration (Using secure environment variables)
+// ✅ **Environment-based Config (Security & Scaling)**
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -11,23 +10,20 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID, // Optional, used for analytics
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-// 🛡 Ensure Firebase is not initialized multiple times
+// 🔥 **Prevent re-initialization issues in hot-reloads**
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// 🚀 Firebase Services
+// 🔒 **Authentication - Persistent Login**
 const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.error("⚠️ Firebase Auth Persistence Error:", err);
+});
+
+// 🔥 **Optimized Firestore Instance**
 const firestore = getFirestore(app);
 
-// 🌟 Export Firebase functions for app-wide use
+// 🚀 **Exported for global usage**
 export { app, auth, firestore };
-
-// ✅ OpenAI API Key (Stored in environment variables)
-const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
-
-// 🔥 Function to Retrieve OpenAI API Key
-const useOpenAiApiKey = () => openaiApiKey;
-
-export { useOpenAiApiKey };
