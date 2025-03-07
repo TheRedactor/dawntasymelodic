@@ -1,29 +1,24 @@
-import { eventHandler, readBody } from "#imports";
-import OpenAI from "openai";
+import OpenAI from 'openai';
 
-// Initialize OpenAI with server-side API key
+// Initialize OpenAI with API key (client-side—use with caution!!)
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY // Set in .env, loaded via Vite!!
 });
 
-export default eventHandler(async (event) => {
+// Use OpenAI's ChatCompletionMessageParam type
+export async function sendChatMessage(messages: OpenAI.ChatCompletionMessageParam[]) {
   try {
-    const { messages } = await readBody(event);
-    
     if (!messages || !Array.isArray(messages)) {
-      return {
-        statusCode: 400,
-        body: { error: "Invalid request. Messages array is required." }
-      };
+      throw new Error('Invalid request. Messages array is required.');
     }
-    
+
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages,
+      model: 'gpt-4o-mini',
+      messages, // No more red underline!!
       temperature: 0.7,
       max_tokens: 1000
     });
-    
+
     return {
       statusCode: 200,
       body: {
@@ -32,14 +27,13 @@ export default eventHandler(async (event) => {
       }
     };
   } catch (error: any) {
-    console.error("Error calling OpenAI:", error);
-    
+    console.error('Error calling OpenAI:', error);
     return {
       statusCode: 500,
       body: { 
-        error: "Error processing your request",
+        error: 'Error processing your request',
         message: error.message
       }
     };
   }
-});
+}
