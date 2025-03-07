@@ -1,134 +1,221 @@
-import axios from 'axios';
-import { ref } from 'vue';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { firestore } from '../firebase'; // Ensure Firebase is correctly imported
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { useAuthStore } from './auth';
+import { firestore } from '../firebase';
+import { 
+  collection, 
+  addDoc, 
+  getDocs, 
+  getDoc,
+  doc, 
+  updateDoc, 
+  serverTimestamp, 
+  query, 
+  where, 
+  orderBy,
+  onSnapshot,
+  Timestamp,
+  arrayUnion
+} from 'firebase/firestore';
+import { sendChatMessage } from '../services/api'; // Changed from '../services/openai' to '../services/api'
 
-// 🌌 OpenAI API Configuration
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-const baseURL = 'https://api.openai.com/v1';
-
-// 🌟 Create OpenAI Axios Instance
-const openaiClient = axios.create({
-  baseURL,
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${apiKey}`
-  }
-});
-
-// 🌍 Define Chat Message Interface
-interface Message {
-  role: 'system' | 'user' | 'assistant';
+export interface Message {
+  id?: string;
   content: string;
-  timestamp?: any;
+  role: 'user' | 'assistant';
+  timestamp: Timestamp | Date;
 }
 
-// 🌍 Define OpenAI Chat Request & Response Types
-interface ChatCompletionRequest {
-  model: string;
+export interface Chat {
+  id: string;
+  title: string;
+  createdAt: Timestamp | Date;
+  updatedAt: Timestamp | Date;
+  userId: string;
   messages: Message[];
-  temperature?: number;
-  max_tokens?: number;
-  stream?: boolean; // ✅ Enables Streaming
 }
 
-export function useOpenAI() {
+export const useChatStore = defineStore('chat', () => {
+  const authStore = useAuthStore();
+  
+  const chats = ref<Chat[]>([]);
+  const currentChat = ref<Chat | null>(null);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
+  
+  // 📌 **Sorted Chats by Most Recent**
+  const sortedChats = computed(() => {
+    return [...chats.value].sort((a, b) => {
+      const dateA = a.updatedAt instanceof Timestamp ? a.updatedAt.toDate() : new Date(a.updatedAt);
+      const dateB = b.updatedAt instanceof Timestamp ? b.updatedAt.toDate() : new Date(b.updatedAt);
+      return dateB.getTime() - dateA.getTime();
+    });
+  });
+  
+  // 🚀 **Fetch User's Chats from Firestore**
+  async function fetchChats() {
+    if (!authStore.user?.uid) return;
+    
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+      const q = query(
+        collection(firestore, 'chats'),
+        where('userId', '==', authStore.user.uid),
+        orderBy('updatedAt', 'desc')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      chats.value = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Chat[];
+      
+    } catch (err: any) {
+      console.error('🔥 Error fetching chats:', err);
+      error.value = 'Failed to load chats. Please try again later.';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+  
+  // 🔄 **Fetch & Subscribe to Chat (Real-Time Updates)**
+  async function fetchChat(chatId: string) {
+    if (!authStore.user?.uid) return;
+    
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+      const docRef = doc(firestore, 'chats', chatId);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists() && docSnap.data().userId === authStore.user.uid) {
+        currentChat.value = {
+          id: docSnap.id,
+          ...docSnap.data()
+        } as Chat;
+        
+        // ✅ Subscribe to real-time updates
+        subscribeToChat(chatId);
+      } else {
+        error.value = '⚠️ Chat not found or access denied.';
+        currentChat.value = null;
+      }
+    } catch (err: any) {
+      console.error('🔥 Error fetching chat:', err);
+      error.value = 'Failed to load the chat. Please try again later.';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+  
+  // 🔄 **Real-time Chat Sync**
+  let unsubscribe: (() => void) | null = null;
+  
+  function subscribeToChat(chatId: string) {
+    if (unsubscribe) {
+      unsubscribe(); // Clean up previous listener
+    }
+    
+    const docRef = doc(firestore, 'chats', chatId);
+    unsubscribe = onSnapshot(docRef, (doc) => {
+      if (doc.exists()) {
+        currentChat.value = {
+          id: doc.id,
+          ...doc.data()
+        } as Chat;
+      }
+    });
+  }
+  
+  // 🆕 **Create a New Chat**
+  async function createChat() {
+    if (!authStore.user?.uid) return null;
+    
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+      const newChat = {
+        title: 'New Conversation',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        userId: authStore.user.uid,
+        messages: []
+      };
+      
+      const docRef = await addDoc(collection(firestore, 'chats'), newChat);
+      
+      // ✅ Add new chat to local state
+      chats.value.unshift({ id: docRef.id, ...newChat, messages: [] } as Chat);
+      
+      return docRef.id;
+    } catch (err: any) {
+      console.error('🔥 Error creating chat:', err);
+      error.value = 'Failed to create a new chat.';
+      return null;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+  
+  // 💬 **Send Message with AI Response Streaming**
+  async function sendMessage(content: string) {
+    if (!authStore.user?.uid || !currentChat.value) return;
 
-  /**
-   * 🚀 **Streaming Chat Request** (Real-time AI replies)
-   */
-  async function sendChatMessage(chatId: string, messages: Message[], model = 'gpt-4o-mini') {
     isLoading.value = true;
     error.value = null;
 
     try {
-      console.log("🚀 Sending message to OpenAI... (Streaming Enabled)");
+      const chatRef = doc(firestore, 'chats', currentChat.value.id);
 
-      const requestData: ChatCompletionRequest = {
-        model,
-        messages,
-        temperature: 0.7,
-        max_tokens: 1000,
-        stream: true // ✅ Enables token streaming
+      // ✅ Add user message instantly to Firestore
+      const userMessage: Message = {
+        content,
+        role: 'user',
+        timestamp: new Date()
       };
-
-      const response = await axios.post(`${baseURL}/chat/completions`, requestData, {
-        responseType: 'stream'
-      });
-
-      let assistantMessage = { role: 'assistant', content: '', timestamp: new Date() };
-
-      response.data.on('data', (chunk: Buffer) => {
-        const text = chunk.toString();
-        const parsedData = parseOpenAIResponse(text);
-        if (parsedData) {
-          assistantMessage.content += parsedData;
-          console.log("📥 Streaming: ", parsedData);
-        }
-      });
-
-      response.data.on('end', async () => {
-        console.log("✅ AI Response Completed: ", assistantMessage.content);
-        
-        // 📌 Add AI Response to Messages
-        messages.push(assistantMessage);
-
-        // 📝 Save Updated Chat to Firestore
-        await saveChatToFirestore(chatId, messages);
-
-        isLoading.value = false;
-      });
-
-      return assistantMessage;
-    } catch (err: any) {
-      console.error('🔥 OpenAI API error:', err);
-      error.value = err.response?.data?.error?.message || 'Error connecting to AI service';
-      throw new Error(error.value);
-    }
-  }
-
-  /**
-   * 🔥 **Save Chat History to Firestore**
-   */
-  async function saveChatToFirestore(chatId: string, messages: Message[]) {
-    try {
-      if (!chatId) throw new Error("⚠️ Chat ID is missing!");
-
-      // 📌 Get Firestore Document Reference
-      const chatRef = doc(firestore, 'chats', chatId);
-
-      // 🚀 Efficient Firestore Write (Prevents Overwrites & Duplicates)
       await updateDoc(chatRef, {
-        messages: arrayUnion(...messages), // Append only new messages
-        updatedAt: serverTimestamp() // Keep last update time
+        messages: arrayUnion(userMessage),
+        updatedAt: serverTimestamp()
       });
 
-      console.log("🔥 Chat history successfully saved to Firestore!");
-    } catch (error) {
-      console.error("🔥 Error saving chat history:", error);
-    }
-  }
+      // ✅ Stream AI Response (No Wait Time!)
+      const aiMessage = await sendChatMessage(currentChat.value.id, [
+        ...currentChat.value.messages,
+        userMessage
+      ]);
 
-  /**
-   * 🔄 **Parse Streaming Data from OpenAI**
-   */
-  function parseOpenAIResponse(text: string) {
-    try {
-      const jsonParts = text.split('data: ').filter(Boolean);
-      const messages = jsonParts.map(part => JSON.parse(part.trim()));
-      return messages.map(msg => msg.choices?.[0]?.delta?.content || '').join('');
-    } catch (error) {
-      console.warn("⚠️ Error parsing OpenAI stream response:", error);
-      return null;
+      await updateDoc(chatRef, {
+        messages: arrayUnion(aiMessage),
+        updatedAt: serverTimestamp()
+      });
+
+      // ✅ Auto-update chat title
+      if (currentChat.value.messages.length === 0) {
+        const title = content.length > 30 ? content.substring(0, 30) + '...' : content;
+        await updateDoc(chatRef, { title });
+      }
+
+    } catch (err: any) {
+      console.error('🔥 Error sending message:', err);
+      error.value = 'Failed to send the message. Please try again later.';
+    } finally {
+      isLoading.value = false;
     }
   }
 
   return {
-    sendChatMessage,
-    saveChatToFirestore,
+    chats,
+    currentChat,
     isLoading,
-    error
+    error,
+    sortedChats,
+    fetchChats,
+    fetchChat,
+    createChat,
+    sendMessage
   };
-}
+});
