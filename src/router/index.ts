@@ -43,7 +43,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory('/app.html'), // ✅ Ensures Vue app runs inside app.html
+  history: createWebHistory(), // ✅ Ensures Vue app runs inside app.html
   routes,
   scrollBehavior() {
     return { top: 0 };
