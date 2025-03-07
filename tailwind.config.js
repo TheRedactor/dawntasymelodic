@@ -1,8 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: 'class', // ✅ Enables dark mode with a class switch
+  darkMode: 'class', // ✅ Dark mode enabled via class (best practice)
   content: [
-    "./app.html", 
+    "./app.html",
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
     "./components/**/*.{vue,js,ts,jsx,tsx}",
@@ -29,7 +29,7 @@ module.exports = {
           light: '#334155',
           accent: '#8b5cf6',
           glow: '#a78bfa',
-          pulse: '#ff66cc', // ✅ FIX: Added missing cosmic-pulse color
+          pulse: '#ff66cc', // ✅ Absolutely no missing color errors!
         },
       },
       fontFamily: {
@@ -59,7 +59,11 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'), // ✅ Improves typography styles
-    require('@tailwindcss/aspect-ratio'), // ✅ Fixes issues with aspect ratios
+    require('@tailwindcss/typography'),
+    require('@tailwindcss/aspect-ratio'),
+  ],
+  safelist: [
+    'bg-cosmic-pulse', // ✅ Ensures no errors when using bg-cosmic-pulse
+    'text-cosmic-pulse', // ✅ Ensures text-cosmic-pulse is valid
   ],
 };
