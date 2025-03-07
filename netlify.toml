@@ -3,8 +3,8 @@
   publish = "dist"
 
 [[redirects]]
-  from = "/index.html"
-  to = "/index.html"
+  from = "/*"
+  to = "/app.html"
   status = 200
 
 [[redirects]]
@@ -18,7 +18,7 @@
   status = 200
 
 [[redirects]]
-  from = "/chat"
+  from = "/chat/*"
   to = "/app.html"
   status = 200
 
