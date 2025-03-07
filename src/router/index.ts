@@ -4,7 +4,7 @@ import Home from '../views/Home.vue';
 import Register from '../views/Register.vue';
 import Chat from '../views/Chat.vue';
 import Settings from '../views/Settings.vue';
-import AIComponent from '../views/AIComponent.vue'; // ✅ Added AIComponent
+import AIComponent from '../vcomponents/AIComponent.vue'; // ✅ Added AIComponent
 import Header from '../components/Header.vue'; // ✅ Added Header
 import Sidebar from '../components/Sidebar.vue'; // ✅ Added Sidebar
 
