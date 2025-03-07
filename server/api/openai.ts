@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { ref } from 'vue';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { firestore } from '../firebase'; // Ensure Firebase is correctly imported
 
 // OpenAI API configuration
 const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
@@ -18,6 +20,7 @@ const openaiClient = axios.create({
 interface Message {
   role: 'system' | 'user' | 'assistant';
   content: string;
+  timestamp?: any;
 }
 
 interface ChatCompletionRequest {
@@ -51,7 +54,7 @@ export function useOpenAI() {
   /**
    * Send a chat completion request to OpenAI API
    */
-  async function sendChatMessage(messages: Message[], model = 'gpt-4o-mini') {
+  async function sendChatMessage(chatId: string, messages: Message[], model = 'gpt-4o-mini') {
     isLoading.value = true;
     error.value = null;
     
@@ -67,15 +70,25 @@ export function useOpenAI() {
         '/chat/completions', 
         requestData
       );
-      
-      // Optional: Save chat history to Firestore
-      saveChatToFirestore(messages);
 
-      return response.data.choices[0].message;
+      // Get AI-generated response
+      const aiMessage: Message = {
+        role: 'assistant',
+        content: response.data.choices[0].message.content,
+        timestamp: new Date()
+      };
+
+      // Add AI response to message array
+      messages.push(aiMessage);
+
+      // Save updated chat history to Firestore
+      await saveChatToFirestore(chatId, messages);
+
+      return aiMessage;
     } catch (err: any) {
-      console.error('OpenAI API error:', err);
+      console.error('🔥 OpenAI API error:', err);
       error.value = err.response?.data?.error?.message || 'Error connecting to AI service';
-      throw err;
+      throw new Error(error.value);
     } finally {
       isLoading.value = false;
     }
@@ -84,12 +97,24 @@ export function useOpenAI() {
   /**
    * Save chat history to Firestore
    */
-  async function saveChatToFirestore(messages: Message[]) {
-    // This method could directly be connected to your chat store or directly 
-    // from where you're sending/receiving messages.
-    // Implement the logic here to push the chat history to Firestore.
-    // Example: store the messages in the Firebase Firestore using Firebase SDK
-    // This would usually require a userId and chatId to correctly store the data.
+  async function saveChatToFirestore(chatId: string, messages: Message[]) {
+    try {
+      if (!chatId) throw new Error("⚠️ Chat ID is missing!");
+
+      const chatRef = collection(firestore, 'chats', chatId, 'messages');
+
+      for (const message of messages) {
+        await addDoc(chatRef, {
+          role: message.role,
+          content: message.content,
+          timestamp: serverTimestamp() // Ensure timestamp consistency
+        });
+      }
+
+      console.log("🔥 Chat history successfully saved to Firestore!");
+    } catch (error) {
+      console.error("🔥 Error saving chat history:", error);
+    }
   }
 
   return {
