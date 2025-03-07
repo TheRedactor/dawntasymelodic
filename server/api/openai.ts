@@ -29,71 +29,69 @@ interface ChatCompletionRequest {
   messages: Message[];
   temperature?: number;
   max_tokens?: number;
-}
-
-interface ChatCompletionResponse {
-  id: string;
-  object: string;
-  created: number;
-  model: string;
-  choices: {
-    index: number;
-    message: Message;
-    finish_reason: string;
-  }[];
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
+  stream?: boolean; // ✅ Enables Streaming
 }
 
 export function useOpenAI() {
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
-  // 🚀 **Send a Chat Completion Request to OpenAI API**
+  /**
+   * 🚀 **Streaming Chat Request** (Real-time AI replies)
+   */
   async function sendChatMessage(chatId: string, messages: Message[], model = 'gpt-4o-mini') {
     isLoading.value = true;
     error.value = null;
-    
+
     try {
-      console.log("🚀 Sending message to OpenAI...");
+      console.log("🚀 Sending message to OpenAI... (Streaming Enabled)");
+
       const requestData: ChatCompletionRequest = {
         model,
         messages,
         temperature: 0.7,
-        max_tokens: 1000
+        max_tokens: 1000,
+        stream: true // ✅ Enables token streaming
       };
 
-      const response = await autoRetry(async () =>
-        openaiClient.post<ChatCompletionResponse>('/chat/completions', requestData)
-      );
+      const response = await axios.post(`${baseURL}/chat/completions`, requestData, {
+        responseType: 'stream'
+      });
 
-      // 📩 Get AI Response
-      const aiMessage: Message = {
-        role: 'assistant',
-        content: response.data.choices[0].message.content,
-        timestamp: new Date()
-      };
+      let assistantMessage = { role: 'assistant', content: '', timestamp: new Date() };
 
-      // 📌 Add AI Response to Messages
-      messages.push(aiMessage);
+      response.data.on('data', (chunk: Buffer) => {
+        const text = chunk.toString();
+        const parsedData = parseOpenAIResponse(text);
+        if (parsedData) {
+          assistantMessage.content += parsedData;
+          console.log("📥 Streaming: ", parsedData);
+        }
+      });
 
-      // 📝 Save Updated Chat to Firestore
-      await saveChatToFirestore(chatId, messages);
+      response.data.on('end', async () => {
+        console.log("✅ AI Response Completed: ", assistantMessage.content);
+        
+        // 📌 Add AI Response to Messages
+        messages.push(assistantMessage);
 
-      return aiMessage;
+        // 📝 Save Updated Chat to Firestore
+        await saveChatToFirestore(chatId, messages);
+
+        isLoading.value = false;
+      });
+
+      return assistantMessage;
     } catch (err: any) {
       console.error('🔥 OpenAI API error:', err);
       error.value = err.response?.data?.error?.message || 'Error connecting to AI service';
       throw new Error(error.value);
-    } finally {
-      isLoading.value = false;
     }
   }
 
-  // 🌟 **Save Chat History to Firestore**
+  /**
+   * 🔥 **Save Chat History to Firestore**
+   */
   async function saveChatToFirestore(chatId: string, messages: Message[]) {
     try {
       if (!chatId) throw new Error("⚠️ Chat ID is missing!");
@@ -113,17 +111,18 @@ export function useOpenAI() {
     }
   }
 
-  // ⚡ **Auto-Retry Function (Handles Failed Requests)**
-  async function autoRetry(fn: () => Promise<any>, retries = 3, delay = 1000) {
-    for (let i = 0; i < retries; i++) {
-      try {
-        return await fn();
-      } catch (error) {
-        console.warn(`⚠️ Attempt ${i + 1} failed. Retrying in ${delay}ms...`);
-        await new Promise((res) => setTimeout(res, delay));
-      }
+  /**
+   * 🔄 **Parse Streaming Data from OpenAI**
+   */
+  function parseOpenAIResponse(text: string) {
+    try {
+      const jsonParts = text.split('data: ').filter(Boolean);
+      const messages = jsonParts.map(part => JSON.parse(part.trim()));
+      return messages.map(msg => msg.choices?.[0]?.delta?.content || '').join('');
+    } catch (error) {
+      console.warn("⚠️ Error parsing OpenAI stream response:", error);
+      return null;
     }
-    throw new Error("🔥 All retries failed.");
   }
 
   return {
