@@ -29,3 +29,7 @@ app.config.errorHandler = (err, vm, info) => {
   console.error('Component:', vm);
   console.error('Info:', info);
 };
+// In your main.ts
+import { initializeDebugTools } from './debug';
+// Initialize at app startup
+initializeDebugTools();
