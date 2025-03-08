@@ -1,4 +1,5 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+// src/router/index.ts - COMPLETELY DIFFERENT APPROACH
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
 const routes: RouteRecordRaw[] = [
@@ -13,18 +14,17 @@ const routes: RouteRecordRaw[] = [
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 ];
 
+// THE BIG CHANGE: Use hash history instead of HTML5 history!
 const router = createRouter({
-  // FIXED: Use a consistent base path - no dynamic determination
-  history: createWebHistory('/app/'),
+  history: createWebHashHistory(),
   routes,
 });
 
-// Add debug logging to help diagnose issues
+// Debug logging
 router.beforeEach((to, from) => {
   console.log('🔍 Route Debug:', {
     to: to.fullPath,
     from: from.fullPath,
-    base: router.options.history.base,
     currentUrl: window.location.href
   });
 });

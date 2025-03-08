@@ -5,10 +5,10 @@ import path from 'path';
 export default defineConfig({
   plugins: [vue()],
   build: {
-    outDir: 'dist-ai',
+    outDir: 'dist',
     emptyOutDir: true,
   },
-  base: '/app/', // CRITICAL: Set base to /app/ to match package.json homepage
+  base: '/app/', // Keep this consistent
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
