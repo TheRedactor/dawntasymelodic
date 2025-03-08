@@ -1,74 +1,35 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-cosmic-dark py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-      <div class="text-center">
-        <h1 class="text-4xl font-display font-bold cosmic-glow">DawntasyAI</h1>
-        <h2 class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
-          Sign in to your account
-        </h2>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Or
-          <router-link to="/register" class="font-medium text-cosmic-accent hover:text-cosmic-glow">
-            create a new account
-          </router-link>
-        </p>
+  <div class="min-h-screen bg-gradient-to-br from-indigo-950 via-cosmic-dark to-purple-900 flex items-center justify-center">
+    <form @submit.prevent="login" class="w-full max-w-md bg-white dark:bg-cosmic-dark shadow-2xl rounded-xl p-10 cosmic-card-animation">
+      <h1 class="text-3xl font-display font-bold cosmic-glow text-center mb-6">✨ Welcome Back ✨</h1>
+      
+      <!-- Error Message -->
+      <div v-if="error" class="bg-red-500 bg-opacity-20 text-red-300 p-3 rounded-lg shadow-lg mb-4 animate-shake">
+        {{ error }}
       </div>
       
-      <div class="mt-8 card p-6">
-        <div v-if="error" class="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-          {{ error }}
-        </div>
-        
-        <form class="space-y-6" @submit.prevent="handleLogin">
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Email address
-            </label>
-            <div class="mt-1">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autocomplete="email"
-                required
-                v-model="email"
-                class="input"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Password
-            </label>
-            <div class="mt-1">
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autocomplete="current-password"
-                required
-                v-model="password"
-                class="input"
-              />
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              class="btn btn-primary w-full flex justify-center"
-              :disabled="isLoading"
-            >
-              <span v-if="isLoading" class="mr-2">
-                <i class="ri-loader-4-line animate-spin"></i>
-              </span>
-              Sign in
-            </button>
-          </div>
-        </form>
+      <!-- Email Field -->
+      <div class="mb-4">
+        <input v-model="email" type="email" required placeholder="Email Address" class="input cosmic-input w-full" />
       </div>
-    </div>
+      
+      <!-- Password Field -->
+      <div class="mb-4">
+        <input v-model="password" required type="password" placeholder="Password" class="input w-full" />
+      </div>
+      
+      <!-- Submit Button -->
+      <button type="submit" :disabled="loading"
+        class="btn-primary w-full py-3 mt-6 cosmic-btn transition-transform hover:scale-105 shadow-cosmic-glow">
+        {{ loading ? "Launching..." : "Enter the Cosmos 🚀" }}
+      </button>
+      
+      <!-- Redirect to Register -->
+      <p class="mt-4 text-center text-gray-400">
+        New here? 
+        <router-link to="/register" class="text-indigo-400 hover:text-indigo-200 transition">Create Account</router-link>
+      </p>
+    </form>
   </div>
 </template>
 
@@ -83,20 +44,68 @@ const authStore = useAuthStore();
 const email = ref('');
 const password = ref('');
 const error = ref('');
-const isLoading = ref(false);
+const loading = ref(false);
 
-async function handleLogin() {
-  isLoading.value = true;
+async function login() {
   error.value = '';
+  loading.value = true;
   
-  const result = await authStore.login(email.value, password.value);
-  
-  if (result.success) {
-    router.push('/');
-  } else {
-    error.value = result.error || 'Failed to sign in. Please check your credentials.';
+  try {
+    await authStore.login(email.value, password.value);
+    router.push('/home');
+  } catch (err: any) {
+    error.value = err.message || 'Login failed. Please check your credentials.';
+  } finally {
+    loading.value = false;
   }
-  
-  isLoading.value = false;
 }
 </script>
+
+<style scoped>
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+form {
+  @apply flex flex-col max-w-md w-full bg-cosmic-light bg-opacity-50 backdrop-blur-lg p-8 rounded-xl shadow-xl;
+  animation: floatForm 6s infinite alternate ease-in-out;
+}
+
+.input {
+  @apply px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-800 text-white shadow-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500;
+}
+
+button {
+  @apply bg-indigo-600 text-white py-3 rounded-lg shadow-md hover:bg-indigo-500 transition-all duration-300 cosmic-pulse;
+}
+
+@layer utilities {
+  .cosmic-pulse {
+    @apply text-cosmic-pulse animate-[cosmic-pulse_1.5s_infinite];
+  }
+}
+
+@keyframes cosmic-pulse {
+  0%, 100% { box-shadow: 0 0 10px #8b5cf6; }
+  50% { box-shadow: 0 0 25px #c084fc, 0 0 50px #8b5cf6; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-10px); }
+  40%, 80% { transform: translateX(10px); }
+}
+
+.animate-shake {
+  animation: shake 0.6s ease-in-out;
+}
+
+.cosmic-glow {
+  text-shadow: 0 0 10px rgba(192, 132, 252, 0.8), 0 0 20px rgba(139, 92, 246, 1);
+}
+
+@keyframes floatForm {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-10px); }
+}
+</style>

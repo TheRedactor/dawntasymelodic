@@ -1,37 +1,28 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { fileURLToPath, URL } from 'url';
-import compression from 'vite-plugin-compression';
+import { resolve } from 'path';
 
+// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    vue(),
-    compression({ algorithm: 'brotliCompress' }),
-  ],
+  plugins: [vue()],
   resolve: {
     alias: {
-      '@': new URL('./src', import.meta.url).pathname,
+      '@': resolve(__dirname, 'src'),
     },
   },
   build: {
     rollupOptions: {
       input: {
-        main: new URL('./app.html', import.meta.url).pathname,
+        main: resolve(__dirname, 'app.html'),
       },
-    },
-    minify: 'terser',
-    terserOptions: {
-      compress: { drop_console: true },
-      format: { comments: false },
     },
   },
   server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
+    // This ensures that routes like /register work correctly
+    historyApiFallback: {
+      rewrites: [
+        { from: /^\/.*$/, to: '/app.html' },
+      ],
     },
   },
 });

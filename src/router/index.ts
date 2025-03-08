@@ -1,20 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+
+// Import all components with proper paths
 import Home from '../views/Home.vue';
 import Register from '../views/Register.vue';
+import Login from '../views/Login.vue';
 import Chat from '../views/Chat.vue';
 import Settings from '../views/Settings.vue';
-import AIComponent from '../components/AIComponent.vue'; // ✅ Added AIComponent
-import Header from '../components/Header.vue'; // ✅ Added Header
-import Sidebar from '../components/Sidebar.vue'; // ✅ Added Sidebar
+import AIComponent from '../components/AIComponent.vue';
 
 const routes = [
   {
     path: '/',
-    redirect: () => {
-      const authStore = useAuthStore();
-      return authStore.isAuthenticated ? '/home' : '/register';
-    },
+    redirect: '/home',
   },
   {
     path: '/register',
@@ -25,47 +23,67 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/Login.vue'),
-    meta: { guestOnly: true },
+    component: Login,
+    meta: { requiresGuest: true },
   },
   {
     path: '/home',
+    name: 'Home',
     component: Home,
     meta: { requiresAuth: true },
-    children: [
-      { path: '', name: 'Home', component: Home },
-      { path: 'chat/:id', name: 'Chat', component: Chat },
-      { path: 'settings', name: 'Settings', component: Settings },
-      { path: 'ai', name: 'AIComponent', component: AIComponent },
-    ],
   },
-  { path: '/:pathMatch(.*)*', redirect: '/home' }, // Catch-all redirect to /home
+  {
+    path: '/chat/:id?',
+    name: 'Chat',
+    component: Chat,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: Settings,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/ai',
+    name: 'AIComponent',
+    component: AIComponent,
+    meta: { requiresAuth: true },
+  },
+  { 
+    path: '/:pathMatch(.*)*', 
+    redirect: '/' 
+  }
 ];
 
 const router = createRouter({
-  history: createWebHistory(), // ✅ Ensures Vue app runs inside app.html
+  // Fix the history to handle paths with or without the app.html prefix
+  history: createWebHistory('/'),
   routes,
-  scrollBehavior() {
-    return { top: 0 };
-  },
 });
 
-// 🔐 Auth Guard Logic
+// Auth Guard Logic
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-
+  
+  // Wait for auth initialization if not done yet
   if (!authStore.authInitialized) {
-    await authStore.initAuth();
+    try {
+      await authStore.initAuth();
+    } catch (error) {
+      console.error('Auth initialization failed:', error);
+    }
   }
-
+  
+  // Handle auth routes
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    return next('/register'); // 🔥 Redirects unauthenticated users
+    return next('/login');
   }
-
-  if (to.meta.guestOnly && authStore.isAuthenticated) {
-    return next('/home'); // 🔥 Prevents logged-in users from accessing guest pages
+  
+  if (to.meta.requiresGuest && authStore.isAuthenticated) {
+    return next('/home');
   }
-
+  
   next();
 });
 
