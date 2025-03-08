@@ -13,7 +13,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory('/ai/'),
+  history: createWebHistory('/app.html'),
   routes,
 });
 
