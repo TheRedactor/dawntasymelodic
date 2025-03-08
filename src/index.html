@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DawntasyAI</title>
-  <!-- CRITICAL ENCHANTMENT: Base path for AI application -->
-  <base href="/ai/">
+  
+  <!-- CHANGED: Updated base path to /app/ to match router and package.json -->
+  <base href="/app/">
   
   <!-- Favicon for branding -->
   <link rel="icon" href="/assets/dawntasy-logo.png" type="image/png">
@@ -16,7 +17,8 @@
   <meta property="og:title" content="DawntasyAI">
   <meta property="og:description" content="Your AI-powered companion for intelligent conversations.">
   <meta property="og:image" content="/assets/dawntasy-logo.png">
-  <meta property="og:url" content="https://dawntasy.com/ai/">
+  <!-- CHANGED: Updated URL to match new base path -->
+  <meta property="og:url" content="https://dawntasy.com/app/">
   <link rel="manifest" href="/manifest.json">
   
   <!-- Fonts -->
@@ -104,17 +106,7 @@
       z-index: -1;
     }
   </style>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/ai/service-worker.js')
-        .then(reg => console.log('Service Worker registered:', reg))
-        .catch(err => console.error('Service Worker registration failed:', err));
-    });
-  }
-</script>
 </head>
-<body>
 <body>
   <!-- Enhanced Loading Screen -->
   <div id="app">
@@ -127,6 +119,9 @@
       <p class="loading-text">Loading DawntasyAI...</p>
     </div>
   </div>
+  
+  <!-- ADDED: Debug info div -->
+  <div id="debug-info" style="position:fixed; bottom:10px; left:10px; background:rgba(0,0,0,0.7); padding:5px; font-size:10px; z-index:9999; display:none;"></div>
   
   <!-- Main entry point - use relative path with base tag -->
   <script type="module" src="./main.ts"></script>
@@ -182,6 +177,19 @@
     }
 
     document.addEventListener('DOMContentLoaded', initStarfield);
+    
+    // ADDED: Debug info display
+    window.addEventListener('load', () => {
+      const debugInfo = document.getElementById('debug-info');
+      if (debugInfo) {
+        debugInfo.style.display = 'block';
+        debugInfo.innerHTML = `
+          Path: ${window.location.pathname}<br>
+          Base: ${document.baseURI}<br>
+          Full URL: ${window.location.href}
+        `;
+      }
+    });
   </script>
   
   <!-- Noscript fallback -->
@@ -194,11 +202,11 @@
     </div>
   </noscript>
 
-  <!-- PWA Service Worker Registration -->
+  <!-- PWA Service Worker Registration - UPDATED path -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/ai/service-worker.js')
+        navigator.serviceWorker.register('/app/service-worker.js')
           .then(reg => console.log('Service Worker registered:', reg))
           .catch(err => console.error('Service Worker registration failed:', err));
       });
