@@ -5,12 +5,15 @@ import path from 'path';
 export default defineConfig({
   plugins: [vue()],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+    alias: { '@': path.resolve(__dirname, './src') },
   },
   build: {
-    outDir: 'dist-ai',
+    outDir: 'dist-ai',  // ✅ Build AI into dist-ai
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'app.html') // 👈 THIS FORCES VITE TO BUILD AI
+      }
+    }
   },
-  base: '/ai/', // ✅ IMPORTANT: SETS YOUR AI APP PATH TO "/ai/"
+  base: '/ai/'  // ✅ AI runs under /ai/
 });
