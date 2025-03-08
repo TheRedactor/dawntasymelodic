@@ -1,28 +1,19 @@
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { resolve } from 'path';
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
+      '@': path.resolve(__dirname, './src'),
     },
   },
+  // This ensures the app loads correctly when accessing any path
   build: {
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'app.html'),
-      },
-    },
+    outDir: 'dist',
   },
-  server: {
-    // This ensures that routes like /register work correctly
-    historyApiFallback: {
-      rewrites: [
-        { from: /^\/.*$/, to: '/app.html' },
-      ],
-    },
-  },
-});
+  // Remove the base path - this is critical for routing to work properly
+  base: '/',
+})
