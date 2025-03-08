@@ -3,4 +3,4 @@
 /login       /dist-ai/app.html   200
 /chat/*      /dist-ai/app.html   200
 /settings    /dist-ai/app.html   200
-/*           /app.html      200
+/*           /dist-ai/app.html   200
