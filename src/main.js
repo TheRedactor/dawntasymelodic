@@ -1,4 +1,4 @@
-import './assets/css/main.css';  // Make sure this file exists
+import './assets/css/main.css';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
