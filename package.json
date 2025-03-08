@@ -4,11 +4,11 @@
   "private": true,
   "homepage": "https://Dawntasy.com/app.html",
   "scripts": {
-    "dev": "vite --open app.html",
-    "serve": "vite --open app.html",
+    "dev": "vite",
+    "serve": "vite",
     "build": "vite build",
-    "preview": "vite preview --open app.html"
-  },
+    "preview": "vite preview"
+  }, 
   "dependencies": {
     "@vueuse/head": "^2.0.0",
     "auth0": "^4.18.0",
