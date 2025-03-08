@@ -1,8 +1,13 @@
 [build]
-  command = "npm run build"
-  publish = "dist-ai"
+  command = "npm run build:ai && npm run build:book"
+  publish = "dist"
+
+[[redirects]]
+  from = "/app/*"
+  to = "/app/index.html"
+  status = 200
 
 [[redirects]]
   from = "/*"
-  to = "/app.html"
+  to = "/index.html"
   status = 200

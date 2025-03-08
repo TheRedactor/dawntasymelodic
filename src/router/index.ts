@@ -14,7 +14,7 @@ const routes: RouteRecordRaw[] = [
 ];
 
 const router = createRouter({
-  history: createWebHistory('/app.html/'), // Ensure the base URL is correctly set
+  history: createWebHistory('/'), // Ensure the base URL is correctly set
   routes,
 });
 

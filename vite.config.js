@@ -11,9 +11,9 @@ export default defineConfig({
     outDir: 'dist-ai',  // ✅ Build AI into dist-ai
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'app.html') // 👈 THIS FORCES VITE TO BUILD AI
+        main: path.resolve(__dirname, 'src/index.html') // 👈 THIS FORCES VITE TO BUILD AI
       }
     }
   },
-  base: '/app.html'  // ✅ AI runs under /ai/
+  base: '/'  // ✅ AI runs under /ai/
 });
