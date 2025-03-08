@@ -1,6 +1,6 @@
-/ai/*        /ai/index.html   200
-/register    /ai/index.html   200
-/login       /ai/index.html   200
-/chat/*      /ai/index.html   200
-/settings    /ai/index.html   200
-/*           /index.html      200
+/ai/*        /dist-ai/app.html   200
+/register    /dist-ai/app.html  200
+/login       /dist-ai/app.html   200
+/chat/*      /dist-ai/app.html   200
+/settings    /dist-ai/app.html   200
+/*           /app.html      200
