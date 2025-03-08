@@ -15,5 +15,5 @@ export default defineConfig({
       }
     }
   },
-  base: '/'  // ✅ AI runs under /ai/
+  base: '/ai/'  // ✅ AI runs under /ai/
 });
