@@ -14,7 +14,7 @@ const routes: RouteRecordRaw[] = [
 ];
 
 const router = createRouter({
-  history: createWebHistory('/ai/'), // Fixed: Base path for history mode
+  history: createWebHistory('/ai/'), // MAGICAL CHANGE: Sets history base to /ai/
   routes,
 });
 

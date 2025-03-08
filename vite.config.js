@@ -13,7 +13,7 @@ export default defineConfig({
       },
     },
   },
-  base: '/ai/', // Fixed: Serve AI app from /ai/ path
+  base: '/ai/', // CRITICAL CHANGE: Sets base path to /ai/
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
