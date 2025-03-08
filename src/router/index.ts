@@ -11,7 +11,6 @@ const routes: RouteRecordRaw[] = [
   { path: '/chat/:id?', component: () => import('../views/Chat.vue'), meta: { requiresAuth: true } },
   { path: '/settings', component: () => import('../views/Settings.vue'), meta: { requiresAuth: true } },
   { path: '/ai', component: () => import('../components/AIComponent.vue'), meta: { requiresAuth: true } },
-  { path: '/:pathMatch(.*)*', component: () => import('../views/NotFound.vue') }, // Show a 404 page
 ];
 
 const router = createRouter({
