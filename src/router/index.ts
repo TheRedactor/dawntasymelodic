@@ -119,8 +119,8 @@ router.beforeEach(async (
 
   try {
     const user = await getCurrentUser();
-    const requiresAuth = to.matched.some(record => (record.meta as EnhancedRouteMetadata).requiresAuth);
-    const requiredRole = (to.meta as EnhancedRouteMetadata).roleRequired;
+    const requiresAuth = to.matched.some(record => (record.meta as unknown as EnhancedRouteMetadata).requiresAuth);
+    const requiredRole = (to.meta as unknown as EnhancedRouteMetadata).roleRequired;
 
     // ✅ Redirect if user isn't authenticated
     if (requiresAuth && !user) {
@@ -137,7 +137,7 @@ router.beforeEach(async (
     }
 
     // ✅ Analytics tracking (future feature)
-    if ((to.meta as EnhancedRouteMetadata).analyticsTrack) {
+    if ((to.meta as unknown as EnhancedRouteMetadata).analyticsTrack) {
       // Example: trackPageView(to.path);
     }
 
