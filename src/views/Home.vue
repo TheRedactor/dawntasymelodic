@@ -63,7 +63,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { useChatStore } from '../stores/chat';
+import { useChatStore } from '../store/chat';
 
 const router = useRouter();
 const chatStore = useChatStore();

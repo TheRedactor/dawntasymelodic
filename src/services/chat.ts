@@ -1,7 +1,7 @@
 import { callOpenAI } from '../../server/api/openai';
 import { Message } from '../types/';
 import { serverTimestamp, collection, addDoc, updateDoc, doc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db } from '../firebase/init';
 
 // Inside your useChats function, in the addMessage function:
 const addMessage = async (chatId: string, message: Message) => {

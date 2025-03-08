@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useAuthStore } from './auth';
-import { firestore } from '../firebase';
+import { firestore } from '../firebase/init';
 import { 
   collection, 
   addDoc, 

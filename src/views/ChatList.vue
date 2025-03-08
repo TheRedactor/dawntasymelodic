@@ -47,7 +47,7 @@
   <script setup lang="ts">
   import { onMounted } from 'vue';
   import { useRouter } from 'vue-router';
-  import { useChatStore } from '../stores/chat';
+  import { useChatStore } from '../store/chat';
   import { format } from 'date-fns';
   
   const router = useRouter();

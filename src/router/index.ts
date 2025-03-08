@@ -1,43 +1,156 @@
-// src/router/index.ts - DEFINITIVE VERSION
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
-import { useAuthStore } from '../stores/auth';
+// src/router/index.ts
+import { createRouter, createWebHistory, RouteRecordRaw, NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
+import { auth } from '@/firebase/init';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import NProgress from 'nprogress'; // 🆕 Added progress bar support
+import 'nprogress/nprogress.css'; // 🆕 Import styles
 
-const routes: RouteRecordRaw[] = [
-  { path: '/', redirect: '/home' },
-  { path: '/register', component: () => import('../views/Register.vue'), meta: { requiresGuest: true } },
-  { path: '/login', component: () => import('../views/Login.vue'), meta: { requiresGuest: true } },
-  { path: '/home', component: () => import('../views/Home.vue'), meta: { requiresAuth: true } },
-  { path: '/chat/:id?', component: () => import('../views/Chat.vue'), meta: { requiresAuth: true } },
-  { path: '/chat-list', component: () => import('../views/ChatList.vue'), meta: { requiresAuth: true } },
-  { path: '/settings', component: () => import('../views/Settings.vue'), meta: { requiresAuth: true } },
-  { path: '/ai', component: () => import('../components/AIComponent.vue'), meta: { requiresAuth: true } },
-  { path: '/:pathMatch(.*)*', redirect: '/home' },
+// 🌌 **Enhanced route metadata**
+interface EnhancedRouteMetadata {
+  requiresAuth: boolean;
+  transition: string;
+  roleRequired?: 'user' | 'admin' | 'guest';
+  analyticsTrack?: boolean;
+}
+
+const routes: Array<RouteRecordRaw> = [
+  {
+    path: '/',
+    name: 'Landing',
+    component: () => import('@/views/LandingView.vue'),
+    meta: { requiresAuth: false, transition: 'fade' }
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { requiresAuth: false, transition: 'slide-left' }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/RegisterView.vue'),
+    meta: { requiresAuth: false, transition: 'slide-left' }
+  },
+  {
+    path: '/chat',
+    name: 'Chat',
+    component: () => import('@/views/ChatView.vue'),
+    meta: {
+      requiresAuth: true, 
+      transition: 'cosmic-fade',
+      roleRequired: 'user',
+      analyticsTrack: true
+    }
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('@/views/ProfileView.vue'),
+    meta: { requiresAuth: true, transition: 'slide-up' }
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: () => import('@/views/SettingsView.vue'),
+    meta: { requiresAuth: true, transition: 'slide-up' }
+  },
+  {
+    path: '/about',
+    name: 'About',
+    component: () => import('@/views/AboutView.vue'),
+    meta: { requiresAuth: false, transition: 'fade' }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/NotFoundView.vue'),
+    meta: { requiresAuth: false, transition: 'fade' }
+  }
 ];
 
-// USING HASH HISTORY - This is the key change
+// 🚀 **Fix: Ensures Netlify routes correctly under `/ai/`**
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory('/ai/'),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (savedPosition) {
+          resolve(savedPosition);
+        } else {
+          resolve({
+            top: 0, 
+            behavior: 'smooth',
+            el: to.hash ? `#${to.hash.slice(1)}` : undefined
+          });
+        }
+      }, 300);
+    });
+  }
 });
 
-// Authentication logic remains the same
-router.beforeEach(async (to, from, next) => {
-  console.log('🚀 Navigating to:', to.path);
-  const authStore = useAuthStore();
-  if (!authStore.authInitialized) {
-    console.log('🔍 Initializing auth...');
-    await authStore.initAuth();
-    console.log('✅ Auth initialized, authenticated:', authStore.isAuthenticated);
-  }
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    console.log('🚫 Redirecting to /login due to auth requirement');
-    next('/login');
-  } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    console.log('🚫 Redirecting to /home due to guest restriction');
-    next('/home');
-  } else {
-    console.log('✅ Proceeding to:', to.path);
+// 🌟 **Enhanced user authentication resolution**
+const getCurrentUser = (): Promise<User | null> => {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = onAuthStateChanged(
+      auth, 
+      (user) => {
+        unsubscribe();
+        resolve(user);
+      },
+      (error) => {
+        unsubscribe();
+        reject(error);
+      }
+    );
+  });
+};
+
+// 🔥 **Navigation guards with progress bar & role-based auth**
+router.beforeEach(async (
+  to: RouteLocationNormalized, 
+  from: RouteLocationNormalized, 
+  next: NavigationGuardNext
+) => {
+  NProgress.start(); // ✅ Starts progress bar when route changes begin
+  
+  document.body.classList.add('page-transitioning');
+
+  try {
+    const user = await getCurrentUser();
+    const requiresAuth = to.matched.some(record => (record.meta as EnhancedRouteMetadata).requiresAuth);
+    const requiredRole = (to.meta as EnhancedRouteMetadata).roleRequired;
+
+    // ✅ Redirect if user isn't authenticated
+    if (requiresAuth && !user) {
+      NProgress.done();
+      return next({ 
+        name: 'Login', 
+        query: { redirect: to.fullPath } 
+      });
+    }
+
+    // ✅ Role-based access control (future feature)
+    if (requiredRole && user) {
+      // Example: if (user.role !== requiredRole) { next('/unauthorized'); }
+    }
+
+    // ✅ Analytics tracking (future feature)
+    if ((to.meta as EnhancedRouteMetadata).analyticsTrack) {
+      // Example: trackPageView(to.path);
+    }
+
     next();
+  } catch (error) {
+    console.error('Navigation error:', error);
+    NProgress.done();
+    next({ name: 'Login' });
+  } finally {
+    requestAnimationFrame(() => {
+      document.body.classList.remove('page-transitioning');
+      NProgress.done(); // ✅ Ensures progress bar ends after navigation
+    });
   }
 });
 

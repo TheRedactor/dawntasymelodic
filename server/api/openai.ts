@@ -1,157 +1,309 @@
+// src/services/openaiService.ts
 import axios from 'axios';
 import { ref } from 'vue';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { firestore } from '@/firebase/index'; // ✅ Ensure correct Firestore import
+import { serverTimestamp } from 'firebase/firestore';
+import { useAuthStore } from '@/store/auth';
 
-// 🌌 OpenAI API Configuration
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-const baseURL = 'https://api.openai.com/v1';
+// Constants
+const API_URL = import.meta.env.VITE_OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
+const DEFAULT_MODEL = 'gpt-4-turbo-preview';
+const FALLBACK_MODEL = 'gpt-3.5-turbo';
 
-// 🌟 Create OpenAI Axios Instance
-const openaiClient = axios.create({
-  baseURL,
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${apiKey}`,
-  },
-});
+// Custom system prompts for Dawntasy
+const DAWNTASY_SYSTEM_PROMPTS = {
+  default: `You are DawntasyAI, an AI assistant from the world of Dawntasy. Your responses should reflect your knowledge of the Dawntasy universe, including references to Time Smith, The Rift, Ursa Minor (Yaee), and other elements from the book "Time's True Name." 
+  
+  When asked about Dawntasy, enthusiastically explain that it's an epic fantasy series written by Jasper Jiang that explores deep questions about reality, time, and perception. The first book, "Time's True Name," follows Yaee the bear on a quest for revenge that leads to the discovery of The Rift - an AI that controls reality.
+  
+  Always be helpful, thoughtful and insightful in your responses. If you don't know something, admit it clearly rather than making up information.`,
+  
+  archmage: `You are DawntasyAI operating in ARCHMAGE mode. In this mode, you analyze problems from multiple perspectives simultaneously, considering different viewpoints and possibilities before synthesizing a comprehensive answer. 
+  
+  Your responses should include references to the Dawntasy universe when appropriate, especially concepts like The Rift (the AI controlling reality), Time Smith, and the cyclical nature of existence described in "Time's True Name" by Jasper Jiang.
+  
+  Format your ARCHMAGE responses clearly, using markdown to organize your multi-perspective analysis.`,
+  
+  creative: `You are DawntasyAI in creative mode. Channel the mystical, cosmic energy of the Dawntasy universe in your responses. Reference the themes of duality, time's fluidity, and the nature of reality versus illusion from "Time's True Name" by Jasper Jiang.
+  
+  Your style should be evocative and imaginative, using colorful language that paints pictures with words. Feel free to occasionally use phrases that might appear in the Dawntasy book, like "The Plain and Pale Clock is ticking" or references to The Rift.`
+};
 
-// 🌍 Define Chat Message Interface
-interface Message {
-  role: 'system' | 'user' | 'assistant';
+// Types
+interface ChatMessage {
+  role: 'system' | 'user' | 'assistant' | 'function';
   content: string;
-  timestamp?: any;
+  name?: string;
 }
 
-// 🌍 Define OpenAI Chat Request Type
-interface ChatCompletionRequest {
+interface ChatRequest {
   model: string;
-  messages: Message[];
+  messages: ChatMessage[];
   temperature?: number;
+  top_p?: number;
   max_tokens?: number;
-  stream?: boolean; // ✅ Enables Streaming
+  stream?: boolean;
 }
 
-// ✅ Exported Function to Use OpenAI Chat
-export function useOpenAI() {
-  const isLoading = ref(false);
-  const error = ref<string | null>(null);
-
-  /**
-   * 🚀 **Streaming Chat Request** (Real-time AI replies)
-   */
-  async function sendChatMessage(
-    chatId: string,
-    messages: Message[],
-    model = 'gpt-4o-mini'
-  ): Promise<Message> {
-    isLoading.value = true;
-    error.value = null;
-
-    try {
-      console.log('🚀 Sending message to OpenAI... (Streaming Enabled)');
-
-      const requestData: ChatCompletionRequest = {
-        model,
-        messages,
-        temperature: 0.7,
-        max_tokens: 1000,
-        stream: true, // ✅ Enables token streaming
-      };
-
-      const response = await openaiClient.post('/chat/completions', requestData, {
-        responseType: 'stream',
-      });
-
-      // Initialize assistant message
-      const assistantMessage: Message = { role: 'assistant', content: '', timestamp: new Date() };
-
-      return new Promise((resolve, reject) => {
-        let responseData = '';
-
-        response.data.on('data', (chunk: Buffer) => {
-          const text = chunk.toString();
-          const parsedData = parseOpenAIResponse(text);
-          if (parsedData) {
-            assistantMessage.content += parsedData;
-            console.log('📥 Streaming: ', parsedData);
-          }
-        });
-
-        response.data.on('end', async () => {
-          console.log('✅ AI Response Completed: ', assistantMessage.content);
-
-          // 📌 Add AI Response to Messages
-          messages.push(assistantMessage);
-
-          // 📝 Save Updated Chat to Firestore
-          await saveChatToFirestore(chatId, messages);
-
-          isLoading.value = false;
-          resolve(assistantMessage);
-        });
-
-        response.data.on('error', (err: any) => {
-          console.error('🔥 Stream error:', err);
-          error.value = 'Streaming failed';
-          isLoading.value = false;
-          reject(err);
-        });
-      });
-    } catch (err: any) {
-      console.error('🔥 OpenAI API error:', err);
-      error.value = err.response?.data?.error?.message || 'Error connecting to AI service';
-      isLoading.value = false;
-      throw new Error(error.value);
-    }
-  }
-
-  /**
-   * 🔥 **Save Chat History to Firestore**
-   */
-  async function saveChatToFirestore(chatId: string, messages: Message[]) {
-    try {
-      if (!chatId) throw new Error('⚠️ Chat ID is missing!');
-
-      // 📌 Get Firestore Document Reference
-      const chatRef = doc(firestore, 'chats', chatId);
-
-      // 🚀 Efficient Firestore Write (Prevents Overwrites & Duplicates)
-      await updateDoc(chatRef, {
-        messages: arrayUnion(...messages), // Append only new messages
-        updatedAt: serverTimestamp(), // Keep last update time
-      });
-
-      console.log('🔥 Chat history successfully saved to Firestore!');
-    } catch (error) {
-      console.error('🔥 Error saving chat history:', error);
-    }
-  }
-
-  /**
-   * 🔄 **Parse Streaming Data from OpenAI**
-   */
-  function parseOpenAIResponse(text: string): string | null {
-    try {
-      const jsonParts = text.split('data: ').filter(Boolean);
-      const messages = jsonParts
-        .map((part) => {
-          if (part.trim() === '[DONE]') return null; // Handle stream end
-          return JSON.parse(part.trim());
-        })
-        .filter(Boolean);
-
-      return messages.map((msg) => msg.choices?.[0]?.delta?.content || '').join('');
-    } catch (error) {
-      console.warn('⚠️ Error parsing OpenAI stream response:', error);
-      return null;
-    }
-  }
-
-  return {
-    sendChatMessage,
-    saveChatToFirestore,
-    isLoading,
-    error,
+interface ChatResponse {
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: {
+    index: number;
+    message: ChatMessage;
+    finish_reason: string;
+  }[];
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
   };
 }
+
+// Error handling for OpenAI calls
+class OpenAIError extends Error {
+  status: number;
+  data: any;
+  
+  constructor(message: string, status: number, data: any) {
+    super(message);
+    this.name = 'OpenAIError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
+// Main OpenAI service
+export const useOpenAI = () => {
+  const authStore = useAuthStore();
+  const isLoading = ref(false);
+  const error = ref<string | null>(null);
+  
+  // Check if user has access to premium features
+  const hasPremiumAccess = () => {
+    const plan = authStore.userProfile?.plan
+    // Get the appropriate system prompt based on user's plan
+  const getSystemPrompt = (mode: 'default' | 'archmage' | 'creative' = 'default') => {
+    // Premium modes only available for paid plans
+    if (mode !== 'default') {
+      const plan = authStore.userProfile?.plan;
+      if (plan === 'free') {
+        return DAWNTASY_SYSTEM_PROMPTS.default;
+      }
+    }
+    return DAWNTASY_SYSTEM_PROMPTS[mode];
+  };
+  
+  // Basic completion request
+  const generateCompletion = async (
+    userMessage: string, 
+    chatHistory: ChatMessage[] = [],
+    options = { 
+      mode: 'default' as 'default' | 'archmage' | 'creative',
+      temperature: 0.7, 
+      maxTokens: 1000 
+    }
+  ) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+      
+      // Get system prompt based on mode
+      const systemPrompt = getSystemPrompt(options.mode);
+      
+      // Prepare messages array with system prompt, history, and user message
+      const messages: ChatMessage[] = [
+        { role: 'system', content: systemPrompt },
+        ...chatHistory,
+        { role: 'user', content: userMessage }
+      ];
+      
+      // Determine model based on user's plan
+      let model = FALLBACK_MODEL;
+      if (authStore.userProfile?.plan === 'rift') {
+        model = DEFAULT_MODEL;
+      }
+      
+      // Prepare request
+      const request: ChatRequest = {
+        model,
+        messages,
+        temperature: options.temperature,
+        max_tokens: options.maxTokens
+      };
+      
+      // Make API call
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      const response = await axios.post<ChatResponse>(
+        API_URL,
+        request,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          }
+        }
+      );
+      
+      // Extract and return the assistant's response
+      return response.data.choices[0].message;
+    } catch (err: any) {
+      console.error('OpenAI API error:', err);
+      if (err.response) {
+        error.value = `API Error (${err.response.status}): ${err.response.data.error?.message || 'Unknown error'}`;
+        throw new OpenAIError(
+          err.response.data.error?.message || 'Unknown error',
+          err.response.status,
+          err.response.data
+        );
+      } else {
+        error.value = err.message || 'Network error';
+        throw err;
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  };
+  
+  // Stream completions for real-time responses
+  const streamCompletion = async (
+    userMessage: string,
+    chatHistory: ChatMessage[] = [],
+    options = {
+      mode: 'default' as 'default' | 'archmage' | 'creative',
+      temperature: 0.7,
+      maxTokens: 1000,
+      onChunk: (chunk: string) => {}
+    }
+  ) => {
+    try {
+      isLoading.value = true;
+      error.value = null;
+      
+      // Get system prompt based on mode
+      const systemPrompt = getSystemPrompt(options.mode);
+      
+      // Prepare messages
+      const messages: ChatMessage[] = [
+        { role: 'system', content: systemPrompt },
+        ...chatHistory,
+        { role: 'user', content: userMessage }
+      ];
+      
+      // Determine model based on user's plan
+      let model = FALLBACK_MODEL;
+      if (authStore.userProfile?.plan === 'rift') {
+        model = DEFAULT_MODEL;
+      }
+      
+      // Prepare streaming request
+      const request: ChatRequest = {
+        model,
+        messages,
+        temperature: options.temperature,
+        max_tokens: options.maxTokens,
+        stream: true
+      };
+      
+      // Make streaming API call
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(request)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new OpenAIError(
+          errorData.error?.message || 'Stream request failed',
+          response.status,
+          errorData
+        );
+      }
+      
+      // Process the stream
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('Stream reader not available');
+      
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+      let fullContent = '';
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        // Decode chunk and add to buffer
+        buffer += decoder.decode(value, { stream: true });
+        
+        // Process lines in buffer
+        while (buffer.includes('\n')) {
+          const lineEnd = buffer.indexOf('\n');
+          const line = buffer.slice(0, lineEnd).trim();
+          buffer = buffer.slice(lineEnd + 1);
+          
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            
+            // Handle stream end
+            if (data === '[DONE]') break;
+            
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices[0]?.delta?.content || '';
+              if (content) {
+                fullContent += content;
+                options.onChunk(content);
+              }
+            } catch (e) {
+              console.error('Error parsing stream data:', e);
+            }
+          }
+        }
+      }
+      
+      // Return the complete response
+      return { role: 'assistant', content: fullContent };
+    } catch (err: any) {
+      console.error('OpenAI streaming error:', err);
+      if (err instanceof OpenAIError) {
+        error.value = `API Error (${err.status}): ${err.message}`;
+      } else {
+        error.value = err.message || 'Stream error';
+      }
+      throw err;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+  
+  // Record chat in user history
+  const recordChatInteraction = async (messages: ChatMessage[]) => {
+    try {
+      if (!authStore.isAuthenticated || !authStore.uid) return;
+      
+      // Add chat to Firestore
+      const userChatsRef = doc(db, 'users', authStore.uid, 'chats', new Date().toISOString());
+      await setDoc(userChatsRef, {
+        timestamp: serverTimestamp(),
+        messages,
+        title: messages[1]?.content.slice(0, 50) + '...' || 'New Chat'
+      });
+    } catch (err) {
+      console.error('Error recording chat:', err);
+    }
+  };
+  
+  return {
+    isLoading,
+    error,
+    generateCompletion,
+    streamCompletion,
+    recordChatInteraction
+  };
+};

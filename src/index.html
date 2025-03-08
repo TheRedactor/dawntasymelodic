@@ -1,232 +1,188 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DawntasyAI</title>
-  
-  <!-- NO BASE TAG NEEDED WITH HASH ROUTER -->
-  
-  <!-- Favicon for branding -->
-  <link rel="icon" href="/assets/dawntasy-logo.png" type="image/png">
-  <link rel="apple-touch-icon" href="/assets/dawntasy-logo.png">
+<html lang="en" data-theme="cosmic">
+  <head>
+    <!-- EXISTING EPIC META TAGS -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DawntasyAI - The AI That Makes You Think</title>
+    <meta name="description" content="Dawntasy AI is an advanced chatbot merging fantasy, music, and cutting-edge AI technology from the Dawntasy universe." />
 
-  <!-- SEO, Social Media & PWA Meta Tags -->
-  <meta name="description" content="DawntasyAI - Your ultimate AI assistant for creativity and coding.">
-  <meta property="og:title" content="DawntasyAI">
-  <meta property="og:description" content="Your AI-powered companion for intelligent conversations.">
-  <meta property="og:image" content="/assets/dawntasy-logo.png">
-  <meta property="og:url" content="https://dawntasy.com">
-  <link rel="manifest" href="/manifest.json">
-  
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Critical CSS for loader -->
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #4c1d95 100%);
-      font-family: 'Orbitron', sans-serif;
-      color: white;
-      overflow: hidden;
-    }
-    
-    #app-loader {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      width: 100vw;
-    }
-    
-    .cosmic-loader {
-      position: relative;
-      width: 100px;
-      height: 100px;
-    }
-    
-    .cosmic-spinner {
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      top: 20px;
-      left: 20px;
-      border: 4px solid rgba(139, 92, 246, 0.3);
-      border-radius: 50%;
-      border-top-color: #8b5cf6;
-      animation: spin 1s ease-in-out infinite;
-      box-shadow: 0 0 15px rgba(139, 92, 246, 0.7);
-    }
-    
-    .cosmic-orbit {
-      position: absolute;
-      width: 100px;
-      height: 100px;
-      border: 2px solid rgba(192, 132, 252, 0.5);
-      border-radius: 50%;
-      animation: pulse 2s ease-in-out infinite;
-    }
-    
-    .loading-text {
-      margin-top: 30px;
-      font-size: 24px;
-      text-shadow: 0 0 10px rgba(139, 92, 246, 0.8);
-      animation: glow 1.5s ease-in-out infinite alternate;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    @keyframes pulse {
-      0% { transform: scale(0.8); opacity: 0.3; }
-      50% { transform: scale(1.2); opacity: 0.7; }
-      100% { transform: scale(0.8); opacity: 0.3; }
-    }
-    
-    @keyframes glow {
-      from { text-shadow: 0 0 5px #8b5cf6, 0 0 10px #8b5cf6; }
-      to { text-shadow: 0 0 10px #c084fc, 0 0 20px #c084fc, 0 0 30px #c084fc; }
-    }
-    
-    #star-field {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-    }
-  </style>
-</head>
-<body>
-  <!-- Enhanced Loading Screen -->
-  <div id="app">
+    <!-- 🔥 OPEN GRAPH & SEO OPTIMIZATION -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://dawntasy.com" />
+    <meta property="og:title" content="DawntasyAI - The AI That Makes You Think" />
+    <meta property="og:description" content="Experience DawntasyAI, an advanced chatbot merging fantasy lore with cutting-edge AI technology." />
+    <meta property="og:image" content="/assets/images/og-image.jpg" />
+
+    <!-- 🆕 PERFORMANCE & PWA ENHANCEMENTS -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- 🔥 ADVANCED PRELOAD OPTIMIZATIONS -->
+    <link rel="preload" href="/assets/fonts/Orbitron.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="modulepreload" href="/assets/main.js"> <!-- ✅ FIXED -->
+
+    <!-- 🆕 ADDITIONAL PERFORMANCE META -->
+    <meta http-equiv="x-dns-prefetch-control" content="on">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- EXISTING STYLES + EPIC ADDITIONS -->
+    <style>
+      /* 🆕 DARK MODE & THEME SUPPORT */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --cosmic-dark: #0a0e17;
+          --cosmic-light: #1a2234;
+        }
+      }
+
+      /* 🆕 ACCESSIBILITY ENHANCEMENTS */
+      @media (prefers-reduced-motion: reduce) {
+        .cosmic-orbit, 
+        .cosmic-spinner, 
+        .cosmic-core {
+          animation: none;
+        }
+      }
+      
+      /* Cosmic Background */
+      body {
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #4c1d95 100%);
+        color: white;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Loader */
+      #app-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #4c1d95 100%);
+      }
+
+      .cosmic-orbit {
+        position: absolute;
+        border-radius: 50%;
+        border: 2px solid rgba(167, 139, 250, 0.5);
+        animation: pulse 4s infinite alternate ease-in-out;
+      }
+
+      .cosmic-spinner {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        top: 60px;
+        left: 60px;
+        border-radius: 50%;
+        border: 4px solid rgba(139, 92, 246, 0.2);
+        border-top-color: #8b5cf6;
+        animation: spin 1.5s linear infinite;
+      }
+
+      .cosmic-core {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        top: 80px;
+        left: 80px;
+        border-radius: 50%;
+        background: #8b5cf6;
+        box-shadow: 0 0 20px #a78bfa;
+        animation: glow 2s infinite alternate;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(0.8); opacity: 0.3; }
+        50% { transform: scale(1.1); opacity: 0.7; }
+        100% { transform: scale(0.8); opacity: 0.3; }
+      }
+
+      @keyframes glow {
+        from { box-shadow: 0 0 10px #8b5cf6; }
+        to { box-shadow: 0 0 30px #a78bfa, 0 0 50px #a78bfa; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ACCESSIBILITY ANNOUNCEMENT -->
+    <div id="a11y-announcer" aria-live="polite" class="sr-only"></div>
+
+    <!-- LOADER -->
     <div id="app-loader">
-      <canvas id="star-field"></canvas>
-      <div class="cosmic-loader">
-        <div class="cosmic-orbit"></div>
-        <div class="cosmic-spinner"></div>
-      </div>
+      <div class="cosmic-orbit orbit-1"></div>
+      <div class="cosmic-spinner"></div>
+      <div class="cosmic-core"></div>
       <p class="loading-text">Loading DawntasyAI...</p>
     </div>
-  </div>
-  
-  <!-- ADDED: Debug info div -->
-  <div id="debug-info" style="position:fixed; bottom:10px; left:10px; background:rgba(0,0,0,0.7); padding:5px; font-size:10px; z-index:9999; display:none;"></div>
-  
-  <!-- Main entry point - use relative path with base tag -->
-  <script type="module" src="./main.ts"></script>
-  
-  <!-- Animated starfield background -->
-  <script>
-    function initStarfield() {
-      const canvas = document.getElementById('star-field');
-      if (!canvas || !canvas.getContext) {
-        console.error('Starfield canvas not found or unsupported');
-        return;
-      }
 
-      const ctx = canvas.getContext('2d');
-      
-      const resizeCanvas = () => {
+    <!-- 🌟 STARFIELD ANIMATION -->
+    <canvas id="star-field"></canvas>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const canvas = document.getElementById('star-field');
+        const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-      };
-      resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
-      
-      const stars = Array(300).fill().map(() => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: Math.random() * 1.5,
-        speed: Math.random() * 0.1,
-        opacity: Math.random()
-      }));
-      
-      function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        stars.forEach(star => {
-          ctx.beginPath();
-          ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
-          ctx.fill();
-          
-          star.y += star.speed;
-          if (star.y > canvas.height) {
-            star.y = 0;
-            star.x = Math.random() * canvas.width;
+
+        const MAX_STARS = Math.min(
+          Math.floor(window.innerWidth * window.innerHeight / 500), 
+          5000 // Cap total stars
+        );
+
+        function generateStars() {
+          const stars = [];
+          for (let i = 0; i < MAX_STARS; i++) {
+            stars.push({
+              x: Math.random() * canvas.width,
+              y: Math.random() * canvas.height,
+              radius: Math.random() * 1.5,
+              speed: Math.random() * 0.05,
+              opacity: Math.random()
+            });
           }
-          
-          star.opacity = Math.abs(Math.sin(Date.now() * 0.001 + star.speed * 10) * 0.7 + 0.3);
-        });
-        
-        requestAnimationFrame(animate);
-      }
-      
-      animate();
-    }
+          return stars;
+        }
 
-    document.addEventListener('DOMContentLoaded', initStarfield);
-    
-    // ADDED: Debug info display
-    window.addEventListener('load', () => {
-      const debugInfo = document.getElementById('debug-info');
-      if (debugInfo) {
-        debugInfo.style.display = 'block';
-        debugInfo.innerHTML = `
-          Path: ${window.location.pathname}<br>
-          Base: ${document.baseURI}<br>
-          Full URL: ${window.location.href}
-        `;
-      }
-    });
-  </script>
-  
-  <!-- Noscript fallback -->
-  <noscript>
-    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; padding: 20px; text-align: center;">
-      <div>
-        <h1 style="font-size: 24px; margin-bottom: 20px;">✨ DawntasyAI requires JavaScript ✨</h1>
-        <p style="font-size: 18px;">Please enable JavaScript to experience the cosmic wonders of DawntasyAI.</p>
-      </div>
-    </div>
-  </noscript>
+        const stars = generateStars();
 
-  <!-- PWA Service Worker Registration - UPDATED path -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(reg => console.log('Service Worker registered:', reg))
-          .catch(err => console.error('Service Worker registration failed:', err));
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          stars.forEach(star => {
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            ctx.fill();
+            star.y += star.speed;
+            if (star.y > canvas.height) {
+              star.y = 0;
+              star.x = Math.random() * canvas.width;
+            }
+          });
+          requestAnimationFrame(animate);
+        }
+        animate();
       });
-    }
-    
-    // Show debug info
-    window.addEventListener('load', () => {
-      const debugInfo = document.getElementById('debug-info');
-      if (debugInfo) {
-        debugInfo.innerHTML = `
-          Path: ${window.location.pathname}<br>
-          Hash: ${window.location.hash}<br>
-          URL: ${window.location.href}
-        `;
-        // Show debug with D key
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'd' || e.key === 'D') {
-            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
-          }
-        });
-      }
-    });
-  </script>
-</body>
+    </script>
+
+    <!-- MAIN SCRIPT -->
+    <script type="module" src="/assets/main.js"
+      crossorigin="anonymous"
+      integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC">
+    </script>
+  </body>
 </html>

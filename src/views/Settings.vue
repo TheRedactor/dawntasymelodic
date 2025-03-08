@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue';
-import { useAuthStore } from '../stores/auth';
+import { useAuthStore } from '../store/auth';
 import { useRouter } from 'vue-router';
 
 // Stores

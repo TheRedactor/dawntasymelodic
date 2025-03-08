@@ -1,105 +1,143 @@
 <template>
-  <div 
-    :class="[isDarkMode ? 'dark' : '', 'min-h-screen transition-colors duration-700 ease-in-out bg-gradient-to-br from-cosmic-dark via-indigo-900 to-purple-900 text-white overflow-hidden']"
-  >
-    <Header 
-      v-if="authStore.isAuthenticated" 
-      class="opacity-100 transition-opacity duration-700 ease-in-out"
-    />
-    <div class="flex-grow flex transition-transform duration-700 ease-in-out">
-      <Sidebar v-if="authStore.isAuthenticated" />
-      <main class="flex-grow overflow-auto w-full">
-        <div v-if="isLoading" class="flex justify-center items-center h-screen">
-          <div class="cosmic-loader">
-            <div class="cosmic-spinner"></div>
-            <p class="mt-4 text-xl text-cosmic-glow animate-pulse">Loading DawntasyAI...</p>
-            <p v-if="authStore.error" class="mt-2 text-red-400 animate-fade-in">
-              {{ authStore.error }} 
-              <button @click="retryAuth" class="ml-2 underline hover:text-cosmic-glow">Retry</button>
-            </p>
-          </div>
-        </div>
-        <keep-alive v-else>
-          <router-view v-slot="{ Component }">
-            <transition name="page-slide" mode="out-in">
-              <component :is="Component" :key="$route.fullPath" />
-            </transition>
-          </router-view>
-        </keep-alive>
+  <div :class="{ 'dark': isDarkMode }" class="app-container">
+    <!-- Background starfield component -->
+    <CosmicBackground />
+    
+    <!-- Main app layout -->
+    <div class="main-layout">
+      <!-- Header only shown when authenticated -->
+      <AppHeader v-if="authStore.isAuthenticated" />
+      
+      <!-- Main content area with router view -->
+      <main class="main-content">
+        <router-view v-slot="{ Component }">
+          <transition name="cosmic-fade" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
       </main>
+      
+      <!-- Portal animations for transitions -->
+      <div class="cosmic-portal" :class="{ 'active': isNavigating }"></div>
     </div>
-    <footer v-if="authStore.isAuthenticated" class="footer">
-      Made with 💜 for the Dawntasy Universe
-    </footer>
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import { useHead } from '@vueuse/head';
-import { useAuthStore } from './stores/auth';
-import Header from './components/Header.vue';
-import Sidebar from './components/Sidebar.vue';
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from './store/auth';
+import CosmicBackground from './components/CosmicBackground.vue';
+import AppHeader from './components/AppHeader.vue';
 
+// Store references
 const authStore = useAuthStore();
+const router = useRouter();
+
+// State
 const isDarkMode = ref(true);
-const isLoading = ref(true); // Managed by router/auth now
+const isNavigating = ref(false);
 
-// Retry authentication
-const retryAuth = () => {
-  authStore.error = null;
-  authStore.initAuth();
-};
+// Initialize authentication
+onMounted(async () => {
+  await authStore.initAuth();
+});
 
-useHead({
-  title: 'Dawntasy AI | Ultimate Legendary Chatbot Experience',
-  meta: [
-    { name: 'description', content: 'Legendary AI-powered chatbot built for Dawntasy fans.' },
-    { property: 'og:title', content: 'Dawntasy AI – Epic Chatbot for Dawntasy Fans!' },
-    { property: 'og:description', content: 'Chat with your favorite Dawntasy characters.' },
-    { property: 'og:image', content: '/images/dawntasy-ai-banner.png' },
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'viewport', content: 'width=device-width, initial-scale=1.0' },
-  ],
+// Watch for route changes to trigger animations
+watch(
+  () => router.currentRoute.value,
+  () => {
+    isNavigating.value = true;
+    setTimeout(() => {
+      isNavigating.value = false;
+    }, 800);
+  }
+);
+
+// Add keyboard shortcuts
+onMounted(() => {
+  window.addEventListener('keydown', (e) => {
+    // Ctrl+/ to toggle dark mode
+    if (e.ctrlKey && e.key === '/') {
+      isDarkMode.value = !isDarkMode.value;
+    }
+  });
 });
 </script>
 
-<style scoped>
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-.page-slide-enter-active, .page-slide-leave-active {
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-.page-slide-enter-from { opacity: 0; transform: translateY(20px); }
-.page-slide-leave-to { opacity: 0; transform: translateY(-20px); }
-
-.footer {
-  text-align: center;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.2);
-  font-size: 0.9rem;
+<style lang="scss">
+.app-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: theme('colors.void.900');
+  color: theme('colors.starlight.100');
+  transition: all 0.5s ease-in-out;
+  overflow-x: hidden;
+  position: relative;
+  
+  &.dark {
+    background-color: theme('colors.void.900');
+    color: theme('colors.starlight.100');
+  }
 }
 
-.cosmic-loader {
+.main-layout {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  min-height: 100vh;
+  max-width: 100vw;
+  z-index: 10;
+  position: relative;
 }
 
-.cosmic-spinner {
-  width: 60px;
-  height: 60px;
-  border: 5px solid rgba(139, 92, 246, 0.4);
-  border-top-color: #8b5cf6;
+.main-content {
+  flex: 1;
+  width: 100%;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
+}
+
+// Transition animations
+.cosmic-fade-enter-active,
+.cosmic-fade-leave-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.cosmic-fade-enter-from,
+.cosmic-fade-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+// Portal animation for route changes
+.cosmic-portal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(
+    circle,
+    rgba(97, 61, 244, 0.9) 0%,
+    rgba(97, 61, 244, 0.2) 50%,
+    transparent 70%
+  );
   border-radius: 50%;
-  animation: cosmic-spin 1.2s ease-in-out infinite, glow 2s infinite;
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+  
+  &.active {
+    transform: translate(-50%, -50%) scale(15);
+    opacity: 1;
+  }
 }
-
-@keyframes cosmic-spin { to { transform: rotate(360deg); } }
-@keyframes glow { 50% { box-shadow: 0 0 30px rgba(139, 92, 246, 1); } }
-.animate-fade-in { animation: fadeIn 0.5s ease-in; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>
