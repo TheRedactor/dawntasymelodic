@@ -11,6 +11,7 @@ module.exports = {
       colors: {
         cosmic: {
           dark: '#0f172a',
+          light: '#your_cosmic_light_color', // Add this line with your desired color
           accent: '#8b5cf6',
           glow: '#a78bfa',
           pulse: '#ff66cc',
@@ -21,18 +22,10 @@ module.exports = {
         display: ['Orbitron', 'sans-serif'],
       },
       keyframes: {
-        cosmicShift: {
-          '0%, 100%': { backgroundPosition: '0% 50%' },
-          '50%': { backgroundPosition: '100% 50%' },
-        },
-        notificationSlide: { // Add this keyframes definition
-          from: { opacity: 0, transform: 'translateX(100px)' },
-          to: { opacity: 1, transform: 'translateX(0)' },
-        },
+        // ... your existing keyframes ...
       },
       animation: {
-        cosmicShift: 'cosmicShift 15s infinite ease-in-out alternate',
-        notificationSlide: 'notificationSlide 1s ease-in-out', // Add this animation definition
+        // ... your existing animations ...
       },
     },
   },
