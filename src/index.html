@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DawntasyAI</title>
+  <!-- Base path for AI application -->
+  <base href="/ai/">
+  
   <!-- Favicon for branding -->
   <link rel="icon" href="/assets/dawntasy-logo.png" type="image/png">
   <link rel="apple-touch-icon" href="/assets/dawntasy-logo.png">
@@ -13,7 +16,7 @@
   <meta property="og:title" content="DawntasyAI">
   <meta property="og:description" content="Your AI-powered companion for intelligent conversations.">
   <meta property="og:image" content="/assets/dawntasy-logo.png">
-  <meta property="og:url" content="https://dawntasy.com">
+  <meta property="og:url" content="https://dawntasy.com/ai/">
   <link rel="manifest" href="/manifest.json">
   
   <!-- Fonts -->
@@ -115,8 +118,8 @@
     </div>
   </div>
   
-  <!-- Main entry point -->
-  <script type="module" src="./main.ts"></script> <!-- Fixed path -->
+  <!-- Main entry point - use relative path with base tag -->
+  <script type="module" src="./main.ts"></script>
   
   <!-- Animated starfield background -->
   <script>
@@ -185,7 +188,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
+        navigator.serviceWorker.register('/ai/service-worker.js')
           .then(reg => console.log('Service Worker registered:', reg))
           .catch(err => console.error('Service Worker registration failed:', err));
       });

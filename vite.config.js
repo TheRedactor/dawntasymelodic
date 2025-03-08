@@ -4,15 +4,19 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [vue()],
-  root: 'src', // Set src as the root, with index.html as entry
   build: {
-    outDir: '../dist-ai', // Output AI files to dist-ai
-    emptyOutDir: true, // Clear dist-ai on build
+    outDir: '../dist-ai',
+    emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'src/index.html'), // Explicitly set entry point
+        main: path.resolve(__dirname, 'src/index.html'),
       },
     },
   },
-  base: '/', // Serve from root, matching router history
+  base: '/ai/', // Fixed: Serve AI app from /ai/ path
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  }
 });

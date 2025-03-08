@@ -2,7 +2,7 @@
   "name": "dawntasy-ai",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://Dawntasy.com/app/", 
+  "homepage": "https://Dawntasy.com/app/",
   "scripts": {
     "dev": "vite",
     "serve": "vite",
@@ -16,6 +16,7 @@
     "axios": "^1.8.2",
     "bcryptjs": "^3.0.2",
     "core-js": "^3.8.3",
+    "date-fns": "^4.1.0",
     "firebase": "^11.4.0",
     "openai": "^4.86.1",
     "pinia": "^3.0.1",
