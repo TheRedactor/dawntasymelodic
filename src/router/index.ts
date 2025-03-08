@@ -1,3 +1,4 @@
+// src/router/index.ts - COMPLETELY REVISED
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
@@ -13,11 +14,16 @@ const routes: RouteRecordRaw[] = [
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 ];
 
+// This function determines the base path based on environment
+function getBasePath() {
+  // In production, use the AI path, otherwise use root for development
+  return import.meta.env.PROD ? '/ai/' : '/';
+}
+
 const router = createRouter({
-  history: createWebHistory('/ai/'), // MAGICAL CHANGE: Sets history base to /ai/
+  history: createWebHistory(getBasePath()),
   routes,
 });
-
 // Authentication logic remains the same
 router.beforeEach(async (to, from, next) => {
   console.log('🚀 Navigating to:', to.path);

@@ -1,12 +1,14 @@
+# netlify.toml - COMPLETELY REVISED
 [build]
   command = "npm run build" 
-  publish = "dist-ai"
-
+  publish = "dist"
+  
 # AI application routes
 [[redirects]]
   from = "/ai/*"
-  to = "/ai/index.html"
+  to = "/index.html"
   status = 200
+  force = true
 
 # Book website (default) routes
 [[redirects]]
