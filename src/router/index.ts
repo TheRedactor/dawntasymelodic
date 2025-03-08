@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
 const Home = () => import('../views/Home.vue');
@@ -10,33 +10,27 @@ const AIComponent = () => import('../components/AIComponent.vue');
 
 const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/home' },
-  { path: '/register', name: 'Register', component: Register, meta: { requiresGuest: true } },
-  { path: '/login', name: 'Login', component: Login, meta: { requiresGuest: true } },
-  { path: '/home', name: 'Home', component: Home, meta: { requiresAuth: true } },
-  { path: '/chat/:id?', name: 'Chat', component: Chat, meta: { requiresAuth: true } },
-  { path: '/settings', name: 'Settings', component: Settings, meta: { requiresAuth: true } },
-  { path: '/ai', name: 'AIComponent', component: AIComponent, meta: { requiresAuth: true } },
+  { path: '/register', component: Register, meta: { requiresGuest: true } },
+  { path: '/login', component: Login, meta: { requiresGuest: true } },
+  { path: '/home', component: Home, meta: { requiresAuth: true } },
+  { path: '/chat/:id?', component: Chat, meta: { requiresAuth: true } },
+  { path: '/settings', component: Settings, meta: { requiresAuth: true } },
+  { path: '/ai', component: AIComponent, meta: { requiresAuth: true } },
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 ];
 
-// Change from createWebHistory to createWebHashHistory
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory('/'), // FIXED: Clean URLs (no hashes)
   routes,
 });
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  if (!authStore.authInitialized) {
-    await authStore.initAuth();
-  }
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login');
-  } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    next('/home');
-  } else {
-    next();
-  }
+  if (!authStore.authInitialized) await authStore.initAuth();
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) next('/login');
+  else if (to.meta.requiresGuest && authStore.isAuthenticated) next('/home');
+  else next();
 });
 
 export default router;
