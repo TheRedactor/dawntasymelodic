@@ -1,4 +1,4 @@
-// src/router/index.ts - COMPLETELY DIFFERENT APPROACH
+// src/router/index.ts - DEFINITIVE VERSION
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
@@ -14,22 +14,13 @@ const routes: RouteRecordRaw[] = [
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 ];
 
-// THE BIG CHANGE: Use hash history instead of HTML5 history!
+// USING HASH HISTORY - This is the key change
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
 });
 
-// Debug logging
-router.beforeEach((to, from) => {
-  console.log('🔍 Route Debug:', {
-    to: to.fullPath,
-    from: from.fullPath,
-    currentUrl: window.location.href
-  });
-});
-
-// Authentication logic
+// Authentication logic remains the same
 router.beforeEach(async (to, from, next) => {
   console.log('🚀 Navigating to:', to.path);
   const authStore = useAuthStore();

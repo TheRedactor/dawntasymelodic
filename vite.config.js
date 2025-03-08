@@ -8,7 +8,7 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
   },
-  base: '/app/', // Keep this consistent
+  base: '/', // Use root path for simplicity with hash router
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DawntasyAI</title>
   
-  <!-- CHANGED: Updated base path to /app/ to match router and package.json -->
+  <!-- NO BASE TAG NEEDED WITH HASH ROUTER -->
   
   <!-- Favicon for branding -->
   <link rel="icon" href="/assets/dawntasy-logo.png" type="image/png">
@@ -16,8 +16,7 @@
   <meta property="og:title" content="DawntasyAI">
   <meta property="og:description" content="Your AI-powered companion for intelligent conversations.">
   <meta property="og:image" content="/assets/dawntasy-logo.png">
-  <!-- CHANGED: Updated URL to match new base path -->
-  <meta property="og:url" content="https://dawntasy.com/app/">
+  <meta property="og:url" content="https://dawntasy.com">
   <link rel="manifest" href="/manifest.json">
   
   <!-- Fonts -->
@@ -205,11 +204,29 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/app/service-worker.js')
+        navigator.serviceWorker.register('/service-worker.js')
           .then(reg => console.log('Service Worker registered:', reg))
           .catch(err => console.error('Service Worker registration failed:', err));
       });
     }
+    
+    // Show debug info
+    window.addEventListener('load', () => {
+      const debugInfo = document.getElementById('debug-info');
+      if (debugInfo) {
+        debugInfo.innerHTML = `
+          Path: ${window.location.pathname}<br>
+          Hash: ${window.location.hash}<br>
+          URL: ${window.location.href}
+        `;
+        // Show debug with D key
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'd' || e.key === 'D') {
+            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+          }
+        });
+      }
+    });
   </script>
 </body>
 </html>

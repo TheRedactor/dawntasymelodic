@@ -2,7 +2,7 @@
   "name": "dawntasy-ai",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/app",
+  "homepage": "https://dawntasy.com",
   "scripts": {
   "dev": "vite",
   "serve": "vite",
