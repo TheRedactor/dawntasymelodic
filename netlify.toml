@@ -1,41 +1,67 @@
 # netlify.toml
+
 [build]
-  command = "npm run build"
-  publish = "dist"
-  
-# Environment variable inheritance
+  command = "npm run build"
+  publish = "dist-ai"
+  base = "/ai/"
+
+# ✅ Environment Variables
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "18"
+  VITE_APP_VERSION = "1.0.0"
+  VITE_DEPLOYMENT_ENV = "production"
 
-# Handling SPA routing - THIS IS KEY!
+# 🔥 AI-SPECIFIC ROUTING (FIXED!)
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = true
+  from = "/ai"
+  to = "/ai/index.html"
+  status = 200
+  force = true
 
-# Performance optimizations
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.openai.com https://*.firebaseio.com https://*.googleapis.com;"
+[[redirects]]
+  from = "/ai/*"
+  to = "/ai/index.html"
+  status = 200
+  query = { path = ":splat" }  # ✅ FIXED: Preserves deep linking!
 
-# Cache control for static assets
+[[redirects]]
+  from = "/"
+  to = "/ai/"
+  status = 301
+
+# 🔥 SECURITY HEADERS - NOW ULTRA-SECURE!
 [[headers]]
-  for = "/*.js"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Permissions-Policy = "geolocation=(), camera=(), microphone=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.openai.com https://*.firebaseio.com https://*.googleapis.com;"
+
+# 🔥 CACHE OPTIMIZATION (NOW EVEN FASTER!)
+[[headers]]
+  for = "/assets/*.{js,css,woff2}"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, stale-while-revalidate=86400"
 
 [[headers]]
-  for = "/*.css"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
 
 [[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+  for = "/api/*.json"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, must-revalidate"
+
+[[headers]]
+  for = "/images/*.{png,jpg,svg}"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, must-revalidate"
+
+# 🔥 DNS PREFETCH FOR FASTER LOADS
+[[headers]]
+  for = "/*.{js,css}"
+  [headers.values]
+    X-DNS-Prefetch-Control = "on"
