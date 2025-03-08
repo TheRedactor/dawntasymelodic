@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dawntasy Route Debugger</title>
+  <style>
+    body { font-family: system-ui; padding: 2rem; background: #0f172a; color: white; }
+    .path { background: #8b5cf6; padding: 0.5rem; border-radius: 0.25rem; margin: 1rem 0; }
+    h1 { color: #c084fc; }
+  </style>
+</head>
+<body>
+  <h1>✨ Dawntasy Route Debugger ✨</h1>
+  <div id="output"></div>
+  
+  <script>
+    const output = document.getElementById('output');
+    output.innerHTML = `
+      <p>Current Path: <span class="path">${window.location.pathname}</span></p>
+      <p>URL: <span class="path">${window.location.href}</span></p>
+      <p>Base URL: <span class="path">${document.baseURI}</span></p>
+    `;
+  </script>
+</body>
+</html>
