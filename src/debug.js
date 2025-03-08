@@ -1,64 +1,57 @@
-// src/debug.js
-export function initializeDebugTools() {
-    // Create debug overlay
-    const debugDiv = document.createElement('div');
-    debugDiv.id = 'route-debug';
-    debugDiv.style.cssText = `
+export default function setupDebugger() {
+    // Add a listener to detect redirects
+    let originalPushState = history.pushState;
+    let originalReplaceState = history.replaceState;
+    
+    history.pushState = function() {
+      console.log('🔍 pushState called with:', arguments);
+      return originalPushState.apply(this, arguments);
+    };
+    
+    history.replaceState = function() {
+      console.log('🔍 replaceState called with:', arguments);
+      return originalReplaceState.apply(this, arguments);
+    };
+    
+    // Create a visible debug element
+    const debugElement = document.createElement('div');
+    debugElement.style.cssText = `
       position: fixed;
       bottom: 10px;
       left: 10px;
-      background: rgba(0,0,0,0.8);
-      color: #00ff00;
+      background: rgba(0, 0, 0, 0.8);
+      color: lime;
       padding: 10px;
       border-radius: 5px;
       font-family: monospace;
-      font-size: 12px;
       z-index: 9999;
-      max-width: 400px;
-      max-height: 200px;
-      overflow: auto;
+      max-width: 80%;
+      word-break: break-all;
+      font-size: 12px;
     `;
-    document.body.appendChild(debugDiv);
     
-    // Log key information
-    const updateDebug = () => {
-      debugDiv.innerHTML = `
-        <strong>ROUTE DEBUG:</strong><br>
+    // Add debug info
+    const updateDebugInfo = () => {
+      debugElement.innerHTML = `
         Path: ${window.location.pathname}<br>
         Hash: ${window.location.hash}<br>
         Full URL: ${window.location.href}<br>
-        Base URL: ${document.baseURI || 'None'}<br>
-        Script Path: ${document.currentScript?.src || 'Unknown'}<br>
-        <strong>PRESS ESC TO TOGGLE</strong>
+        Referrer: ${document.referrer}<br>
+        <button onclick="localStorage.clear(); sessionStorage.clear(); alert('Storage cleared!')">Clear Storage</button>
       `;
     };
     
-    // Update on navigation
-    window.addEventListener('popstate', updateDebug);
-    document.addEventListener('DOMContentLoaded', updateDebug);
-    
-    // Toggle with ESC key
+    // Show on D key press
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        debugDiv.style.display = debugDiv.style.display === 'none' ? 'block' : 'none';
+      if (e.key === 'd' || e.key === 'D') {
+        if (document.body.contains(debugElement)) {
+          document.body.removeChild(debugElement);
+        } else {
+          document.body.appendChild(debugElement);
+          updateDebugInfo();
+        }
       }
     });
     
-    // Track all script loads
-    const originalCreateElement = document.createElement;
-    document.createElement = function(tag) {
-      const element = originalCreateElement.call(document, tag);
-      if (tag.toLowerCase() === 'script') {
-        element.addEventListener('load', () => {
-          console.log('✅ Script loaded:', element.src);
-        });
-        element.addEventListener('error', () => {
-          console.error('❌ Script failed to load:', element.src);
-        });
-      }
-      return element;
-    };
-    
-    console.log('🔍 Debug tools initialized!');
-    return updateDebug;
+    console.log('🔧 Debugger initialized! Press D to show debug info');
   }
