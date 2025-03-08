@@ -1,7 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
-const routes = [
+import type { RouteRecordRaw } from 'vue-router';
+
+const routes: RouteRecordRaw[] = [
   { path: '/', redirect: '/home' },
   { path: '/register', component: () => import('../views/Register.vue'), meta: { requiresGuest: true } },
   { path: '/login', component: () => import('../views/Login.vue'), meta: { requiresGuest: true } },
@@ -9,11 +11,11 @@ const routes = [
   { path: '/chat/:id?', component: () => import('../views/Chat.vue'), meta: { requiresAuth: true } },
   { path: '/settings', component: () => import('../views/Settings.vue'), meta: { requiresAuth: true } },
   { path: '/ai', component: () => import('../components/AIComponent.vue'), meta: { requiresAuth: true } },
-  { path: '/:pathMatch(.*)*', redirect: '/home' },
+  { path: '/:pathMatch(.*)*', component: () => import('../views/NotFound.vue') }, // Show a 404 page
 ];
 
 const router = createRouter({
-  history: createWebHistory('/app.html'),
+  history: createWebHistory('/app.html/'), // Ensure the base URL is correctly set
   routes,
 });
 
