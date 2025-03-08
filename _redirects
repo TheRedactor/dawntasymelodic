@@ -1,6 +1,6 @@
-/register   /index.html   200
-/login      /index.html   200
-/chat/*     /index.html   200
-/settings   /index.html   200
-/ai         /index.html   200
-/*          /index.html   200
+/ai/*        /ai/index.html   200
+/register    /ai/index.html   200
+/login       /ai/index.html   200
+/chat/*      /ai/index.html   200
+/settings    /ai/index.html   200
+/*           /index.html      200

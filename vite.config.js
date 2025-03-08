@@ -12,5 +12,5 @@ export default defineConfig({
   build: {
     outDir: 'dist',
   },
-  base: '/', // FIXED: Must be '/'
+  base: '/ai/', // ✅ IMPORTANT: SETS YOUR AI APP PATH TO "/ai/"
 });

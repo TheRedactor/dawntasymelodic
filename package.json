@@ -2,7 +2,7 @@
   "name": "dawntasy-ai",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://Dawntasy.com/app.html",
+  "homepage": "https://Dawntasy.com/ai/",
   "scripts": {
     "dev": "vite",
     "serve": "vite",
