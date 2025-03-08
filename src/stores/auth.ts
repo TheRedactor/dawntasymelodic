@@ -7,85 +7,74 @@ import {
   onAuthStateChanged,
   updateProfile
 } from 'firebase/auth';
-import { auth, db } from '../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase/index'; // Corrected path
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null);
   const authInitialized = ref(false);
   const isLoading = ref(false);
-  const error = ref(null);
+  const error = ref<string | null>(null);
 
-  // Computed properties
   const isAuthenticated = computed(() => !!user.value);
   const currentUser = computed(() => user.value);
 
-  // Initialize auth state
   async function initAuth() {
-    return new Promise((resolve) => {
-      // Only set up the observer once
+    console.log('authStore: initAuth started');
+    isLoading.value = true;
+    error.value = null;
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        error.value = 'Connection to cosmos failed. Check your network.';
+        isLoading.value = false;
+        reject(new Error('Auth timeout'));
+      }, 10000);
+
       if (!authInitialized.value) {
+        console.log('authStore: Setting up onAuthStateChanged');
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+          clearTimeout(timeout);
+          console.log('authStore: onAuthStateChanged fired, user:', currentUser?.uid || 'none');
           if (currentUser) {
             try {
-              // Get additional user data from Firestore
               const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-              if (userDoc.exists()) {
-                // Combine auth user with Firestore data
-                user.value = {
-                  ...currentUser,
-                  ...userDoc.data()
-                };
-              } else {
-                user.value = currentUser;
-              }
+              user.value = userDoc.exists() ? { ...currentUser, ...userDoc.data() } : currentUser;
             } catch (err) {
-              console.error('Error fetching user data:', err);
+              console.error('Firestore fetch failed:', err);
               user.value = currentUser;
             }
           } else {
             user.value = null;
           }
-          
           authInitialized.value = true;
+          isLoading.value = false;
           resolve(user.value);
+        }, (err) => {
+          clearTimeout(timeout);
+          error.value = 'Authentication error: ' + err.message;
+          isLoading.value = false;
+          reject(err);
         });
       } else {
+        clearTimeout(timeout);
+        isLoading.value = false;
         resolve(user.value);
       }
     });
   }
 
-  // Register user
-  async function register(email, password, name) {
+  async function register(email: string, password: string, name: string) {
     isLoading.value = true;
     error.value = null;
-    
     try {
-      // Create user in Firebase Auth
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Update the user profile with display name
-      await updateProfile(userCred.user, {
-        displayName: name
-      });
-      
-      // Store additional user data in Firestore
+      await updateProfile(userCred.user, { displayName: name });
       await setDoc(doc(db, 'users', userCred.user.uid), {
-        name: name,
-        email: email,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString()
+        name, email, createdAt: new Date().toISOString(), lastLogin: new Date().toISOString()
       });
-      
-      // Update user in store
-      user.value = {
-        ...userCred.user,
-        name: name
-      };
-      
+      user.value = { ...userCred.user, name };
       return userCred.user;
-    } catch (err) {
+    } catch (err: any) {
       error.value = err.message || 'Registration failed';
       throw err;
     } finally {
@@ -93,32 +82,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Login user
-  async function login(email, password) {
+  async function login(email: string, password: string) {
     isLoading.value = true;
     error.value = null;
-    
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
-      
-      // Update last login
-      await setDoc(doc(db, 'users', userCred.user.uid), {
-        lastLogin: new Date().toISOString()
-      }, { merge: true });
-      
-      // Get user data from Firestore
+      await setDoc(doc(db, 'users', userCred.user.uid), { lastLogin: new Date().toISOString() }, { merge: true });
       const userDoc = await getDoc(doc(db, 'users', userCred.user.uid));
-      if (userDoc.exists()) {
-        user.value = {
-          ...userCred.user,
-          ...userDoc.data()
-        };
-      } else {
-        user.value = userCred.user;
-      }
-      
+      user.value = userDoc.exists() ? { ...userCred.user, ...userDoc.data() } : userCred.user;
       return userCred.user;
-    } catch (err) {
+    } catch (err: any) {
       error.value = err.message || 'Login failed';
       throw err;
     } finally {
@@ -126,27 +99,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Logout user
   async function logout() {
     try {
       await signOut(auth);
       user.value = null;
-    } catch (err) {
+    } catch (err: any) {
       error.value = err.message || 'Logout failed';
       throw err;
     }
   }
 
-  return {
-    user,
-    authInitialized,
-    isLoading,
-    error,
-    isAuthenticated,
-    currentUser,
-    initAuth,
-    register,
-    login,
-    logout
-  };
+  return { user, authInitialized, isLoading, error, isAuthenticated, currentUser, initAuth, register, login, logout };
 });
