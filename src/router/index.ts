@@ -153,5 +153,11 @@ router.beforeEach(async (
     });
   }
 });
+// Enhance the RouteMeta type
+declare module 'vue-router' {
+  interface RouteMeta extends EnhancedRouteMetadata {}
+}
+
+// ... in your router.beforeEach:
 
 export default router;

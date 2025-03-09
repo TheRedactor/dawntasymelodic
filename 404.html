@@ -4,11 +4,10 @@
   <meta charset="utf-8">
   <title>Dawntasy AI</title>
   <script type="text/javascript">
-    var pathSegmentsToKeep = 0; // Keep only the first segment (e.g., /ai)
+    var pathSegmentsToKeep = 1; // Keep the first segment (/ai)
     var l = window.location;
-    // Check if the current path already matches the redirect target
-    var redirectTarget = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-                          l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/';
+    // Construct the redirect target URL with /ai/
+    var redirectTarget = l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') + '/ai/?/'; 
     if (l.pathname !== redirectTarget) {
       l.replace(redirectTarget);
     }
