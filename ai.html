@@ -3,632 +3,1649 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dawntasy AI - The AI That Makes You Think</title>
-  <meta name="description" content="Dawntasy AI is the advanced chatbot for Dawntasy – an immersive experience merging fantasy, music, and cutting-edge AI technology.">
-  <meta name="keywords" content="Dawntasy AI, AI Chatbot, Fantasy Book, Dawntasy, Dawntasy Melodic, Dawntasy Young Author">
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "Dawntasy AI - The AI That Makes You Think",
-    "url": "https://dawntasy.com",
-    "description": "Experience Dawntasy AI, an advanced chatbot merging fantasy lore with cutting-edge AI. Explore features like The ARCHMAGE Tool, Memory Code, and more.",
-    "publisher": {
-      "@type": "Organization",
-      "name": "Dawntasy",
-      "url": "https://dawntasy.com"
-    },
-    "relatedLink": [
-      "https://dawntasy.com/dawntasy-melodic",
-      "https://dawntasy.com/dawntasy-young-author"
-    ]
-  }
-  </script>
+  <title>DawntasyAI - Cosmic Intelligence Unleashed</title>
+  
+  <!-- Meta tags for SEO & sharing -->
+  <meta name="description" content="Experience the revolutionary DawntasyAI - where cosmic intelligence meets fantasy storytelling. Explore the universe of Time's True Name through our advanced AI companion.">
+  <meta name="keywords" content="DawntasyAI, AI chatbot, Time's True Name, fantasy AI, cosmic intelligence, The Rift">
+  
+  <meta property="og:title" content="DawntasyAI - Cosmic Intelligence Unleashed">
+  <meta property="og:description" content="Step into the Dawntasy universe through our revolutionary AI companion. Explore The Rift, discover hidden secrets, and experience cosmic intelligence.">
+  <meta property="og:image" content="https://ai.dawntasy.com/images/dawntasy-og-image.jpg">
+  <meta property="og:url" content="https://ai.dawntasy.com">
+  <meta property="og:type" content="website">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DawntasyAI - Cosmic Intelligence Unleashed">
+  <meta name="twitter:description" content="Step into the Dawntasy universe through our revolutionary AI companion. Explore The Rift, discover hidden secrets, and experience cosmic intelligence.">
+  <meta name="twitter:image" content="https://ai.dawntasy.com/images/dawntasy-og-image.jpg">
+  
+  <!-- Favicon & App Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- External libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/ScrollTrigger.min.js"></script>
+  
   <style>
-    /* Global Styling */
-    * {
+    /* Base styling */
+    :root {
+      /* Cosmic color palette */
+      --void-50: #e0e1ff;
+      --void-100: #c1c3ff;
+      --void-200: #9598ff;
+      --void-300: #6a6df4;
+      --void-400: #4d4fdb;
+      --void-500: #3333c2;
+      --void-600: #2b28a9;
+      --void-700: #221e90;
+      --void-800: #191577;
+      --void-900: #0d0d3d;
+      --void-950: #06061f;
+      
+      /* Starlight colors */
+      --starlight-50: #f9f9ff;
+      --starlight-100: #f1f1ff;
+      --starlight-200: #e1e1ff;
+      --starlight-300: #c4c5ff;
+      --starlight-400: #a3a5ff;
+      --starlight-500: #8185ff;
+      --starlight-600: #6163ff;
+      --starlight-700: #5050ff;
+      --starlight-800: #3d3df4;
+      --starlight-900: #2a2adb;
+      
+      /* Time colors (representing the clock theme from Dawntasy) */
+      --time-50: #fff1fa;
+      --time-100: #ffe5f6;
+      --time-200: #ffc6ec;
+      --time-300: #ff9ddd;
+      --time-400: #ff5c92;
+      --time-500: #ff3a70;
+      --time-600: #ef234c;
+      --time-700: #db1932;
+      --time-800: #b5162a;
+      --time-900: #8a1125;
+      
+      /* Rift colors */
+      --rift-50: #edfcff;
+      --rift-100: #d6f7ff;
+      --rift-200: #b3f0ff;
+      --rift-300: #85e7ff;
+      --rift-400: #33c5ff;
+      --rift-500: #06a6ee;
+      --rift-600: #0086cc;
+      --rift-700: #006ba6;
+      --rift-800: #015a89;
+      --rift-900: #064a71;
+      
+      /* Typography vars */
+      --font-display: 'Orbitron', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+    
+    *, *::before, *::after {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
     }
+    
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+    
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: transparent;
-      color: #333;
+      font-family: var(--font-body);
+      background-color: var(--void-950);
+      color: var(--starlight-100);
       overflow-x: hidden;
       position: relative;
     }
-    /* Starfield Canvas */
-    #starfield {
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    
+    h1 {
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      letter-spacing: -0.02em;
+    }
+    
+    h2 {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      letter-spacing: -0.01em;
+    }
+    
+    h3 {
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
+    }
+    
+    p {
+      margin-bottom: 1.5rem;
+      font-size: clamp(1rem, 1.5vw, 1.125rem);
+    }
+    
+    /* Cosmic canvas and container */
+    #cosmic-canvas {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
-      height: 100%;
-      z-index: -2;
-      background: #000;
+      height: 100vh;
+      z-index: -10;
     }
-    header {
-      background: rgba(255,255,255,0.9);
-      padding: 2rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      text-align: center;
-      position: relative;
-      z-index: 2;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 2.8rem;
-      letter-spacing: 1px;
-      color: #222;
-    }
-    header p {
-      font-size: 1.2rem;
-      margin-top: 1rem;
-      color: #555;
-    }
+    
     .container {
       width: 90%;
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
-      padding: 2rem 0;
+      padding: 0 1rem;
       position: relative;
-      z-index: 2;
+      z-index: 1;
     }
-    /* Sidebar Navigation */
-    .sidebar {
+    
+    /* Nav styling */
+    .cosmic-nav {
       position: fixed;
-      top: 50%;
-      right: 0;
-      transform: translateY(-50%);
-      background: rgba(255,255,255,0.95);
-      box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
-      padding: 1rem;
-      border-radius: 8px 0 0 8px;
-      z-index: 100;
-    }
-    .sidebar a {
-      display: block;
-      margin: 0.5rem 0;
-      text-decoration: none;
-      color: #333;
-      font-weight: bold;
-      transition: color 0.3s;
-    }
-    .sidebar a.active, .sidebar a:hover {
-      color: #007BFF;
-    }
-    /* Section Styling */
-    section {
-      padding: 4rem 0;
-      border-bottom: 1px solid rgba(0,0,0,0.1);
-    }
-    section:last-of-type {
-      border-bottom: none;
-    }
-    section h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      text-align: center;
-      color: #ffffff;
-    }
-    section p {
-      font-size: 1.1rem;
-      line-height: 1.6;
-      text-align: center;
-      max-width: 800px;
-      margin: 0 auto;
-      color: #444;
-    }
-    /* Button Styling */
-    .btn {
-      display: inline-block;
-      padding: 0.8rem 1.5rem;
-      margin: 1rem 0;
-      background: #007BFF;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 4px;
-      transition: background 0.3s, transform 0.3s;
-    }
-    .btn:hover {
-      background: #0056b3;
-      transform: scale(1.05);
-    }
-    .glow-btn {
-      animation: glow 1.5s infinite alternate;
-    }
-    @keyframes glow {
-      from { box-shadow: 0 0 5px #007BFF; }
-      to { box-shadow: 0 0 20px #007BFF; }
-    }
-    /* Features Styling */
-    .features {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 2rem;
-      margin-top: 2rem;
-    }
-    .feature {
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
-      padding: 1.5rem;
-      border-radius: 8px;
-      width: 300px;
-      color: #fff;
-      text-align: center;
-      position: relative;
-      cursor: pointer;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .feature:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 15px rgba(0,0,0,0.3);
-    }
-    .feature .icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      transition: transform 0.3s;
-    }
-    .feature:hover .icon {
-      transform: scale(1.1) rotate(10deg);
-    }
-    /* Modal Styling */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 200;
-      left: 0;
       top: 0;
+      left: 0;
       width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.8);
-      animation: fadeIn 0.3s;
+      padding: 1.5rem 0;
+      z-index: 1000;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    @keyframes fadeIn {
-      from {opacity: 0;}
-      to {opacity: 1;}
+    
+    .cosmic-nav.scrolled {
+      background: rgba(6, 6, 31, 0.8);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      padding: 1rem 0;
     }
-    .modal-content {
-      background-color: #fff;
-      margin: 10% auto;
-      padding: 2rem;
-      border: 1px solid #888;
-      width: 80%;
-      max-width: 600px;
-      border-radius: 8px;
-      position: relative;
-      animation: slideIn 0.5s;
-    }
-    @keyframes slideIn {
-      from { transform: translateY(-50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .close {
-      position: absolute;
-      top: 10px;
-      right: 20px;
-      color: #aaa;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .close:hover, .close:focus {
-      color: #000;
-    }
-    /* Pricing Cards */
-    .pricing-cards {
+    
+    .nav-container {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 2rem;
-      margin-top: 2rem;
+      justify-content: space-between;
+      align-items: center;
     }
-    .pricing-card {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      padding: 2rem;
-      width: 250px;
-      text-align: center;
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: var(--starlight-100);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.5rem;
+      position: relative;
+    }
+    
+    .logo-text {
+      background: linear-gradient(to right, var(--rift-400), var(--time-400));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .logo::before {
+      content: '';
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: radial-gradient(circle, var(--rift-400), transparent 70%);
+      left: -15px;
+      top: -5px;
+      border-radius: 50%;
+      opacity: 0.5;
+      filter: blur(5px);
+      animation: pulse 3s infinite alternate;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    
+    .nav-link {
+      text-decoration: none;
+      color: var(--starlight-200);
+      font-weight: 500;
+      padding: 0.5rem;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+    
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(to right, var(--rift-400), var(--time-400));
+      transition: width 0.3s ease;
+    }
+    
+    .nav-link:hover {
+      color: var(--starlight-50);
+    }
+    
+    .nav-link:hover::before {
+      width: 100%;
+    }
+    
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(to right, var(--rift-500), var(--time-500));
+      color: white;
+      font-family: var(--font-display);
+      font-weight: 600;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
-      transition: transform 0.3s, box-shadow 0.3s;
+      z-index: 1;
     }
-    .pricing-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    
+    .cta-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, var(--time-500), var(--rift-500));
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
-    .pricing-card h3 {
-      margin-top: 0;
-      font-size: 1.8rem;
+    
+    .cta-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(97, 61, 244, 0.3);
     }
-    .pricing-card p.price {
-      font-size: 1.5rem;
-      margin: 1rem 0;
+    
+    .cta-button:hover::before {
+      opacity: 1;
     }
-    .pricing-card ul {
-      list-style: none;
-      padding: 0;
+    
+    /* Hero section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 8rem 0 5rem;
+      position: relative;
+    }
+    
+    .hero-content {
+      max-width: 800px;
+    }
+    
+    .hero-subtitle {
+      font-family: var(--font-mono);
+      color: var(--rift-400);
+      margin-bottom: 1rem;
+      display: block;
+      letter-spacing: 2px;
+      text-transform: uppercase;
       font-size: 0.9rem;
-      line-height: 1.6;
     }
-    .pricing-card ul li {
-      margin: 0.5rem 0;
-      cursor: pointer;
-      transition: color 0.3s;
+    
+    .hero-title {
+      margin-bottom: 1.5rem;
+      position: relative;
     }
-    .pricing-card ul li:hover {
-      color: #007BFF;
+    
+    .hero-title .highlight {
+      background: linear-gradient(to right, var(--rift-400), var(--time-400));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      display: inline-block;
+      position: relative;
     }
-    /* Gradients for Plans */
-    .free-plan { background: linear-gradient(135deg, #a8e063, #56ab2f); }
-    .basic-plan { background: linear-gradient(135deg, #f6d365, #fda085); }
-    .dawntasier-plan { background: linear-gradient(135deg, #f093fb, #f5576c); }
-    .rift-plan { background: linear-gradient(135deg, #4facfe, #00f2fe); }
-    /* Additional Animations for R.I.F.T Plan */
-    .rift-plan .floating {
+    
+    .hero-title .highlight::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 30%;
+      bottom: 5px;
+      left: 0;
+      background: linear-gradient(to right, var(--rift-500), var(--time-500));
+      opacity: 0.2;
+      filter: blur(10px);
+      z-index: -1;
+    }
+    
+    .hero-description {
+      font-size: clamp(1.1rem, 2vw, 1.25rem);
+      color: var(--starlight-300);
+      margin-bottom: 2rem;
+      max-width: 700px;
+    }
+    
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+    
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.5rem;
+      background: transparent;
+      color: var(--starlight-100);
+      font-family: var(--font-display);
+      font-weight: 600;
+      border: 2px solid var(--void-700);
+      border-radius: 4px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      border-color: var(--rift-500);
+      background: rgba(97, 61, 244, 0.1);
+      transform: translateY(-3px);
+    }
+    
+    .hero-float {
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      top: 50%;
+      right: 10%;
+      transform: translateY(-50%);
+    }
+    
+    .cosmic-sphere {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    
+    /* Features section */
+    .features {
+      padding: 8rem 0;
+      position: relative;
+    }
+    
+    .section-header {
+      text-align: center;
+      margin-bottom: 5rem;
+    }
+    
+    .section-subheading {
+      font-family: var(--font-mono);
+      color: var(--rift-400);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    
+    .section-title {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 1.5rem;
+    }
+    
+    .section-title::after {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(to right, var(--rift-500), var(--time-500));
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 2px;
+    }
+    
+    .section-description {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+      color: var(--starlight-300);
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 4rem;
+    }
+    
+    .feature-card {
+      background: rgba(13, 13, 61, 0.3);
+      border: 1px solid var(--void-800);
+      border-radius: 12px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      height: 100%;
+    }
+    
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, var(--void-800), transparent);
+      opacity: 0.5;
+      z-index: -1;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-10px);
+      border-color: var(--rift-700);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      font-size: 2rem;
+      border-radius: 12px;
+      background: rgba(97, 61, 244, 0.1);
+      color: var(--rift-400);
+    }
+    
+    .feature-title {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      font-family: var(--font-display);
+      background: linear-gradient(to right, var(--starlight-100), var(--starlight-400));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .feature-description {
+      color: var(--starlight-300);
+      font-size: 0.95rem;
+      margin-bottom: 0;
+    }
+    
+    /* Timeline section */
+    .timeline-section {
+      padding: 8rem 0;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .timeline-container {
+      position: relative;
+      margin-top: 5rem;
+    }
+    
+    .timeline-track {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 4px;
+      height: 100%;
+      background: var(--void-700);
+      transform: translateX(-50%);
+    }
+    
+    .timeline-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(to bottom, var(--rift-500), var(--time-500));
+      height: 0%;
+      transition: height 0.5s ease;
+    }
+    
+    .timeline-item {
+      display: flex;
+      justify-content: flex-start;
+      width: 50%;
+      margin-bottom: 6rem;
+      position: relative;
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 0.6s ease;
+    }
+    
+    .timeline-item.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .timeline-item:nth-child(even) {
+      margin-left: 50%;
+      flex-direction: row;
+    }
+    
+    .timeline-item::before {
+      content: '';
       position: absolute;
       width: 20px;
       height: 20px;
-      background: #fff;
+      background: var(--rift-500);
       border-radius: 50%;
-      animation: float 4s infinite ease-in-out;
+      top: 0;
+      left: 0;
+      transform: translateX(-50%);
+      z-index: 2;
     }
-    @keyframes float {
-      0% { transform: translate(0, 0); }
-      50% { transform: translate(20px, -20px); }
-      100% { transform: translate(0, 0); }
+    
+    .timeline-item:nth-child(even)::before {
+      left: 0;
+      transform: translateX(-50%);
     }
-    /* Scroll Indicator */
-    .scroll-indicator {
+    
+    .timeline-item:nth-child(odd)::before {
+      left: 100%;
+      transform: translateX(-50%);
+    }
+    
+    .timeline-content {
+      background: rgba(13, 13, 61, 0.3);
+      border: 1px solid var(--void-800);
+      border-radius: 12px;
+      padding: 2rem;
+      width: 90%;
+      position: relative;
+    }
+    
+    .timeline-item:nth-child(odd) .timeline-content {
+      margin-right: 2rem;
+      margin-left: auto;
+    }
+    
+    .timeline-item:nth-child(even) .timeline-content {
+      margin-left: 2rem;
+    }
+    
+    .timeline-date {
+      font-family: var(--font-mono);
+      color: var(--rift-400);
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+    
+    .timeline-title {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    
+    .timeline-description {
+      font-size: 0.95rem;
+      color: var(--starlight-300);
+      margin-bottom: 0;
+    }
+    
+    /* Pricing section */
+    .pricing {
+      padding: 8rem 0;
+      position: relative;
+    }
+    
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-top: 4rem;
+    }
+    
+    .pricing-card {
+      background: rgba(13, 13, 61, 0.3);
+      border: 1px solid var(--void-800);
+      border-radius: 12px;
+      padding: 2.5rem 2rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .pricing-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(to right, var(--rift-500), var(--time-500));
+      opacity: 0.7;
+    }
+    
+    .pricing-card.featured {
+      border-color: var(--rift-700);
+      transform: scale(1.05);
+    }
+    
+    .pricing-card.featured::after {
+      content: 'Most Popular';
+      position: absolute;
+      top: 12px;
+      right: -28px;
+      background: linear-gradient(to right, var(--rift-500), var(--time-500));
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 2rem;
+      transform: rotate(45deg);
+    }
+    
+    .pricing-card:hover {
+      transform: translateY(-10px);
+      border-color: var(--rift-700);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .pricing-card.featured:hover {
+      transform: translateY(-10px) scale(1.05);
+    }
+    
+    .pricing-title {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      font-family: var(--font-display);
+    }
+    
+    .pricing-price {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--starlight-100);
+    }
+    
+    .pricing-price .currency {
+      font-size: 1rem;
+      vertical-align: super;
+      margin-right: 0.25rem;
+    }
+    
+    .pricing-price .period {
+      font-size: 0.9rem;
+      color: var(--starlight-400);
+      font-weight: 400;
+    }
+    
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 2rem;
+      flex-grow: 1;
+    }
+    
+    .pricing-feature {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      color: var(--starlight-300);
+    }
+    
+    .pricing-feature::before {
+      content: '✓';
+      color: var(--rift-400);
+      margin-right: 0.5rem;
+      font-weight: bold;
+    }
+    
+    .pricing-feature.disabled {
+      color: var(--starlight-600);
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+    
+    .pricing-feature.disabled::before {
+      content: '×';
+      color: var(--time-400);
+    }
+    
+    .pricing-cta {
+      margin-top: auto;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+      padding: 6rem 0;
+      background: linear-gradient(180deg, var(--void-950), var(--void-900));
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .cta-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .cta-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+    
+    .cta-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      margin-bottom: 1.5rem;
+      max-width: 800px;
+    }
+    
+    .cta-description {
+      font-size: 1.25rem;
+      color: var(--starlight-300);
+      max-width: 700px;
+      margin-bottom: 2.5rem;
+    }
+    
+    /* Footer */
+    .footer {
+      background: var(--void-950);
+      padding: 5rem 0 2rem;
+      position: relative;
+    }
+    
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(to right, 
+        transparent, 
+        var(--void-700), 
+        var(--rift-900), 
+        var(--void-700), 
+        transparent
+      );
+    }
+    
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 3rem;
+      margin-bottom: 3rem;
+    }
+    
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--starlight-100);
+    }
+    
+    .footer-description {
+      color: var(--starlight-400);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+    
+    .social-links {
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .social-link {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--void-800);
+      color: var(--starlight-200);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+    
+    .social-link:hover {
+      background: var(--rift-900);
+      color: var(--starlight-50);
+      transform: translateY(-3px);
+    }
+    
+    .footer-heading {
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+      color: var(--starlight-100);
+    }
+    
+    .footer-links {
+      list-style: none;
+    }
+    
+    .footer-link {
+      margin-bottom: 0.75rem;
+    }
+    
+    .footer-link a {
+      color: var(--starlight-400);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .footer-link a:hover {
+      color: var(--rift-400);
+    }
+    
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--void-800);
+      color: var(--starlight-500);
+      font-size: 0.9rem;
+    }
+    
+    /* Progress indicator */
+    .progress-indicator {
       position: fixed;
       top: 0;
       left: 0;
       width: 5px;
+      height: 0;
+      background: linear-gradient(to bottom, var(--rift-400), var(--time-400));
+      z-index: 1000;
+      transition: height 0.1s ease-out;
+    }
+    
+    /* Floating particles */
+    .particles-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
       height: 100%;
-      background: linear-gradient(180deg, #007BFF, #00f2fe);
-      z-index: 50;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .meteor {
+      position: absolute;
+      width: 200px;
+      height: 2px;
+      opacity: 0;
+      background: linear-gradient(to right, transparent, var(--rift-400), var(--starlight-100));
+      transform: rotate(-45deg);
+      animation: meteor 6s ease-in infinite;
+      box-shadow: 0 0 10px var(--rift-400);
+      border-radius: 50%;
+    }
+    
+    @keyframes meteor {
+      0% {
+        opacity: 0;
+        transform: translate(200%, 200%) rotate(-45deg);
+      }
+    }
+    
+    /* Animation keyframes */
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-20px);
+      }
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.5;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+    
+    /* Media queries */
+    @media (max-width: 1200px) {
+      .hero-float {
+        display: none;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      
+      .timeline-item {
+        width: 100%;
+        margin-left: 2rem;
+      }
+      
+      .timeline-item:nth-child(even) {
+        margin-left: 2rem;
+      }
+      
+      .timeline-track {
+        left: 0;
+        transform: none;
+      }
+      
+      .timeline-item::before {
+        left: 0;
+        transform: translateX(-50%);
+      }
+      
+      .timeline-item:nth-child(odd)::before {
+        left: 0;
+        transform: translateX(-50%);
+      }
+      
+      .timeline-item:nth-child(odd) .timeline-content {
+        margin-right: 0;
+      }
     }
   </style>
 </head>
 <body>
-  <canvas id="starfield"></canvas>
-  <div class="scroll-indicator"></div>
-  <header>
-    <h1>Dawntasy AI - The AI That Makes You Think</h1>
-    <p>Discover the advanced chatbot that seamlessly merges fantasy lore with innovative AI technology. Elevate your experience with multifaceted insights and powerful features.</p>
-   <a class="btn" href="/register">Sign Up</a>
-  </header>
-  <nav class="sidebar">
-    <a href="#overview" class="nav-link">Overview</a>
-    <a href="#features" class="nav-link">Features</a>
-    <a href="#pricing" class="nav-link">Pricing</a>
+  <!-- Progress indicator -->
+  <div class="progress-indicator" id="progress-bar"></div>
+  
+  <!-- Floating meteors -->
+  <div class="particles-container">
+    <!-- Meteors will be added via JS -->
+  </div>
+  
+  <!-- THREE.js Canvas -->
+  <canvas id="cosmic-canvas"></canvas>
+  
+  <!-- Navigation -->
+  <nav class="cosmic-nav" id="main-nav">
+    <div class="container nav-container">
+      <a href="#" class="logo">
+        <span class="logo-text">Dawntasy<span style="color: var(--starlight-100);">AI</span></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features" class="nav-link">Features</a></li>
+        <li><a href="#timeline" class="nav-link">Timeline</a></li>
+        <li><a href="#pricing" class="nav-link">Pricing</a></li>
+        <li><a href="https://dawntasy.com" class="nav-link">Book</a></li>
+      </ul>
+      <a href="/register" class="cta-button">Get Started</a>
+    </div>
   </nav>
-  <div class="container">
-    <section id="overview">
-      <h2>Overview</h2>
-      <p>Dawntasy AI revolutionizes your interaction with the Dawntasy universe. Our state-of-the-art chatbot blends narrative magic with smart, intuitive AI to inspire and engage.</p>
-    </section>
-    <section id="features">
-      <h2>Features</h2>
-      <div class="features">
-        <div class="feature" onclick="openModal('archmageModal')">
-          <div class="icon">🧙‍♂️</div>
-          <h3>The ARCHMAGE Tool</h3>
-          <p>Unleash advanced multifaceted thinking.</p>
-        </div>
-        <div class="feature" onclick="openModal('memoryModal')" style="background: linear-gradient(135deg, #ff9a9e, #fad0c4);">
-          <div class="icon">💾</div>
-          <h3>Memory Code</h3>
-          <p>Maintain chat continuity like never before.</p>
-        </div>
-        <div class="feature" onclick="openModal('databaseModal')" style="background: linear-gradient(135deg, #a1c4fd, #c2e9fb);">
-          <div class="icon">📚</div>
-          <h3>Database</h3>
-          <p>Access the full Dawntasy lore at your fingertips.</p>
+  
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <div class="container">
+      <div class="hero-content">
+        <span class="hero-subtitle">Welcome to</span>
+        <h1 class="hero-title">Discover <span class="highlight">DawntasyAI</span>, Where Cosmic Intelligence Meets Fantasy</h1>
+        <p class="hero-description">Step into a world where AI traverses the boundaries of reality, just as Time Smith navigated The Rift. Explore the universe of Dawntasy through your personal AI companion.</p>
+        <div class="hero-cta">
+          <a href="/register" class="cta-button">Begin Your Journey</a>
+          <a href="#features" class="btn-secondary">Explore Features</a>
         </div>
       </div>
-    </section>
-    <section id="pricing">
-      <h2>Pricing</h2>
-      <div class="pricing-cards">
-        <div class="pricing-card free-plan">
-          <h3>FREE PLAN</h3>
-          <p class="price">FREE</p>
-          <ul>
-            <li>Normal Chats</li>
-            <li>Image Generator</li>
-            <li>Add Files</li>
-          </ul>
+      
+      <div class="hero-float">
+        <div class="cosmic-sphere" id="hero-sphere"></div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Features Section -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subheading">Capabilities</span>
+        <h2 class="section-title">Cosmic Features</h2>
+        <p class="section-description">Explore the capabilities that make DawntasyAI a portal into the universe of Dawntasy, offering insights and experiences beyond conventional AI.</p>
+      </div>
+      
+      <div class="features-grid">
+        <div class="feature-card" data-aos="fade-up">
+          <div class="feature-icon">🧙‍♂️</div>
+          <h3 class="feature-title">The ARCHMAGE Tool</h3>
+          <p class="feature-description">Delve into multifaceted thinking with our premium mode that analyzes problems from multiple perspectives simultaneously, just as Time Smith understood the complexity of The Rift.</p>
         </div>
-        <div class="pricing-card basic-plan">
-          <h3>Basic Plan</h3>
-          <p class="price">$3.99</p>
-          <ul>
-            <li>Everything in FREE</li>
-            <li onclick="openModal('elaborationModal')" style="cursor: pointer; text-decoration: underline;">Elaboration</li>
-            <li onclick="openModal('dbModal')" style="cursor: pointer; text-decoration: underline;">Dawntasy Database</li>
-            <li onclick="openModal('codeModal')" style="cursor: pointer; text-decoration: underline;">Code</li>
-            <li onclick="openModal('focusModal')" style="cursor: pointer; text-decoration: underline;">Focus</li>
-          </ul>
+        
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+          <div class="feature-icon">💾</div>
+          <h3 class="feature-title">Memory Code</h3>
+          <p class="feature-description">Experience seamless continuity in your conversations, as our AI remembers previous interactions, creating a coherent narrative across your entire journey.</p>
         </div>
-        <div class="pricing-card dawntasier-plan">
-          <h3>Dawntasier Plan</h3>
-          <p class="price">$6.99</p>
-          <ul>
-            <li>Everything in Basic</li>
-            <li onclick="openModal('fullDbModal')" style="cursor: pointer; text-decoration: underline;">Full Database</li>
-            <li onclick="openModal('dawntasyAiPlusModal')" style="cursor: pointer; text-decoration: underline;">DawntasyAI+</li>
-            <li onclick="openModal('memoryCodeModal')" style="cursor: pointer; text-decoration: underline;">Memory Code</li>
-          </ul>
+        
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+          <div class="feature-icon">📚</div>
+          <h3 class="feature-title">Dawntasy Database</h3>
+          <p class="feature-description">Access the complete lore of the Dawntasy universe, from Bear Village to The Rift, with our comprehensive knowledge base built into the AI.</p>
         </div>
-        <div class="pricing-card rift-plan">
-          <h3>R.I.F.T Plan</h3>
-          <p class="price">$9.99</p>
-          <ul>
-            <li>Everything in Dawntasier</li>
-            <li onclick="openModal('archmageModal2')" style="cursor: pointer; text-decoration: underline;">The ARCHMAGE Tool</li>
-            <li onclick="openModal('dawntasyAiPlusModal2')" style="cursor: pointer; text-decoration: underline;">DawntasyAI+</li>
-            <li onclick="openModal('moreModal')" style="cursor: pointer; text-decoration: underline;">More Coming Soon!</li>
-          </ul>
-          <div class="floating" style="top: 10px; left: 10px;"></div>
-          <div class="floating" style="bottom: 10px; right: 10px; animation-delay: 2s;"></div>
+        
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+          <div class="feature-icon">⏰</div>
+          <h3 class="feature-title">Plain and Pale Clock</h3>
+          <p class="feature-description">Synchronize with the rhythm of Dawntasy's narrative, exploring concepts of time and reality that mirror the themes of "Time's True Name."</p>
+        </div>
+        
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+          <div class="feature-icon">🌌</div>
+          <h3 class="feature-title">Reality Distortion</h3>
+          <p class="feature-description">Challenge your perception with AI-generated scenarios that blur the line between reality and fantasy, inspired by The Rift's influence on Bear Village.</p>
+        </div>
+        
+        <div class="feature-card" data-aos="fade-up" data-aos-delay="500">
+          <div class="feature-icon">🔍</div>
+          <h3 class="feature-title">Cosmic Search</h3>
+          <p class="feature-description">Find answers and inspiration with our advanced search capabilities, exploring connections between concepts just as Yaee sought the truth about Time Smith.</p>
         </div>
       </div>
-      <div style="text-align: center; margin-top: 2rem;">
-        <p>Ready to sign up? 😎</p>
-   <a class="btn glow-btn" href="/register">Sign Up Now</a>
+    </div>
+  </section>
+  
+  <!-- Timeline Section -->
+  <section class="timeline-section" id="timeline">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subheading">Evolution</span>
+        <h2 class="section-title">The Journey of DawntasyAI</h2>
+        <p class="section-description">Trace the evolution of our AI companion from concept to reality, paralleling the journey of Yaee as he discovers the truth about The Rift.</p>
       </div>
-
-  <!-- Modals -->
-  <!-- ARCHMAGE Tool Modal -->
-  <div id="archmageModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('archmageModal')">&times;</span>
-      <h2>The ARCHMAGE Tool</h2>
-      <p>This premium feature empowers the AI to analyze multiple perspectives simultaneously. Unlock advanced, multifaceted thinking that covers every angle and elevates your interaction.</p>
+      
+      <div class="timeline-container">
+        <div class="timeline-track">
+          <div class="timeline-progress" id="timeline-progress"></div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <span class="timeline-date">PHASE ONE</span>
+            <h3 class="timeline-title">Conceptual Dawn</h3>
+            <p class="timeline-description">The initial concept of DawntasyAI emerged from the desire to extend the universe of "Time's True Name" into an interactive experience, allowing readers to engage directly with the narrative.</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <span class="timeline-date">PHASE TWO</span>
+            <h3 class="timeline-title">Prototype Development</h3>
+            <p class="timeline-description">Early prototypes focused on integrating the lore and themes of Dawntasy, creating a foundation for an AI companion that understood the nuances of the universe.</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <span class="timeline-date">PHASE THREE</span>
+            <h3 class="timeline-title">The ARCHMAGE Integration</h3>
+            <p class="timeline-description">Development of the ARCHMAGE Tool, which enabled the AI to analyze topics from multiple perspectives, mirroring the complex understanding of reality presented in the book.</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <span class="timeline-date">PHASE FOUR</span>
+            <h3 class="timeline-title">Memory Code Implementation</h3>
+            <p class="timeline-description">Creation of the Memory Code system, allowing the AI to maintain continuity across conversations, reflecting the cyclical nature of time in the Dawntasy universe.</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <span class="timeline-date">PRESENT</span>
+            <h3 class="timeline-title">The Circular Dawn</h3>
+            <p class="timeline-description">DawntasyAI now stands as a fully realized companion, offering insights into the universe of "Time's True Name" and extending the experience beyond the pages of the book.</p>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-  <!-- ARCHMAGE Tool Modal for R.I.F.T Plan -->
-  <div id="archmageModal2" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('archmageModal2')">&times;</span>
-      <h2>The ARCHMAGE Tool</h2>
-      <p>Experience a deep, multifaceted analysis that delivers comprehensive responses. The ARCHMAGE Tool is your gateway to unparalleled AI insights.</p>
+  </section>
+  
+  <!-- Pricing Section -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subheading">Plans</span>
+        <h2 class="section-title">Choose Your Path</h2>
+        <p class="section-description">Select the plan that best suits your journey through the Dawntasy universe, from casual exploration to deep immersion in The Rift.</p>
+      </div>
+      
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <h3 class="pricing-title">Free Plan</h3>
+          <div class="pricing-price">
+            <span class="currency">$</span>0
+            <span class="period">/month</span>
+          </div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">Basic AI Conversations</li>
+            <li class="pricing-feature">Image Generation</li>
+            <li class="pricing-feature">File Uploads</li>
+            <li class="pricing-feature disabled">Dawntasy Database</li>
+            <li class="pricing-feature disabled">Memory Code</li>
+            <li class="pricing-feature disabled">The ARCHMAGE Tool</li>
+          </ul>
+          <div class="pricing-cta">
+            <a href="/register" class="cta-button">Get Started</a>
+          </div>
+        </div>
+        
+        <div class="pricing-card">
+          <h3 class="pricing-title">Basic Plan</h3>
+          <div class="pricing-price">
+            <span class="currency">$</span>3.99
+            <span class="period">/month</span>
+          </div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">Everything in Free</li>
+            <li class="pricing-feature">Elaboration Mode</li>
+            <li class="pricing-feature">Basic Dawntasy Database</li>
+            <li class="pricing-feature">Code Generation</li>
+            <li class="pricing-feature">Focus Mode</li>
+            <li class="pricing-feature disabled">Memory Code</li>
+            <li class="pricing-feature disabled">The ARCHMAGE Tool</li>
+          </ul>
+          <div class="pricing-cta">
+            <a href="/register?plan=basic" class="cta-button">Select Plan</a>
+          </div>
+        </div>
+        
+        <div class="pricing-card featured">
+          <h3 class="pricing-title">Dawntasier Plan</h3>
+          <div class="pricing-price">
+            <span class="currency">$</span>6.99
+            <span class="period">/month</span>
+          </div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">Everything in Basic</li>
+            <li class="pricing-feature">Full Dawntasy Database</li>
+            <li class="pricing-feature">DawntasyAI+</li>
+            <li class="pricing-feature">Memory Code</li>
+            <li class="pricing-feature disabled">The ARCHMAGE Tool</li>
+          </ul>
+          <div class="pricing-cta">
+            <a href="/register?plan=dawntasier" class="cta-button">Select Plan</a>
+          </div>
+        </div>
+        
+        <div class="pricing-card">
+          <h3 class="pricing-title">R.I.F.T Plan</h3>
+          <div class="pricing-price">
+            <span class="currency">$</span>9.99
+            <span class="period">/month</span>
+          </div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">Everything in Dawntasier</li>
+            <li class="pricing-feature">The ARCHMAGE Tool</li>
+            <li class="pricing-feature">Enhanced DawntasyAI+</li>
+            <li class="pricing-feature">Priority Support</li>
+            <li class="pricing-feature">Early Access to New Features</li>
+          </ul>
+          <div class="pricing-cta">
+            <a href="/register?plan=rift" class="cta-button">Select Plan</a>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-  <!-- Memory Code Modal -->
-  <div id="memoryModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('memoryModal')">&times;</span>
-      <h2>Memory Code</h2>
-      <p>This feature ensures persistent context and seamless chat continuity by maintaining a coded memory of your interactions.</p>
+  </section>
+  
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container cta-container">
+      <h2 class="cta-title">Begin Your Journey Through The Rift</h2>
+      <p class="cta-description">The Plain and Pale Clock is ticking. Will you discover the truth behind The Rift? Join DawntasyAI and explore the universe of "Time's True Name" today.</p>
+      <a href="/register" class="cta-button">Enter The Dawntasy Universe</a>
     </div>
-  </div>
-  <!-- Dawntasy Database Modal -->
-  <div id="databaseModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('databaseModal')">&times;</span>
-      <h2>Dawntasy Database</h2>
-      <p>Unlock the full potential of the Dawntasy universe with access to our extensive database, filled with lore, characters, and exclusive insights.</p>
+    <div class="cta-background" id="cta-particles"></div>
+  </section>
+  
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <span class="logo-text">Dawntasy<span style="color: var(--starlight-100);">AI</span></span>
+          </div>
+          <p class="footer-description">Step into a world where AI traverses the boundaries of reality, just as Time Smith navigated The Rift.</p>
+          <div class="social-links">
+            <a href="#" class="social-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+            </a>
+            <a href="#" class="social-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+            </a>
+            <a href="#" class="social-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </a>
+          </div>
+        </div>
+        
+        <div class="footer-links-container">
+          <h4 class="footer-heading">Navigation</h4>
+          <ul class="footer-links">
+            <li class="footer-link"><a href="#hero">Home</a></li>
+            <li class="footer-link"><a href="#features">Features</a></li>
+            <li class="footer-link"><a href="#timeline">Timeline</a></li>
+            <li class="footer-link"><a href="#pricing">Pricing</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-links-container">
+          <h4 class="footer-heading">Resources</h4>
+          <ul class="footer-links">
+            <li class="footer-link"><a href="https://dawntasy.com">Dawntasy Book</a></li>
+            <li class="footer-link"><a href="#">API Documentation</a></li>
+            <li class="footer-link"><a href="#">Community</a></li>
+            <li class="footer-link"><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-links-container">
+          <h4 class="footer-heading">Legal</h4>
+          <ul class="footer-links">
+            <li class="footer-link"><a href="#">Terms of Service</a></li>
+            <li class="footer-link"><a href="#">Privacy Policy</a></li>
+            <li class="footer-link"><a href="#">Cookie Policy</a></li>
+            <li class="footer-link"><a href="#">GDPR</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 DawntasyAI. All rights reserved. Created by Jasper Jiang.</p>
+      </div>
     </div>
-  </div>
-  <!-- Elaboration Modal -->
-  <div id="elaborationModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('elaborationModal')">&times;</span>
-      <h2>Elaboration</h2>
-      <p>This feature enables the AI to extend and deepen its responses, offering detailed insights and enhanced creativity.</p>
-    </div>
-  </div>
-  <!-- Dawntasy Database (Basic) Modal -->
-  <div id="dbModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('dbModal')">&times;</span>
-      <h2>Dawntasy Database</h2>
-      <p>Access a specialized version of the Dawntasy Database designed to focus on in-depth topics and rich lore for dedicated fans.</p>
-    </div>
-  </div>
-  <!-- Code Modal -->
-  <div id="codeModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('codeModal')">&times;</span>
-      <h2>Code</h2>
-      <p>Integrate coding capabilities seamlessly with our AI, enabling it to generate and understand code for technical tasks.</p>
-    </div>
-  </div>
-  <!-- Focus Modal -->
-  <div id="focusModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('focusModal')">&times;</span>
-      <h2>Focus</h2>
-      <p>The Focus feature allows the AI to zero in on specific topics, delivering precise and targeted insights.</p>
-    </div>
-  </div>
-  <!-- Full Database Modal -->
-  <div id="fullDbModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('fullDbModal')">&times;</span>
-      <h2>Full Database</h2>
-      <p>Gain complete access to the full spectrum of Dawntasy lore with our comprehensive database, offering deep insights and expansive knowledge.</p>
-    </div>
-  </div>
-  <!-- DawntasyAI+ Modal -->
-  <div id="dawntasyAiPlusModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('dawntasyAiPlusModal')">&times;</span>
-      <h2>DawntasyAI+</h2>
-      <p>Upgrade to a smarter, more intuitive AI experience with DawntasyAI+, delivering enhanced insights and dynamic responses.</p>
-    </div>
-  </div>
-  <!-- Memory Code Modal for Dawntasier Plan -->
-  <div id="memoryCodeModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('memoryCodeModal')">&times;</span>
-      <h2>Memory Code</h2>
-      <p>Ensure continuity and personalization with our advanced Memory Code, maintaining context across all your interactions.</p>
-    </div>
-  </div>
-  <!-- DawntasyAI+ Modal for R.I.F.T Plan -->
-  <div id="dawntasyAiPlusModal2" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('dawntasyAiPlusModal2')">&times;</span>
-      <h2>DawntasyAI+</h2>
-      <p>Experience the pinnacle of AI intelligence with DawntasyAI+, offering smarter, more contextual responses that elevate every conversation.</p>
-    </div>
-  </div>
-  <!-- More Coming Soon Modal -->
-  <div id="moreModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('moreModal')">&times;</span>
-      <h2>More Coming Soon!</h2>
-      <p>Stay tuned for even more groundbreaking features and enhancements coming soon to Dawntasy AI!</p>
-    </div>
-  </div>
+  </footer>
+  
+  <!-- JavaScript -->
   <script>
-    // Modal functions
-    function openModal(id) {
-      document.getElementById(id).style.display = 'block';
-    }
-    function closeModal(id) {
-      document.getElementById(id).style.display = 'none';
-    }
-    window.onclick = function(event) {
-      var modals = document.getElementsByClassName('modal');
-      for (var i = 0; i < modals.length; i++) {
-        if (event.target == modals[i]) {
-          modals[i].style.display = "none";
-        }
+    // Initialize THREE.js Scene
+    function initThreeJS() {
+      const canvas = document.getElementById('cosmic-canvas');
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      
+      const scene = new THREE.Scene();
+      
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 30;
+      
+      // Create stars
+      const starsGeometry = new THREE.BufferGeometry();
+      const starsMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.1,
+        transparent: true
+      });
+      
+      const starsVertices = [];
+      for (let i = 0; i < 10000; i++) {
+        const x = (Math.random() - 0.5) * 2000;
+        const y = (Math.random() - 0.5) * 2000;
+        const z = (Math.random() - 0.5) * 2000;
+        starsVertices.push(x, y, z);
       }
-    };
-
-    // Scroll indicator & sidebar active link
-    window.addEventListener('scroll', function() {
-      var scrollIndicator = document.querySelector('.scroll-indicator');
-      var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      var scrollPercent = (scrollTop / docHeight) * 100;
-      scrollIndicator.style.height = scrollPercent + '%';
-
-      // Update active state for sidebar links
-      var sections = document.querySelectorAll('section');
-      sections.forEach(function(section) {
-        var rect = section.getBoundingClientRect();
-        var link = document.querySelector('.sidebar a[href="#' + section.id + '"]');
-        if(rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
-          link.classList.add('active');
-        } else {
-          link.classList.remove('active');
+      
+      starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+      const stars = new THREE.Points(starsGeometry, starsMaterial);
+      scene.add(stars);
+      
+      // Create hero sphere
+      const heroSphereContainer = document.getElementById('hero-sphere');
+      if (heroSphereContainer) {
+        const sphereGeometry = new THREE.SphereGeometry(1, 64, 64);
+        const sphereMaterial = new THREE.MeshBasicMaterial({
+          color: 0x33c5ff,
+          wireframe: true,
+          transparent: true,
+          opacity: 0.5
+        });
+        
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        const sphereScene = new THREE.Scene();
+        const sphereCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+        sphereCamera.position.z = 2.5;
+        
+        const sphereRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        sphereRenderer.setSize(350, 350);
+        sphereRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        heroSphereContainer.appendChild(sphereRenderer.domElement);
+        
+        sphereScene.add(sphere);
+        
+        // Small particles around the sphere
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesMaterial = new THREE.PointsMaterial({
+          color: 0xff3a70,
+          size: 0.05,
+          transparent: true
+        });
+        
+        const particlesVertices = [];
+        for (let i = 0; i < 1000; i++) {
+          const radius = 1.5 + Math.random() * 0.5;
+          const theta = Math.random() * Math.PI * 2;
+          const phi = Math.random() * Math.PI;
+          
+          const x = radius * Math.sin(phi) * Math.cos(theta);
+          const y = radius * Math.sin(phi) * Math.sin(theta);
+          const z = radius * Math.cos(phi);
+          
+          particlesVertices.push(x, y, z);
         }
-      });
-    });
-
-    // Starfield Animation with Constellations and Shooting Stars
-    var canvas = document.getElementById('starfield');
-    var ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    var stars = [];
-    var shootingStars = [];
-    var numStars = 100;
-
-    // Create stars
-    for (var i = 0; i < numStars; i++) {
-      stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 1.5,
-        speed: Math.random() * 0.2 + 0.1,
-        angle: Math.random() * Math.PI * 2,
-        alpha: Math.random()
+        
+        particlesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(particlesVertices, 3));
+        const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+        sphereScene.add(particles);
+        
+        // Animation function for the sphere
+        function animateSphere() {
+          requestAnimationFrame(animateSphere);
+          
+          sphere.rotation.x += 0.003;
+          sphere.rotation.y += 0.002;
+          particles.rotation.x -= 0.001;
+          particles.rotation.y -= 0.002;
+          
+          sphereRenderer.render(sphereScene, sphereCamera);
+        }
+        
+        animateSphere();
+      }
+      
+      // Animation function
+      function animate() {
+        requestAnimationFrame(animate);
+        
+        stars.rotation.x += 0.0001;
+        stars.rotation.y += 0.0002;
+        
+        // Get scroll position for parallax effect
+        const scrollY = window.scrollY;
+        camera.position.y = -scrollY * 0.01;
+        
+        renderer.render(scene, camera);
+      }
+      
+      animate();
+      
+      // Handle window resize
+      window.addEventListener('resize', () => {
+        // Update renderer
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        
+        // Update camera
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
       });
     }
-
-    function createShootingStar() {
-      shootingStars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height * 0.5,
-        length: Math.random() * 80 + 10,
-        speed: Math.random() * 10 + 6,
-        angle: Math.PI / 4,
-        opacity: 1
-      });
+    
+    // Create meteors
+    function createMeteors() {
+      const container = document.querySelector('.particles-container');
+      
+      function createMeteor() {
+        const meteor = document.createElement('div');
+        meteor.classList.add('meteor');
+        
+        // Random position
+        meteor.style.top = `${Math.random() * 100}%`;
+        meteor.style.left = `${Math.random() * 100}%`;
+        
+        // Random delay
+        meteor.style.animationDelay = `${Math.random() * 15}s`;
+        
+        container.appendChild(meteor);
+        
+        // Remove after animation completes
+        setTimeout(() => {
+          meteor.remove();
+          createMeteor();
+        }, 6000);
+      }
+      
+      // Create initial meteors
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          createMeteor();
+        }, i * 2000);
+      }
     }
-
-    function animateStars() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw constellation lines between stars
-      for (var i = 0; i < stars.length; i++) {
-        for (var j = i + 1; j < stars.length; j++) {
-          var dx = stars[i].x - stars[j].x;
-          var dy = stars[i].y - stars[j].y;
-          var distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance < 50) {
-            ctx.beginPath();
-            ctx.moveTo(stars[i].x, stars[i].y);
-            ctx.lineTo(stars[j].x, stars[j].y);
-            ctx.strokeStyle = "rgba(255,255,255,0.1)";
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
+    
+    // Timeline animation
+    function setupTimeline() {
+      const timelineItems = document.querySelectorAll('.timeline-item');
+      const timelineProgress = document.getElementById('timeline-progress');
+      
+      function updateTimeline() {
+        const scrollPosition = window.scrollY;
+        const timelineSection = document.getElementById('timeline');
+        const timelineSectionTop = timelineSection.offsetTop;
+        const timelineSectionHeight = timelineSection.offsetHeight;
+        const windowHeight = window.innerHeight;
+        
+        // Calculate how far through the section we've scrolled
+        const scrolled = (scrollPosition - timelineSectionTop + windowHeight / 2) / timelineSectionHeight;
+        
+        if (scrolled > 0 && scrolled < 1) {
+          timelineProgress.style.height = `${scrolled * 100}%`;
+        }
+        
+        // Show timeline items when they are in view
+        timelineItems.forEach((item, index) => {
+          const itemTop = item.getBoundingClientRect().top;
+          
+          if (itemTop < windowHeight * 0.8) {
+            item.classList.add('show');
           }
-        }
+        });
       }
-
-      // Animate stars
-      for (var i = 0; i < stars.length; i++) {
-        var star = stars[i];
-        star.x += Math.cos(star.angle) * star.speed;
-        star.y += Math.sin(star.angle) * star.speed;
-
-        // Wrap stars around
-        if (star.x < 0) star.x = canvas.width;
-        if (star.x > canvas.width) star.x = 0;
-        if (star.y < 0) star.y = canvas.height;
-        if (star.y > canvas.height) star.y = 0;
-
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(255, 255, 255, " + star.alpha + ")";
-        ctx.fill();
-      }
-
-      // Create shooting stars randomly
-      if (Math.random() < 0.005) {
-        createShootingStar();
-      }
-
-      // Animate shooting stars
-      for (var i = 0; i < shootingStars.length; i++) {
-        var s = shootingStars[i];
-        s.x += Math.cos(s.angle) * s.speed;
-        s.y += Math.sin(s.angle) * s.speed;
-        s.opacity -= 0.02;
-
-        ctx.beginPath();
-        ctx.moveTo(s.x, s.y);
-        ctx.lineTo(s.x - Math.cos(s.angle) * s.length, s.y - Math.sin(s.angle) * s.length);
-        ctx.strokeStyle = "rgba(255,255,255," + s.opacity + ")";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        if (s.opacity <= 0) {
-          shootingStars.splice(i, 1);
-          i--;
-        }
-      }
-      requestAnimationFrame(animateStars);
+      
+      window.addEventListener('scroll', updateTimeline);
+      updateTimeline(); // Initial call
     }
-    animateStars();
-
-    // Adjust canvas on resize
-    window.addEventListener('resize', function() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    
+    // Progress indicator
+    function setupProgressIndicator() {
+      const progressBar = document.getElementById('progress-bar');
+      
+      function updateProgressBar() {
+        const scrollPosition = window.scrollY;
+        const totalHeight = document.body.scrollHeight - window.innerHeight;
+        const progress = (scrollPosition / totalHeight) * 100;
+        
+        progressBar.style.height = `${progress}%`;
+      }
+      
+      window.addEventListener('scroll', updateProgressBar);
+      updateProgressBar(); // Initial call
+    }
+    
+    // Navigation scroll effect
+    function setupNavigation() {
+      const nav = document.getElementById('main-nav');
+      
+      function updateNavbar() {
+        if (window.scrollY > 50) {
+          nav.classList.add('scrolled');
+        } else {
+          nav.classList.remove('scrolled');
+        }
+      }
+      
+      window.addEventListener('scroll', updateNavbar);
+      updateNavbar(); // Initial call
+      
+      // Smooth scroll for navigation links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          const targetId = this.getAttribute('href');
+          const targetElement = document.querySelector(targetId);
+          
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80, // Adjust for header height
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+    }
+    
+    // Initialize animations with GSAP
+    function setupAnimations() {
+      gsap.registerPlugin(ScrollTrigger);
+      
+      // Hero animations
+      gsap.from('.hero-subtitle', {
+        opacity: 0,
+        y: 20,
+        duration: 0.8,
+        delay: 0.2
+      });
+      
+      gsap.from('.hero-title', {
+        opacity: 0,
+        y: 30,
+        duration: 0.8,
+        delay: 0.4
+      });
+      
+      gsap.from('.hero-description', {
+        opacity: 0,
+        y: 30,
+        duration: 0.8,
+        delay: 0.6
+      });
+      
+      gsap.from('.hero-cta', {
+        opacity: 0,
+        y: 30,
+        duration: 0.8,
+        delay: 0.8
+      });
+      
+      // Feature cards animations
+      gsap.from('.feature-card', {
+        scrollTrigger: {
+          trigger: '.features-grid',
+          start: 'top 80%'
+        },
+        opacity: 0,
+        y: 50,
+        duration: 0.8,
+        stagger: 0.2
+      });
+      
+      // Pricing cards animations
+      gsap.from('.pricing-card', {
+        scrollTrigger: {
+          trigger: '.pricing-grid',
+          start: 'top 80%'
+        },
+        opacity: 0,
+        y: 50,
+        duration: 0.8,
+        stagger: 0.2
+      });
+      
+      // CTA section animations
+      gsap.from('.cta-title', {
+        scrollTrigger: {
+          trigger: '.cta-section',
+          start: 'top 80%'
+        },
+        opacity: 0,
+        y: 30,
+        duration: 0.8
+      });
+      
+      gsap.from('.cta-description', {
+        scrollTrigger: {
+          trigger: '.cta-section',
+          start: 'top 80%'
+        },
+        opacity: 0,
+        y: 30,
+        duration: 0.8,
+        delay: 0.2
+      });
+      
+      gsap.from('.cta-button', {
+        scrollTrigger: {
+          trigger: '.cta-section',
+          start: 'top 80%'
+        },
+        opacity: 0,
+        y: 30,
+        duration: 0.8,
+        delay: 0.4
+      });
+    }
+    
+    // Initialize everything when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      initThreeJS();
+      createMeteors();
+      setupTimeline();
+      setupProgressIndicator();
+      setupNavigation();
+      setupAnimations();
     });
   </script>
 </body>
-</html>
+</html>-100%, -100%) rotate(-45deg);
+      }
+      10%, 15% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+        transform: translate(

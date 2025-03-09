@@ -52,7 +52,7 @@
             <h3 class="feature-title">The ARCHMAGE Tool</h3>
             <p class="feature-description">
               Experience multifaceted analysis that unlocks new dimensions of understanding, 
-              just as Time Smith understood The Rift's true nature.
+              just as Time Sm3ith understood The Rift's true nature.
             </p>
           </div>
           
