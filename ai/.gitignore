@@ -80,4 +80,5 @@ tmp/
 temp/
 ".env" 
 /dist-ai/
+node_modules/
 /dist-book/
