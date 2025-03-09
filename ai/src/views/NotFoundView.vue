@@ -190,5 +190,8 @@
         theme('colors.rift.500'),
         theme('colors.rift.700')
       );
-      box-shadow: 0 0 10px theme('colors.rift.500');
-      animation: pulse 3s infinite altern
+            box-shadow: 0 0 10px theme('colors.rift.500');
+            animation: pulse 3s infinite alternate;
+          }
+        }
+      </style>

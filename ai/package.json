@@ -12,9 +12,7 @@
     "deploy": "npm run build && netlify deploy --prod"
   },
   "dependencies": {
-    "vue": "^3.3.4", 
-    "vue-router": "^4.5.0",
-    "pinia": "^2.3.1",
+    "@vue/runtime-dom": "^3.5.13",
     "@vueuse/core": "^10.11.1",
     "@vueuse/head": "^2.0.0",
     "animejs": "^3.2.2",
@@ -27,9 +25,12 @@
     "motion": "^12.4.10",
     "nprogress": "^0.2.0",
     "openai": "^4.86.2",
+    "pinia": "^2.3.1",
     "remixicon": "^4.6.0",
     "three": "^0.161.0",
-    "typed.js": "^2.1.0"
+    "typed.js": "^2.1.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",
