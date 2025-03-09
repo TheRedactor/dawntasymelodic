@@ -2,7 +2,6 @@
 [build]
   command = "npm run build"
   publish = "dist-ai"
-  base = "/ai/"
 
 # ✅ ENVIRONMENT VARIABLES
 [build.environment]
@@ -20,8 +19,6 @@
   from = "/ai/*"
   to = "/index.html"
   status = 200
-
-# ❌ REMOVED: The "/" redirect to "/ai/" that was conflicting with the book site!
 
 # 🔥🔥🔥 SECURITY HEADERS (KEPT FROM YOUR VERSION)
 [[headers]]
