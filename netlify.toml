@@ -1,24 +1,29 @@
+# ✅ BUILD CONFIGURATION
 [build]
   command = "npm run build"
   publish = "dist-ai"
+  base = "/ai/"
 
+# ✅ ENVIRONMENT VARIABLES
 [build.environment]
   NODE_VERSION = "18"
   VITE_APP_VERSION = "1.0.0"
   VITE_DEPLOYMENT_ENV = "production"
 
-# 🔥 AI-SPECIFIC ROUTING (FIXED!)
+# ✅ AI-SPECIFIC ROUTING (FIXED FOR DEEP LINKING!)
 [[redirects]]
   from = "/ai"
-  to = "/ai/index.html"
+  to = "/index.html"
   status = 200
 
 [[redirects]]
   from = "/ai/*"
-  to = "/ai/index.html"
+  to = "/index.html"
   status = 200
 
-# 🔥 SECURITY HEADERS (FIXED QUOTES!)
+# ❌ REMOVED: The "/" redirect to "/ai/" that was conflicting with the book site!
+
+# 🔥🔥🔥 SECURITY HEADERS (KEPT FROM YOUR VERSION)
 [[headers]]
   for = "/*"
   [headers.values]
@@ -26,7 +31,7 @@
     Permissions-Policy = "geolocation=(), camera=(), microphone=()"
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.openai.com https://*.firebaseio.com https://*.googleapis.com;"
 
-# 🔥 CACHE OPTIMIZATION (FASTER LOADS!)
+# 🔥🔥🔥 CACHING OPTIMIZATION (KEPT FOR PERFORMANCE)
 [[headers]]
   for = "/assets/*.{js,css,woff2}"
   [headers.values]
@@ -49,7 +54,7 @@
   [headers.values]
     Cache-Control = "public, max-age=604800, must-revalidate"
 
-# 🔥 DNS PREFETCH FOR FASTER LOADS
+# 🔥🔥🔥 ENABLE DNS PREFETCH FOR EVEN FASTER LOAD TIMES
 [[headers]]
   for = "/*.{js,css}"
   [headers.values]
