@@ -20,24 +20,24 @@ export default defineConfig({
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
           },
           {
             src: 'pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      }
-    })
+            type: 'image/png',
+          },
+        ],
+      },
+    }),
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
+      '@': path.resolve(__dirname, './src'),
+    },
   },
   server: {
-    port: 5173
+    port: 5173,
   },
   build: {
     outDir: 'dist-ai', // 🔥 Ensures output goes to the right folder
@@ -45,11 +45,12 @@ export default defineConfig({
     chunkSizeWarningLimit: 1600,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'index.html') // 🔥 Fixed path
+        main: path.resolve(__dirname, 'index.html'), // 🔥 Fixed path
       },
       output: {
-        entryFileNames: 'assets/main.js'
-      }
-    }
-  }
+        entryFileNames: 'assets/main.js',
+      },
+      // external: ['/ai/assets/main.js'], //Consider if this line is needed, and if the path is correct.
+    },
+  },
 });
