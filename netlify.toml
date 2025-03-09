@@ -2,15 +2,13 @@
   command = "npm run build"
   publish = "dist-ai"
   base = "/ai/"
-  cache = "clear"
 
-# ✅ ENVIRONMENT VARIABLES
 [build.environment]
   NODE_VERSION = "18"
   VITE_APP_VERSION = "1.0.0"
   VITE_DEPLOYMENT_ENV = "production"
 
-# ✅ AI-SPECIFIC ROUTING (FIXED FOR DEEP LINKING!)
+# 🔥 AI-SPECIFIC ROUTING (FIXED!)
 [[redirects]]
   from = "/ai"
   to = "/ai/index.html"
@@ -21,22 +19,15 @@
   to = "/ai/index.html"
   status = 200
 
-# ❌ REMOVED: The "/" redirect to "/ai/" (which was conflicting with the book site!)
-
-# 🔥🔥🔥 SECURITY HEADERS (KEPT FROM MY VERSION)
+# 🔥 SECURITY HEADERS (FIXED QUOTES!)
 [[headers]]
   for = "/*"
   [headers.values]
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
     Permissions-Policy = "geolocation=(), camera=(), microphone=()"
-    Content-Security-Policy = "default-src 'self'; 
-                               script-src 'self' 'unsafe-inline'; 
-                               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
-                               font-src 'self' https://fonts.gstatic.com; 
-                               img-src 'self' data: blob:; 
-                               connect-src 'self' https://api.openai.com https://*.firebaseio.com https://*.googleapis.com;"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.openai.com https://*.firebaseio.com https://*.googleapis.com;"
 
-# 🔥🔥🔥 CACHING OPTIMIZATION (KEPT FOR PERFORMANCE)
+# 🔥 CACHE OPTIMIZATION (FASTER LOADS!)
 [[headers]]
   for = "/assets/*.{js,css,woff2}"
   [headers.values]
@@ -59,7 +50,7 @@
   [headers.values]
     Cache-Control = "public, max-age=604800, must-revalidate"
 
-# 🔥🔥🔥 ENABLE DNS PREFETCH FOR EVEN FASTER LOAD TIMES
+# 🔥 DNS PREFETCH FOR FASTER LOADS
 [[headers]]
   for = "/*.{js,css}"
   [headers.values]
