@@ -7,7 +7,8 @@
   </template>
   
   <script setup lang="ts">
-  import { ref, onMounted, onUnmounted, watch } from 'vue';
+  import type { Ref } from '@vue/runtime-core'
+  import { ref, onMounted, onUnmounted, watch } from '@vue/runtime-core';
   import { useWindowSize } from '@vueuse/core';
   import { useRouter } from 'vue-router';
   import * as THREE from 'three';

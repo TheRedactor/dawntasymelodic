@@ -1,3 +1,134 @@
+<template>
+  <div class="auth-card">
+    <!-- Portal Animation Container -->
+    <div class="portal-container">
+      <div class="portal-ring"></div>
+      <div class="portal-core"></div>
+    </div>
+
+    <!-- Login Title -->
+    <h1 class="auth-title">Login to DawntasyAI</h1>
+
+    <!-- Login Form -->
+    <form class="auth-form" @submit.prevent="handleLogin">
+      <!-- Error Alert (if any) -->
+      <div v-if="error" class="error-alert">
+        <span class="alert-icon">!</span>
+        <span class="alert-message">{{ error }}</span>
+      </div>
+
+      <!-- Username Field -->
+      <div class="form-group" :class="{ focused: isFocused.username }">
+        <label class="form-label" for="username">Username</label>
+        <div class="input-wrapper">
+          <span class="input-icon">👤</span>
+          <input
+            v-model="credentials.username"
+            @focus="focusField('username')"
+            @blur="blurField('username')"
+            type="text"
+            id="username"
+            class="form-input"
+            placeholder="Enter your username"
+          />
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group" :class="{ focused: isFocused.password }">
+        <label class="form-label" for="password">Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input
+            v-model="credentials.password"
+            @focus="focusField('password')"
+            @blur="blurField('password')"
+            :type="showPassword ? 'text' : 'password'"
+            id="password"
+            class="form-input"
+            placeholder="Enter your password"
+          />
+          <button type="button" class="password-toggle" @click="togglePassword">
+            <span class="eye-icon">{{ showPassword ? '👁️' : '😶' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Remember Me and Forgot Password -->
+      <div class="form-extras">
+        <label class="remember-me">
+          <input type="checkbox" v-model="rememberMe" />
+          <span class="checkmark"></span>
+          <span class="label-text">Remember Me</span>
+        </label>
+        <a href="#" class="forgot-password">Forgot Password?</a>
+      </div>
+
+      <!-- Login Button -->
+      <button :disabled="loading" class="login-button">
+        <span v-if="loading" class="loading-spinner"></span>
+        <span v-else class="button-text">Login</span>
+      </button>
+    </form>
+
+    <!-- Footer with Register Link -->
+    <div class="auth-footer">
+      <p>Don't have an account?</p>
+      <a href="#" class="register-link">Register Now</a>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      credentials: {
+        username: '',
+        password: ''
+      },
+      rememberMe: false,
+      showPassword: false,
+      loading: false,
+      error: '',
+      isFocused: {
+        username: false,
+        password: false
+      }
+    };
+  },
+  methods: {
+    focusField(field) {
+      this.isFocused[field] = true;
+    },
+    blurField(field) {
+      this.isFocused[field] = false;
+    },
+    togglePassword() {
+      this.showPassword = !this.showPassword;
+    },
+    async handleLogin() {
+      this.loading = true;
+      this.error = '';
+
+      try {
+        // Simulate API call (replace with your actual login logic)
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Mock delay
+        if (this.credentials.username === 'test' && this.credentials.password === 'test') {
+          this.$router.push('/dashboard'); // Navigate on success (adjust route)
+        } else {
+          this.error = 'Invalid username or password';
+        }
+      } catch (err) {
+        this.error = 'Login failed. Please try again.';
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
+};
+</script>
+
 <style>
 .auth-card {
   @apply bg-void-800 rounded-xl p-8 w-full max-w-md relative overflow-hidden;
