@@ -40,7 +40,7 @@ export default defineConfig({
     port: 5173
   },
   build: {
-    outDir: 'ai', // <-- Changed from "dist-ai" to "ai"
+    outDir: 'dist', // <-- Changed from "dist-ai" to "ai"
     emptyOutDir: true,
     chunkSizeWarningLimit: 1600,
     rollupOptions: {

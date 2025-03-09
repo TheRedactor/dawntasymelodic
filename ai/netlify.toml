@@ -1,25 +1,35 @@
+# ✅ BUILD CONFIGURATION
 [build]
   command = "npm run build"
-  publish = "ai"  # Publish the built "ai" folder
+  publish = "ai/dist"  # ✅ Change from "ai" to "ai/dist" because Vite builds into "dist"
 
+# ✅ ENVIRONMENT VARIABLES
 [build.environment]
   NODE_VERSION = "18"
   VITE_APP_VERSION = "1.0.0"
   VITE_DEPLOYMENT_ENV = "production"
 
+# ✅ REDIRECTS FOR VUE ROUTER
 [[redirects]]
   from = "/ai/*"
   to = "/ai/index.html"
   status = 200
   force = true
 
+# ✅ SECURITY HEADERS
 [[headers]]
   for = "/*"
   [headers.values]
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
     Permissions-Policy = "geolocation=(), camera=(), microphone=()"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.openai.com https://*.firebaseio.com https://*.googleapis.com;"
+    Content-Security-Policy = "default-src 'self'; 
+                               script-src 'self' 'unsafe-inline'; 
+                               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
+                               font-src 'self' https://fonts.gstatic.com; 
+                               img-src 'self' data: blob:; 
+                               connect-src 'self' https://api.openai.com https://*.firebaseio.com https://*.googleapis.com;"
 
+# ✅ CACHE OPTIMIZATION
 [[headers]]
   for = "/assets/*.{js,css,woff2}"
   [headers.values]
