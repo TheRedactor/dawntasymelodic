@@ -291,11 +291,24 @@ const formatMessage = (content: string) => {
   let html = marked(content, {
     gfm: true,
     breaks: true,
-    highlight: function(code, lang) {
-      if (lang && hljs.getLanguage(lang)) {
-        return hljs.highlight(code, { language: lang }).value;
+    hooks: {
+      preprocess(markdown) { return markdown; },
+      postprocess(html) { return html; },
+      options: {},
+      processAllTokens(tokens) { return tokens; },
+      provideLexer() { return null; },
+      provideParser() { return null; }
+    },
+    walkTokens: (token: any) => {
+      if (token.type === 'code') {
+        const code = token.text;
+        const lang = token.lang;
+        if (lang && hljs.getLanguage(lang)) {
+          token.text = hljs.highlight(code, { language: lang }).value;
+        } else {
+          token.text = hljs.highlightAuto(code).value;
+        }
       }
-      return hljs.highlightAuto(code).value;
     }
   });
   
@@ -852,3 +865,4 @@ onUnmounted(() => {
     backgroundCanvas.parentNode.removeChild(backgroundCanvas);
   }
 });
+</script>
