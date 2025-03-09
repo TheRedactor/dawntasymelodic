@@ -4,6 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
 export default defineConfig({
+  base: '/ai/', // This tells Vite that your app is served from /ai/
   plugins: [
     vue(),
     VitePWA({
@@ -36,10 +37,10 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5173 // ✅ Matches default Vite dev server port
+    port: 5173
   },
   build: {
-    outDir: 'dist-ai', // ✅ Fix: Ensures AI chatbot builds separately
+    outDir: 'dist-ai',
     emptyOutDir: true,
     chunkSizeWarningLimit: 1600,
     rollupOptions: {
@@ -47,9 +48,8 @@ export default defineConfig({
         main: path.resolve(__dirname, 'index.html')
       },
       output: {
-        entryFileNames: 'assets/main.js' // ✅ Forces Vite to generate a predictable file
+        entryFileNames: 'assets/main.js'
       }
     }
-  },
-  base: '/ai/' // ✅ Fix: Ensures Netlify knows AI app is under /ai/
+  }
 });

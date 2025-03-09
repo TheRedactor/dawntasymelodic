@@ -2,22 +2,57 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0;url=/index.html">
+  <meta name="description" content="🚀 404: Page Not Found – This cosmic page got lost in space!">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redirecting...</title>
+  <title>🚀 404: Page Lost in Space</title>
+  <!-- Preload Orbitron font for that stellar look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      text-align: center;
+      padding: 2rem;
+      margin: 0;
+      background: radial-gradient(circle at top, #1e1b4b, #0f172a);
+      color: #fff;
+    }
+    h1 {
+      font-size: 3rem;
+      color: #8b5cf6;
+      text-shadow: 0 0 10px #c084fc;
+      margin-bottom: 1rem;
+    }
+    p {
+      font-size: 1.2rem;
+      opacity: 0.8;
+      margin-bottom: 1.5rem;
+    }
+    .home-link {
+      display: inline-block;
+      padding: 0.8rem 1.5rem;
+      background: #8b5cf6;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.3s ease-in-out;
+    }
+    .home-link:hover {
+      background: #c084fc;
+      transform: scale(1.05);
+    }
+  </style>
   <script>
-    // JavaScript SPA Redirect for Netlify
-    (function() {
-      var path = window.location.pathname;
-      if (path.startsWith('/ai/')) {
-        window.location.replace('/ai/index.html' + window.location.search + window.location.hash);
-      } else {
-        window.location.replace('/index.html' + window.location.search + window.location.hash);
-      }
-    })();
+    // If the user is on the AI app (/ai/*), redirect to the Vue Router entry point.
+    if (window.location.pathname.startsWith('/ai/')) {
+      window.location.replace('/ai/index.html' + window.location.search + window.location.hash);
+    }
   </script>
 </head>
 <body>
-  <p>If you are not redirected, <a href="/">click here</a>.</p>
+  <h1>🚀 404: Page Lost in Space</h1>
+  <p>Sorry, traveler! This page doesn’t exist in our cosmic realm.</p>
+  <a href="/" class="home-link">🔮 Return Home</a>
 </body>
 </html>
