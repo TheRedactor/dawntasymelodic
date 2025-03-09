@@ -2,19 +2,20 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>DawntasyAI</title>
-  <script>
-    (function() {
-      const base = "/app.html";
-      const path = window.location.pathname.replace(/\/$/, '');
-      const redirectURL = window.location.origin + base + "#!" + path;
-      window.location.replace(redirectURL);
-    })();
+  <title>Dawntasy AI</title>
+  <script type="text/javascript">
+    // Single Page Application (SPA) redirect
+    var pathSegmentsToKeep = 1;  // How many segments of the URL to retain
+    var l = window.location;
+    l.replace(
+      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+      l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+      (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+      l.hash
+    );
   </script>
 </head>
 <body>
-  <h1 style="text-align: center; font-family: 'Orbitron', sans-serif; margin-top: 50px;">
-    Redirecting to DawntasyAI...
-  </h1>
 </body>
 </html>
