@@ -1,34 +1,37 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="cosmic">
   <head>
-    <!-- EXISTING EPIC META TAGS -->
+    <!-- META TAGS -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DawntasyAI - The AI That Makes You Think</title>
     <meta name="description" content="Dawntasy AI is an advanced chatbot merging fantasy, music, and cutting-edge AI technology from the Dawntasy universe." />
 
-    <!-- 🔥 OPEN GRAPH & SEO OPTIMIZATION -->
+    <!-- OPEN GRAPH & SEO OPTIMIZATION -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://dawntasy.com" />
+    <meta property="og:url" content="https://ai.dawntasy.com" />
     <meta property="og:title" content="DawntasyAI - The AI That Makes You Think" />
     <meta property="og:description" content="Experience DawntasyAI, an advanced chatbot merging fantasy lore with cutting-edge AI technology." />
-    <meta property="og:image" content="/assets/images/og-image.jpg" />
+    <meta property="og:image" content="/images/og-image.jpg" />
 
-    <!-- 🆕 PERFORMANCE & PWA ENHANCEMENTS -->
+    <!-- PERFORMANCE & PWA ENHANCEMENTS -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0f172a">
 
-    <!-- 🔥 ADVANCED PRELOAD OPTIMIZATIONS -->
-    <link rel="preload" href="/assets/fonts/Orbitron.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="modulepreload" href="/assets/main.js"> <!-- ✅ FIXED -->
-
-    <!-- 🆕 ADDITIONAL PERFORMANCE META -->
+    <!-- PERFORMANCE META -->
     <meta http-equiv="x-dns-prefetch-control" content="on">
     <meta name="format-detection" content="telephone=no">
 
-    <!-- EXISTING STYLES + EPIC ADDITIONS -->
+    <!-- FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- ICONS -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+
     <style>
-      /* 🆕 DARK MODE & THEME SUPPORT */
+      /* DARK MODE & THEME SUPPORT */
       @media (prefers-color-scheme: dark) {
         :root {
           --cosmic-dark: #0a0e17;
@@ -36,12 +39,12 @@
         }
       }
 
-      /* 🆕 ACCESSIBILITY ENHANCEMENTS */
+      /* ACCESSIBILITY ENHANCEMENTS */
       @media (prefers-reduced-motion: reduce) {
         .cosmic-orbit, 
         .cosmic-spinner, 
         .cosmic-core {
-          animation: none;
+          animation: none !important;
         }
       }
       
@@ -68,11 +71,26 @@
         align-items: center;
         z-index: 9999;
         background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #4c1d95 100%);
+        transition: opacity 0.5s ease-out;
+      }
+
+      .loading-text {
+        font-family: 'Orbitron', sans-serif;
+        margin-top: 120px;
+        color: #a78bfa;
+        letter-spacing: 1px;
+        opacity: 0.8;
       }
 
       .cosmic-orbit {
         position: absolute;
         border-radius: 50%;
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+      }
+
+      .orbit-1 {
+        width: 200px;
+        height: 200px;
         border: 2px solid rgba(167, 139, 250, 0.5);
         animation: pulse 4s infinite alternate ease-in-out;
       }
@@ -81,8 +99,6 @@
         position: absolute;
         width: 80px;
         height: 80px;
-        top: 60px;
-        left: 60px;
         border-radius: 50%;
         border: 4px solid rgba(139, 92, 246, 0.2);
         border-top-color: #8b5cf6;
@@ -93,12 +109,22 @@
         position: absolute;
         width: 40px;
         height: 40px;
-        top: 80px;
-        left: 80px;
         border-radius: 50%;
         background: #8b5cf6;
         box-shadow: 0 0 20px #a78bfa;
         animation: glow 2s infinite alternate;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
       }
 
       @keyframes spin {
@@ -126,64 +152,13 @@
       <div class="cosmic-orbit orbit-1"></div>
       <div class="cosmic-spinner"></div>
       <div class="cosmic-core"></div>
-      <p class="loading-text">Loading DawntasyAI...</p>
+      <p class="loading-text">Initializing DawntasyAI...</p>
     </div>
 
-    <!-- 🌟 STARFIELD ANIMATION -->
-    <canvas id="star-field"></canvas>
+    <!-- APP MOUNT POINT -->
+    <div id="app"></div>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const canvas = document.getElementById('star-field');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        const MAX_STARS = Math.min(
-          Math.floor(window.innerWidth * window.innerHeight / 500), 
-          5000 // Cap total stars
-        );
-
-        function generateStars() {
-          const stars = [];
-          for (let i = 0; i < MAX_STARS; i++) {
-            stars.push({
-              x: Math.random() * canvas.width,
-              y: Math.random() * canvas.height,
-              radius: Math.random() * 1.5,
-              speed: Math.random() * 0.05,
-              opacity: Math.random()
-            });
-          }
-          return stars;
-        }
-
-        const stars = generateStars();
-
-        function animate() {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-          stars.forEach(star => {
-            ctx.beginPath();
-            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-            ctx.fill();
-            star.y += star.speed;
-            if (star.y > canvas.height) {
-              star.y = 0;
-              star.x = Math.random() * canvas.width;
-            }
-          });
-          requestAnimationFrame(animate);
-        }
-        animate();
-      });
-    </script>
-
-    <!-- MAIN SCRIPT -->
-    <script type="module" src="./assets/main.js" crossorigin="anonymous"
-      integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC">
-    </script>
-    <link rel="manifest" href="./manifest.json">
-      
+    <!-- MAIN SCRIPT - FIXED PATH -->
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>
