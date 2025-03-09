@@ -1,19 +1,25 @@
-# ✅ Netlify Build Configuration
 [build]
   command = "npm run build"
-  publish = "dist-ai" # Make sure this matches your vite.config.js outDir!
+  publish = "dist-ai"  # ✅ Matches vite.config.js output
 
 [build.environment]
   NODE_VERSION = "18"
   VITE_APP_VERSION = "1.0.0"
   VITE_DEPLOYMENT_ENV = "production"
 
-# ✅ Redirect AI routes correctly
 [[redirects]]
   from = "/ai/*"
-  to = "/ai/index.html"
+  to = "/index.html"
   status = 200
   force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Permissions-Policy = "geolocation=(), camera=(), microphone=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.openai.com https://*.firebaseio.com https://*.googleapis.com;"
+
 
 # ✅ Security Headers
 [[headers]]
