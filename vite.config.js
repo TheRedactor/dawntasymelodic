@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
 export default defineConfig({
-  base: '/ai/', // This tells Vite that your app is served from /ai/
+  base: '/ai/', // Ensures asset URLs are prefixed with /ai/
   plugins: [
     vue(),
     VitePWA({
@@ -33,19 +33,19 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(__dirname, './src')
     }
   },
   server: {
     port: 5173
   },
   build: {
-    outDir: 'dist-ai',
+    outDir: 'ai', // <-- Changed from "dist-ai" to "ai"
     emptyOutDir: true,
     chunkSizeWarningLimit: 1600,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'index.html')
+        main: path.resolve(__dirname, 'src/index.html') // Make sure this points to your AI entry point
       },
       output: {
         entryFileNames: 'assets/main.js'

@@ -79,3 +79,5 @@ $RECYCLE.BIN/
 tmp/
 temp/
 ".env" 
+/dist-ai/
+/dist-book/
