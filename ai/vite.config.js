@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
 export default defineConfig({
-  base: '', // 🔥 Set to empty so paths resolve correctly
+  base: '/ai/', // Ensures correct asset paths
   plugins: [
     vue(),
     VitePWA({
@@ -17,40 +17,31 @@ export default defineConfig({
         theme_color: '#0f172a',
         background_color: '#0f172a',
         icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-        ],
-      },
-    }),
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' }
+        ]
+      }
+    })
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+      '@': path.resolve(__dirname, 'ai/src') // 🔥 Ensure correct alias for AI project
+    }
   },
   server: {
-    port: 5173,
+    port: 5173
   },
   build: {
-    outDir: 'dist-ai', // 🔥 Ensures output goes to the right folder
+    outDir: 'ai/dist-ai',  // 🔥 Ensures build files go inside dist-ai
     emptyOutDir: true,
     chunkSizeWarningLimit: 1600,
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'index.html'), // 🔥 Fixed path
-      },
+      input: path.resolve(__dirname, 'ai/index.html'), // 🔥 Correct entry point
       output: {
-        entryFileNames: 'assets/main.js',
-      },
-      // external: ['/ai/assets/main.js'], //Consider if this line is needed, and if the path is correct.
-    },
-  },
+        entryFileNames: 'assets/[name].js', // 🔥 Ensures main.js goes inside assets/
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
+      }
+    }
+  }
 });
