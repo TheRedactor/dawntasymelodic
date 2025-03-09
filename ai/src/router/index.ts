@@ -189,10 +189,10 @@ router.beforeEach(async (
   try {
     // Get current user
     const user = await getCurrentUser();
-    const requiresAuth = to.matched.some(record => (record.meta as EnhancedRouteMetadata).requiresAuth);
+    const requiresAuth = to.matched.some(record => (record.meta as unknown as EnhancedRouteMetadata).requiresAuth);
     
     // Set document title
-    const pageTitle = (to.meta as EnhancedRouteMetadata).title || 'DawntasyAI';
+    const pageTitle = ((to.meta as unknown) as EnhancedRouteMetadata).title || 'DawntasyAI';
     document.title = pageTitle;
 
     // Auth check

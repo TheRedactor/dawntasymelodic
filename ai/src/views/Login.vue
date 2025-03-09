@@ -1,3 +1,4 @@
+<style>
 .auth-card {
   @apply bg-void-800 rounded-xl p-8 w-full max-w-md relative overflow-hidden;
   border: 1px solid theme('colors.void.700');
