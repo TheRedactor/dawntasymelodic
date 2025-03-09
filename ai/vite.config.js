@@ -1,41 +1,15 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
-import { VitePWA } from 'vite-plugin-pwa';
-import viteCompression from 'vite-plugin-compression';
+// Remove the PWA plugin that's causing issues
+// import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  base: '/ai/', // Ensures correct asset paths for subdomain
+  base: '/ai/', // Ensures correct asset paths for subfolder
   plugins: [
     vue(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'robots.txt', 'images/*.svg'],
-      manifest: {
-        name: 'DawntasyAI',
-        short_name: 'DawntasyAI',
-        description: 'Your cosmic AI companion from the Dawntasy universe',
-        theme_color: '#8b5cf6',
-        background_color: '#0f172a',
-        display: 'standalone',
-        icons: [
-          {
-            src: '/ai/pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: '/ai/pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      }
-    }),
-    viteCompression({
-      algorithm: 'gzip',
-      ext: '.gz',
-    })
+    // Remove the PWA plugin for now
+    // VitePWA({...})
   ],
   resolve: {
     alias: {
@@ -69,7 +43,7 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
+        drop_console: false, // Keep console for debugging
         drop_debugger: true
       }
     }

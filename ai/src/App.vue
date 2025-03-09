@@ -4,38 +4,37 @@
     class="dawntasy-app-container"
     @mousemove="handleMouseMove"
   >
-    <!-- 🌌 COSMIC BACKGROUND LAYERS -->
+    <!-- Cosmic Background -->
     <CosmicBackground 
       :intensity="backgroundIntensity" 
       :mouse-position="mousePosition"
     />
 
-    <!-- 🚀 QUANTUM NAVIGATION WARP -->
+    <!-- Page Transition Portal -->
     <NavigationPortal 
       :is-active="isNavigating" 
       :transition-color="portalColor"
     />
 
-    <!-- 🔮 INTELLIGENT APP LAYOUT -->
+    <!-- App Layout -->
     <div class="quantum-layout">
-      <!-- 🛡️ Contextual Header -->
+      <!-- App Header -->
       <AppHeader 
         v-if="authStore.isAuthenticated" 
         :user-profile="authStore.userProfile"
-        @toggle-command-palette="toggleCommandPalette"
       />
 
-      <!-- 🌠 Adaptive Sidebar -->
+      <!-- Sidebar -->
       <AppSidebar 
-        v-if="authStore.isAuthenticated" 
+        v-if="authStore.isAuthenticated && showSidebar" 
         :active-route="currentRoute"
       />
 
-      <!-- 💫 MYTHIC CONTENT TRANSITION -->
-      <main class="quantum-content">
-        <router-view v-slot="{ Component }">
+      <!-- Main Content Transition -->
+      <main class="quantum-content" :class="{ 'with-sidebar': authStore.isAuthenticated && showSidebar }">
+        <router-view v-slot="{ Component, route }">
           <transition 
-            name="quantum-portal" 
+            :name="getTransitionName(route)" 
             mode="out-in"
             @before-enter="beforeEnter"
             @after-enter="afterEnter"
@@ -48,205 +47,341 @@
           </transition>
         </router-view>
       </main>
-
-      <!-- 🧠 UNIVERSAL COMMAND PALETTE -->
-      <CommandPalette 
-        v-if="isCommandPaletteOpen" 
-        @close="closeCommandPalette"
-      />
-
-      <!-- 🌈 PERFORMANCE & TELEMETRY OVERLAY -->
-      <PerformanceMonitor 
-        v-if="isDeveloperMode"
-        :metrics="performanceMetrics"
-      />
     </div>
 
-    <!-- 🔥 SYSTEM NOTIFICATIONS -->
+    <!-- System Notifications -->
     <NotificationCenter 
       :notifications="activeNotifications"
+      @close="removeNotification"
     />
+    
+    <!-- Loading Overlay -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="loader">
+        <div class="loader-ring"></div>
+        <div class="loader-core"></div>
+      </div>
+      <p class="loading-text">{{ loadingText }}</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, provide } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, provide, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
-import { usePerformanceStore } from '@/store/performance';
 import gsap from 'gsap';
 
-// 🚀 COSMIC COMPONENT IMPORTS
+// Component imports
 import CosmicBackground from '@/components/CosmicBackground.vue';
 import NavigationPortal from '@/components/NavigationPortal.vue';
-import AppHeader from '@/components/AppHeader.vue';
-import AppSidebar from '@/components/AppSidebar.vue';
-import CommandPalette from '@/components/CommandPalette.vue';
-import PerformanceMonitor from '@/components/PerformanceMonitor.vue';
+import AppHeader from '@/components/Header.vue'; // Using enhanced header
+import AppSidebar from '@/components/Sidebar.vue';
 import NotificationCenter from '@/components/NotificationCenter.vue';
 
-// 🌌 QUANTUM STATE MANAGEMENT
+// Store initialization
 const authStore = useAuthStore();
-const performanceStore = usePerformanceStore();
 const router = useRouter();
+const route = useRoute();
 
-// 🔮 REACTIVE STATE VARIABLES
+// State
 const isDarkMode = ref(true);
 const isNavigating = ref(false);
-const isCommandPaletteOpen = ref(false);
-const isDeveloperMode = ref(false);
+const isLoading = ref(false);
+const loadingText = ref('Connecting to The Rift...');
 const mousePosition = ref({ x: 0, y: 0 });
 const componentKey = ref(0);
 const backgroundIntensity = ref(0.7);
 const portalColor = ref('#8B5CF6');
-
-// 🌠 COMPUTED PROPERTIES
-const currentRoute = computed(() => router.currentRoute.value.name);
-const performanceMetrics = computed(() => performanceStore.getMetrics());
-const activeNotifications = computed(() => authStore.getNotifications());
-
-// 💫 MOUSE MOVEMENT HANDLER
-const handleMouseMove = (event: MouseEvent) => {
-  mousePosition.value = { 
-    x: event.clientX, 
-    y: event.clientY 
-  };
-};
-
-// 🚀 LIFECYCLE & INITIALIZATION
-onMounted(async () => {
-  await authStore.initAuth();
-  setupKeyboardShortcuts();
-  initPerformanceTracking();
+const activeNotifications = ref<Array<{id: number; message: string; type: string}>>([]);
+const showSidebar = computed(() => {
+  const publicRoutes = ['Landing', 'Login', 'Register', 'NotFound'];
+  return !publicRoutes.includes(route.name as string);
 });
 
-// 🔧 ADVANCED INITIALIZATION METHODS
-const setupKeyboardShortcuts = () => {
-  window.addEventListener('keydown', (e) => {
-    // Ctrl + / : Toggle Dark Mode
-    if (e.ctrlKey && e.key === '/') {
-      isDarkMode.value = !isDarkMode.value;
-    }
-    
-    // Ctrl + K : Toggle Command Palette
-    if (e.ctrlKey && e.key === 'k') {
-      toggleCommandPalette();
-    }
-    
-    // Ctrl + Shift + D : Toggle Developer Mode
-    if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-      isDeveloperMode.value = !isDeveloperMode.value;
-    }
-  });
+// Computed
+const currentRoute = computed(() => route.name);
+
+// Mouse movement handler with throttling
+let mouseMoveTimeout: number;
+const handleMouseMove = (event: MouseEvent) => {
+  if (mouseMoveTimeout) return;
+  
+  mouseMoveTimeout = window.setTimeout(() => {
+    mousePosition.value = { 
+      x: event.clientX / window.innerWidth, 
+      y: event.clientY / window.innerHeight 
+    };
+    mouseMoveTimeout = 0;
+  }, 16); // ~60fps
 };
 
-const initPerformanceTracking = () => {
-  performanceStore.startTracking();
+// Custom transition based on route
+const getTransitionName = (route: any) => {
+  return route.meta.transition || 'fade';
 };
 
-// 🌈 TRANSITION LIFECYCLE HOOKS
+// Transition lifecycle hooks with GSAP
 const beforeEnter = (el: HTMLElement) => {
-  gsap.set(el, { opacity: 0, y: 30 });
+  gsap.set(el, { 
+    opacity: 0,
+    y: route.meta.transition === 'slide-up' ? 30 : 0,
+    x: route.meta.transition === 'slide-left' ? 30 : 0
+  });
 };
 
 const afterEnter = (el: HTMLElement) => {
   gsap.to(el, { 
     opacity: 1, 
-    y: 0, 
+    y: 0,
+    x: 0,
     duration: 0.6, 
-    ease: 'power3.out' 
+    ease: 'power3.out',
+    clearProps: 'all'
   });
 };
 
 const beforeLeave = (el: HTMLElement) => {
   gsap.to(el, { 
-    opacity: 0, 
-    y: 30, 
-    duration: 0.4 
+    opacity: 0,
+    y: route.meta.transition === 'slide-up' ? -30 : 0,
+    x: route.meta.transition === 'slide-left' ? -30 : 0,
+    duration: 0.4,
+    ease: 'power2.in'
   });
 };
 
-// 🔮 COMMAND PALETTE METHODS
-const toggleCommandPalette = () => {
-  isCommandPaletteOpen.value = !isCommandPaletteOpen.value;
+// Route change handler
+watch(() => router.currentRoute.value.fullPath, (newPath, oldPath) => {
+  // Don't animate on initial load
+  if (!oldPath) return;
+  
+  isNavigating.value = true;
+  
+  // Change portal color based on destination
+  if (router.currentRoute.value.name === 'Chat') {
+    portalColor.value = '#06a6ee'; // Rift color
+  } else if (router.currentRoute.value.path.includes('/settings')) {
+    portalColor.value = '#ff3a70'; // Time color
+  } else {
+    portalColor.value = '#8B5CF6'; // Default cosmic color
+  }
+  
+  // Reset navigation state after transition
+  setTimeout(() => {
+    isNavigating.value = false;
+    componentKey.value++; // Force component refresh
+  }, 800);
+}, { immediate: false });
+
+// Auth state watcher for special animations
+watch(() => authStore.isAuthenticated, (isAuthenticated) => {
+  if (isAuthenticated) {
+    // Show welcome back notification on login
+    addNotification({
+      message: `Welcome back, ${authStore.displayName || 'Explorer'}!`,
+      type: 'success'
+    });
+    
+    // Increase background intensity briefly
+    gsap.to(backgroundIntensity, {
+      value: 1,
+      duration: 2,
+      ease: 'power2.out',
+      onComplete: () => {
+        gsap.to(backgroundIntensity, {
+          value: 0.7,
+          duration: 3,
+          ease: 'power2.in'
+        });
+      }
+    });
+  }
+});
+
+// Notification methods
+let notificationId = 0;
+const addNotification = ({ message, type = 'info' }: { message: string, type?: string }) => {
+  const id = notificationId++;
+  activeNotifications.value.push({ id, message, type });
+  
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    removeNotification(id);
+  }, 5000);
 };
 
-const closeCommandPalette = () => {
-  isCommandPaletteOpen.value = false;
+const removeNotification = (id: number) => {
+  activeNotifications.value = activeNotifications.value.filter(
+    notification => notification.id !== id
+  );
 };
 
-// 🌠 PROVIDE GLOBAL CONTEXT
+// Lifecycle hooks
+onMounted(async () => {
+  // Show initial loading
+  isLoading.value = true;
+  
+  try {
+    // Initialize auth
+    await authStore.initAuth();
+    
+    // Animate loading completion
+    gsap.to('.loader-core', {
+      scale: 1.5,
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power2.in'
+    });
+    
+    gsap.to('.loader-ring', {
+      scale: 2,
+      opacity: 0,
+      duration: 1,
+      ease: 'power3.in',
+      onComplete: () => {
+        isLoading.value = false;
+      }
+    });
+  } catch (error) {
+    console.error('Initialization error:', error);
+    loadingText.value = 'Connection failed. Please refresh.';
+    
+    // Still hide after delay even on error
+    setTimeout(() => {
+      isLoading.value = false;
+    }, 3000);
+  }
+});
+
+// Provide global context
 provide('darkMode', isDarkMode);
-provide('developerMode', isDeveloperMode);
+provide('addNotification', addNotification);
 </script>
 
 <style lang="scss">
-/* 🌌 LEGENDARY QUANTUM STYLES */
+/* Global styles */
+@import '@/assets/css/main.css';
+
+/* Base app container */
 .dawntasy-app-container {
-  width: 100%;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a, #1e1b4b);
+  @apply w-full min-h-screen overflow-hidden;
+  background: linear-gradient(145deg, #0f172a, #1e1b4b, #0f172a);
   color: white;
-  transition: all 0.5s ease-in-out;
-  position: relative;
-  overflow: hidden;
 }
 
-/* 🚀 Dynamic Header */
+/* Layout structure */
 .quantum-layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  @apply flex flex-col min-h-screen relative;
 }
 
-/* ✨ Main Content */
+/* Main content area */
 .quantum-content {
-  flex: 1;
-  width: 100%;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
+  @apply flex-1 w-full p-4 md:p-6 overflow-x-hidden;
+  
+  &.with-sidebar {
+    @apply ml-16;
+  }
 }
 
-/* 🔥 Transition Animations */
-.quantum-portal-enter-active,
-.quantum-portal-leave-active {
-  transition: opacity 0.6s ease, transform 0.5s ease;
+/* Page transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
-.quantum-portal-enter-from,
-.quantum-portal-leave-to {
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: opacity 0.3s ease, transform 0.4s ease;
+}
+.slide-up-enter-from {
   opacity: 0;
   transform: translateY(30px);
 }
-
-/* ⚡ Hover Effects */
-button, a {
-  transition: all 0.3s ease-in-out;
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
 }
 
-button:hover, a:hover {
-  transform: scale(1.05);
-  filter: brightness(1.2);
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: opacity 0.3s ease, transform 0.4s ease;
+}
+.slide-left-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+.slide-left-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
 }
 
-/* 🌟 NAVIGATION PORTAL EFFECT */
-.quantum-portal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0);
+.cosmic-fade-enter-active,
+.cosmic-fade-leave-active {
+  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cosmic-fade-enter-from,
+.cosmic-fade-leave-to {
+  opacity: 0;
+}
+
+/* Portal animation */
+.navigation-portal {
+  @apply fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none;
   width: 100px;
   height: 100px;
-  background: radial-gradient(circle, rgba(97, 61, 244, 0.9) 0%, rgba(97, 61, 244, 0.2) 50%, transparent 70%);
   border-radius: 50%;
-  z-index: 100;
+  background: radial-gradient(circle, var(--portal-color, #8B5CF6) 0%, transparent 70%);
   opacity: 0;
-  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+  scale: 0;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  &.active {
+    opacity: 1;
+    scale: 20;
+  }
 }
 
-.quantum-portal.active {
-  transform: translate(-50%, -50%) scale(15);
-  opacity: 1;
+/* Loading overlay */
+.loading-overlay {
+  @apply fixed inset-0 flex flex-col items-center justify-center z-50 bg-void-950;
+  
+  .loader {
+    @apply relative w-20 h-20;
+    
+    .loader-ring {
+      @apply absolute w-full h-full rounded-full border-4 border-rift-500 opacity-70;
+      animation: spin 2s linear infinite;
+    }
+    
+    .loader-core {
+      @apply absolute top-1/2 left-1/2 w-10 h-10 -ml-5 -mt-5 rounded-full bg-rift-600;
+      box-shadow: 0 0 20px theme('colors.rift.500');
+      animation: pulse 1.5s ease-in-out infinite alternate;
+    }
+  }
+  
+  .loading-text {
+    @apply mt-6 text-lg font-display text-starlight-300;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  from { transform: scale(0.8); opacity: 0.7; }
+  to { transform: scale(1.1); opacity: 1; }
+}
+
+/* Global utility classes for transitions */
+.page-transitioning {
+  /* Prevents scrolling during transition */
+  overflow: hidden;
 }
 </style>
