@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import path from 'path';
 
 export default defineConfig({
-  base: '/ai/', // Ensures correct asset paths
+  base: '/', // Ensures correct asset paths
   plugins: [
     vue()
   ],
