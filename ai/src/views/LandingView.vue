@@ -151,7 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue/dist/vue.esm-bundler';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Typed from 'typed.js';
@@ -856,6 +856,7 @@ onUnmounted(() => {
     renderer.dispose();
   }
   
-  // Remove resize handler
+// Remove resize handler
   window.removeEventListener('resize', handleResize);
 });
+</script>
