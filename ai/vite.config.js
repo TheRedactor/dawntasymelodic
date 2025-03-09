@@ -20,7 +20,7 @@ export default defineConfig({
     emptyOutDir: true,
     chunkSizeWarningLimit: 1600,
     rollupOptions: {
-      input: path.resolve(__dirname, 'ai/index.html'), // 🔥 Correct entry point
+      input: path.resolve(__dirname, 'index.html'), // 🔥 Correct entry point
       output: {
         entryFileNames: 'assets/[name].js', // 🔥 Ensures main.js goes inside assets/
         chunkFileNames: 'assets/[name]-[hash].js',
