@@ -37,7 +37,7 @@
         >
           <div class="w-8 h-8 rounded-full bg-gradient-to-br from-rift-500 to-time-500 flex items-center justify-center text-white">
             {{ userInitials }}
-          </div>
+            </div>
         </button>
       </div>
       
