@@ -37,7 +37,9 @@
         >
           <div class="w-8 h-8 rounded-full bg-gradient-to-br from-rift-500 to-time-500 flex items-center justify-center text-white">
             {{ userInitials }}
-            </div>
+          </div>
+          <span class="hidden md:block ml-2">{{ authStore.displayName || 'User' }}</span>
+          <i class="ri-arrow-down-s-line ml-1 transition-transform" :class="{ 'rotate-180': showProfileMenu }"></i>
         </button>
       </div>
       
