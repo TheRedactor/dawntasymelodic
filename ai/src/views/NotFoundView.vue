@@ -114,7 +114,6 @@
     &::before {
       content: '';
       @apply absolute inset-0 z-0;
-      background-image: url('@/assets/images/stars-bg.svg');
       background-size: cover;
       opacity: 0.3;
     }
