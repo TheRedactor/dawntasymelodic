@@ -109,16 +109,6 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
-    path: '/about',
-    name: 'About',
-    component: () => import('@/views/AboutView.vue'),
-    meta: { 
-      requiresAuth: false, 
-      transition: 'fade',
-      title: 'About - DawntasyAI'
-    }
-  },
-  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFoundView.vue'),

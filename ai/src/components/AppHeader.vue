@@ -38,7 +38,7 @@
           <div class="w-8 h-8 rounded-full bg-gradient-to-br from-rift-500 to-time-500 flex items-center justify-center text-white">
             {{ userInitials }}
           </div>
-        </transition>
+        </button>
       </div>
       
       <!-- Mobile Navigation Toggle -->
@@ -72,6 +72,41 @@
             {{ link.label }}
           </router-link>
         </div>
+      </div>
+    </transition>
+
+    <!-- Profile Menu Transition -->
+    <transition
+      name="menu-transition"
+      @enter="onMenuEnter"
+      @leave="onMenuLeave"
+    >
+      <div 
+        v-if="showProfileMenu" 
+        class="profile-dropdown"
+        ref="dropdown"
+      >
+        <router-link 
+          to="/profile" 
+          class="dropdown-item"
+          @click="closeMenu"
+        >
+          <i class="ri-user-line mr-2"></i> Profile
+        </router-link>
+        <router-link 
+          to="/settings" 
+          class="dropdown-item"
+          @click="closeMenu"
+        >
+          <i class="ri-settings-3-line mr-2"></i> Settings
+        </router-link>
+        <div class="border-t border-void-700 my-1"></div>
+        <button 
+          @click="logout" 
+          class="dropdown-item text-left w-full"
+        >
+          <i class="ri-logout-box-line mr-2"></i> Logout
+        </button>
       </div>
     </transition>
   </header>
