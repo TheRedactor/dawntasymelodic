@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useAuthStore } from './auth';
-import { firestore } from '../firebase/init';
+import { db } from '../firebase/init';  // FIXED: Using proper Firebase import
 import { 
   collection, 
   addDoc, 
@@ -19,7 +19,7 @@ import {
 } from 'firebase/firestore';
 import { useOpenAI } from '../../server/api/openai';
 
-const { sendChatMessage } = useOpenAI();
+const openaiService = useOpenAI();
 
 export interface Message {
   id?: string;
@@ -63,7 +63,7 @@ export const useChatStore = defineStore('chat', () => {
     
     try {
       const q = query(
-        collection(firestore, 'chats'),
+        collection(db(), 'chats'),  // FIXED: Using db() function
         where('userId', '==', authStore.user.uid),
         orderBy('updatedAt', 'desc')
       );
@@ -90,7 +90,7 @@ export const useChatStore = defineStore('chat', () => {
     error.value = null;
     
     try {
-      const docRef = doc(firestore, 'chats', chatId);
+      const docRef = doc(db(), 'chats', chatId);  // FIXED: Using db() function
       const docSnap = await getDoc(docRef);
       
       if (docSnap.exists() && docSnap.data().userId === authStore.user.uid) {
@@ -121,7 +121,7 @@ export const useChatStore = defineStore('chat', () => {
       unsubscribe(); // Clean up previous listener
     }
     
-    const docRef = doc(firestore, 'chats', chatId);
+    const docRef = doc(db(), 'chats', chatId);  // FIXED: Using db() function
     unsubscribe = onSnapshot(docRef, (doc) => {
       if (doc.exists()) {
         currentChat.value = {
@@ -133,7 +133,7 @@ export const useChatStore = defineStore('chat', () => {
   }
   
   // 🆕 **Create a New Chat**
-  async function createChat() {
+  async function createChat(options?: { initialPrompt?: string }) {
     if (!authStore.user?.uid) return null;
     
     isLoading.value = true;
@@ -141,17 +141,24 @@ export const useChatStore = defineStore('chat', () => {
     
     try {
       const newChat = {
-        title: 'New Conversation',
+        title: options?.initialPrompt?.slice(0, 30) + '...' || 'New Conversation',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         userId: authStore.user.uid,
         messages: []
       };
       
-      const docRef = await addDoc(collection(firestore, 'chats'), newChat);
+      const docRef = await addDoc(collection(db(), 'chats'), newChat);  // FIXED: Using db() function
       
       // ✅ Add new chat to local state
-      chats.value.unshift({ id: docRef.id, ...newChat, messages: [] } as Chat);
+      const chatWithId = { id: docRef.id, ...newChat, messages: [] } as Chat;
+      chats.value.unshift(chatWithId);
+      
+      // If there's an initial prompt, send it right away
+      if (options?.initialPrompt) {
+        currentChat.value = chatWithId;
+        await sendMessage(options.initialPrompt);
+      }
       
       return docRef.id;
     } catch (err: any) {
@@ -171,7 +178,7 @@ export const useChatStore = defineStore('chat', () => {
     error.value = null;
 
     try {
-      const chatRef = doc(firestore, 'chats', currentChat.value.id);
+      const chatRef = doc(db(), 'chats', currentChat.value.id);  // FIXED: Using db() function
 
       // ✅ Add user message instantly to Firestore
       const userMessage: Message = {
@@ -184,26 +191,79 @@ export const useChatStore = defineStore('chat', () => {
         updatedAt: serverTimestamp()
       });
 
-      // ✅ Stream AI Response (No Wait Time!)
-      const aiMessage = await sendChatMessage(currentChat.value.id, [
-        ...currentChat.value.messages,
-        userMessage
-      ]);
+      // Add message to local state for immediate display
+      if (!currentChat.value.messages) {
+        currentChat.value.messages = [];
+      }
+      currentChat.value.messages.push(userMessage);
 
+      // ✅ Get AI Response
+      const messages = currentChat.value.messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+      // Use streaming for better UX
+      let aiResponse = '';
+      await openaiService.streamCompletion(
+        content,
+        messages.slice(0, -1),
+        {
+          mode: 'default',
+          temperature: 0.7,
+          maxTokens: 1000,
+          onChunk: (chunk) => {
+            aiResponse += chunk;
+            
+            // If we're already displaying a partial response, update it
+            const lastMessage = currentChat.value?.messages[currentChat.value.messages.length - 1];
+            if (lastMessage && lastMessage.role === 'assistant') {
+              lastMessage.content = aiResponse;
+            } else if (currentChat.value) {
+              // Add a new message for the assistant's response
+              currentChat.value.messages.push({
+                content: aiResponse,
+                role: 'assistant',
+                timestamp: new Date()
+              });
+            }
+          }
+        }
+      );
+
+      // Once complete, save the final AI response to Firestore
+      const aiMessage: Message = {
+        content: aiResponse,
+        role: 'assistant',
+        timestamp: new Date()
+      };
+      
       await updateDoc(chatRef, {
         messages: arrayUnion(aiMessage),
         updatedAt: serverTimestamp()
       });
 
-      // ✅ Auto-update chat title
-      if (currentChat.value.messages.length === 0) {
+      // ✅ Auto-update chat title on first message
+      if (currentChat.value.messages.length <= 2) {
         const title = content.length > 30 ? content.substring(0, 30) + '...' : content;
         await updateDoc(chatRef, { title });
+        if (currentChat.value) {
+          currentChat.value.title = title;
+        }
       }
 
     } catch (err: any) {
       console.error('🔥 Error sending message:', err);
       error.value = 'Failed to send the message. Please try again later.';
+      
+      // Add error message to chat for better UX
+      if (currentChat.value && currentChat.value.messages) {
+        currentChat.value.messages.push({
+          content: "Sorry, I'm having trouble connecting. Please try again.",
+          role: 'assistant',
+          timestamp: new Date()
+        });
+      }
     } finally {
       isLoading.value = false;
     }

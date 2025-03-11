@@ -1,49 +1,45 @@
-import { callOpenAI } from '../../server/api/openai';
-import { Message } from '../types/';
-import { serverTimestamp, collection, addDoc, updateDoc, doc } from 'firebase/firestore';
-import { db } from '../firebase/init';
+import OpenAI from 'openai';
 
-// Inside your useChats function, in the addMessage function:
-const addMessage = async (chatId: string, message: Message) => {
+// Initialize OpenAI with the API key stored as a GitHub secret.
+// Ensure that 'GITHUB_OPENAI_API_KEY' is defined in your GitHub repository's secrets.
+const openai = new OpenAI({
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY
+});
+
+// Use OpenAI's ChatCompletionMessageParam type
+export async function sendChatMessage(messages) {
   try {
-    // Add timestamp to message
-    const messageWithTimestamp = {
-      ...message,
-      timestamp: serverTimestamp()
-    };
-
-    // Add message to messages subcollection
-    const messagesRef = collection(db, 'chats', chatId, 'messages');
-    await addDoc(messagesRef, messageWithTimestamp);
-
-    // Update chat's updatedAt timestamp
-    await updateDoc(doc(db, 'chats', chatId), {
-      updatedAt: serverTimestamp()
-    });
-
-    // If the message is from the user, get an AI response and add it
-    if (message.role === 'user') {
-      // Get AI response
-      const aiResponse = await callOpenAI(message.content, messageWithTimestamp);
-
-      // Add AI message
-      const aiMessage: Message = {
-        content: aiResponse,
-        role: 'assistant',
-        timestamp: serverTimestamp()
-      };
-
-      // Add AI response to Firestore
-      await addDoc(messagesRef, aiMessage);
-
-      // Update the chat's title based on the first message
-      const title = message.content.length > 30 ? message.content.substring(0, 30) + '...' : message.content;
-      await updateDoc(doc(db, 'chats', chatId), { title });
+    if (!messages || !Array.isArray(messages)) {
+      throw new Error('Invalid request. Messages array is required.');
     }
 
-    return messageWithTimestamp;
+    // Validate API key is present
+    if (!import.meta.env.VITE_OPENAI_API_KEY) {
+      throw new Error('OpenAI API key is missing. Please check your environment variables.');
+    }
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages,
+      temperature: 0.7,
+      max_tokens: 1000
+    });
+
+    return {
+      statusCode: 200,
+      body: {
+        message: response.choices[0].message.content,
+        usage: response.usage
+      }
+    };
   } catch (error) {
-    console.error('Error adding message:', error);
-    throw error;
+    console.error('Error calling OpenAI:', error);
+    return {
+      statusCode: 500,
+      body: {
+        error: 'Error processing your request',
+        message: error.message
+      }
+    };
   }
-};
+}
