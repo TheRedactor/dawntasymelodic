@@ -1,10 +1,12 @@
+// src/firebase/init.ts
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { 
   getAuth, 
   connectAuthEmulator, 
   Auth,
   initializeAuth,
-  browserLocalPersistence
+  browserLocalPersistence,
+  inMemoryPersistence
 } from 'firebase/auth';
 import { 
   getFirestore, 
@@ -19,17 +21,25 @@ import {
 } from 'firebase/functions';
 import { getAnalytics, Analytics } from 'firebase/analytics';
 
-// 🆕 Enhanced Environment Validation
-const validateEnvironment = (requiredVars: string[]) => {
-  const missingVars = requiredVars.filter(key => !import.meta.env[key]);
-  
+// 🔥 Enhanced Environment Validation
+const requiredFirebaseVars = [
+  "VITE_FIREBASE_API_KEY",
+  "VITE_FIREBASE_AUTH_DOMAIN",
+  "VITE_FIREBASE_PROJECT_ID",
+  "VITE_FIREBASE_STORAGE_BUCKET",
+  "VITE_FIREBASE_MESSAGING_SENDER_ID",
+  "VITE_FIREBASE_APP_ID"
+];
+
+const validateEnvironment = () => {
+  const missingVars = requiredFirebaseVars.filter(key => !import.meta.env[key]);
   if (missingVars.length > 0) {
-    throw new Error(`🚨 CRITICAL: Missing environment variables: ${missingVars.join(', ')}`);
+    throw new Error(`🚨 Missing Firebase config: ${missingVars.join(', ')}`);
   }
 };
 
-// 🆕 Centralized Firebase Configuration
-interface FirebaseConfiguration {
+// 🚀 Optimized Firebase Configuration
+interface FirebaseServices {
   app: FirebaseApp;
   auth: Auth;
   db: Firestore;
@@ -37,63 +47,57 @@ interface FirebaseConfiguration {
   analytics: Analytics | null;
 }
 
-// 🚀 ULTIMATE FIREBASE INITIALIZER
-export function initializeFirebase(): FirebaseConfiguration {
-  // Validate environment BEFORE any initialization
-  validateEnvironment([
-    "VITE_FIREBASE_API_KEY",
-    "VITE_FIREBASE_AUTH_DOMAIN",
-    // ... other required vars
-  ]);
+let firebaseServices: FirebaseServices | null = null;
 
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    // ... other config
-  };
+export function getFirebaseServices(): FirebaseServices {
+  if (!firebaseServices) {
+    validateEnvironment();
+    
+    const firebaseConfig = {
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_FIREBASE_APP_ID
+    };
 
-  // 🆕 Singleton App Initialization with Enhanced Tracking
-  const app = initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig);
+    
+    const auth = initializeAuth(app, {
+      persistence: import.meta.env.SSR ? inMemoryPersistence : browserLocalPersistence
+    });
 
-  // 🔥 Enhanced Auth Configuration
-  const auth = initializeAuth(app, {
-    persistence: browserLocalPersistence
-  });
+    const db = getFirestore(app);
+    enableIndexedDbPersistence(db).catch(error => {
+      if (error.code === 'failed-precondition') {
+        console.warn('📚 Multiple tabs open, persistence can only be enabled in one tab at a time');
+      } else if (error.code === 'unimplemented') {
+        console.warn('📚 Current browser does not support all required features');
+      }
+    });
 
-  // 🌟 Database with Offline Persistence
-  const db = getFirestore(app);
-  enableIndexedDbPersistence(db).catch((err) => {
-    console.warn('🚨 Offline persistence failed:', err);
-  });
+    const functions = getFunctions(app);
+    let analytics: Analytics | null = null;
 
-  const functions = getFunctions(app);
-
-  // Conditional Analytics
-  let analytics: Analytics | null = null;
-  if (import.meta.env.PROD) {
-    try {
+    if (!import.meta.env.SSR && import.meta.env.PROD) {
       analytics = getAnalytics(app);
-    } catch (err) {
-      console.error('🚨 Analytics Initialization Failed', err);
     }
-  }
 
-  // 🔧 Development Emulator Setup
-  if (import.meta.env.DEV) {
-    connectAuthEmulator(auth, 'http://localhost:9099');
-    connectFirestoreEmulator(db, 'localhost', 8080);
-    connectFunctionsEmulator(functions, 'localhost', 5001);
-    console.log('🔥 DEVELOPMENT MODE: Firebase Emulators Activated!');
-  }
+    if (import.meta.env.DEV) {
+      connectAuthEmulator(auth, 'http://localhost:9099');
+      connectFirestoreEmulator(db, 'localhost', 8080);
+      connectFunctionsEmulator(functions, 'localhost', 5001);
+      console.log('🔥 Firebase emulators connected');
+    }
 
-  return { app, auth, db, functions, analytics };
+    firebaseServices = { app, auth, db, functions, analytics };
+  }
+  return firebaseServices;
 }
 
-// 🚀 GLOBAL FIREBASE SERVICES
-export const { 
-  app, 
-  auth, 
-  db, 
-  functions, 
-  analytics 
-} = initializeFirebase();
+// 🛡️ Safe Service Accessors
+export const auth = () => getFirebaseServices().auth;
+export const db = () => getFirebaseServices().db;
+export const functions = () => getFirebaseServices().functions;
+export const analytics = () => getFirebaseServices().analytics;

@@ -22,96 +22,93 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from '@/firebase/init';
 
-// 🆕 ADVANCED USER ROLE ENUM
-enum UserRole {
+// 🚀 USER ROLE ENUM
+export enum UserRole {
   GUEST = 'guest',
   USER = 'user',
   PREMIUM = 'premium',
   ADMIN = 'admin'
 }
 
-// 🆕 ENHANCED USER PROFILE INTERFACE
-interface UserProfile {
+// 🛡️ USER PROFILE INTERFACE
+export interface UserProfile {
   uid: string;
   displayName: string;
-  email: string;
+  email: string | null;
   role: UserRole;
   credits: number;
-  lastLogin: Date;
+  lastLogin: Date | null;
   preferences: {
     theme: 'dark' | 'light';
     notifications: boolean;
   };
 }
 
+// 🔑 AUTH STORE
 export const useAuthStore = defineStore('auth', () => {
-  // 🔥 STATE MANAGEMENT WITH COSMIC PRECISION
   const user = ref<User | null>(null);
   const userProfile = ref<UserProfile | null>(null);
-  const authState = ref({
-    isInitialized: false,
-    isLoading: false,
-    error: null as string | null
-  });
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
-  // 🚀 COMPUTED COSMIC PROPERTIES
-  const authStatus = computed(() => ({
-    isAuthenticated: !!user.value,
-    userRole: userProfile.value?.role || UserRole.GUEST,
-    availableCredits: userProfile.value?.credits || 0
-  }));
+  // 🌟 AUTH STATUS
+  const isAuthenticated = computed(() => !!user.value);
+  const userRole = computed(() => userProfile.value?.role || UserRole.GUEST);
+  const availableCredits = computed(() => userProfile.value?.credits || 0);
 
-  // 🌈 GOOGLE AUTH PROVIDER
+  // 🔑 GOOGLE AUTH PROVIDER
   const googleProvider = new GoogleAuthProvider();
 
-  // 🔮 MULTI-STRATEGY AUTHENTICATION
-  const loginStrategies = {
-    async email(email: string, password: string) {
-      return signInWithEmailAndPassword(auth, email, password);
-    },
-    async google() {
-      return signInWithPopup(auth, googleProvider);
-    }
-  };
-
-  // 💫 INIT AUTH WITH COSMIC INTELLIGENCE
-  const initAuth = async () => {
-    return new Promise<void>((resolve) => {
-      const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+  // 🌟 INIT AUTH
+  const initAuth = () => {
+    onAuthStateChanged(auth(), async (currentUser) => {
+      loading.value = true;
+      try {
         if (currentUser) {
           user.value = currentUser;
-          await fetchOrCreateUserProfile(currentUser);
+          await fetchUserProfile(currentUser.uid);
+        } else {
+          user.value = null;
+          userProfile.value = null;
         }
-        
-        authState.value.isInitialized = true;
-        unsubscribe();
-        resolve();
-      });
+      } catch (e: any) {
+        error.value = e.message;
+      } finally {
+        loading.value = false;
+      }
     });
   };
 
-  // 🛡️ INTELLIGENT PROFILE MANAGEMENT
-  const fetchOrCreateUserProfile = async (firebaseUser: User) => {
+  // 🌟 FETCH USER PROFILE
+  const fetchUserProfile = async (uid: string) => {
     try {
-      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-      
-      if (!userDoc.exists()) {
-        await createUserProfile(firebaseUser);
+      const docRef = doc(db(), "users", uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        userProfile.value = {
+          uid: uid,
+          displayName: docSnap.data().displayName || 'Dawntasy User',
+          email: docSnap.data().email || null,
+          role: docSnap.data().role || UserRole.USER,
+          credits: docSnap.data().credits || 0,
+          lastLogin: docSnap.data().lastLogin?.toDate() || null,
+          preferences: docSnap.data().preferences || { theme: 'dark', notifications: true }
+        };
       } else {
-        userProfile.value = userDoc.data() as UserProfile;
+        console.log("No such document!");
       }
-    } catch (error) {
-      console.error('🚨 Profile Sync Failed', error);
+    } catch (e: any) {
+      error.value = e.message;
     }
   };
 
-  // 🌟 CREATE NEW USER PROFILE
-  const createUserProfile = async (firebaseUser: User) => {
+  // 🌟 CREATE USER PROFILE
+  const createUserProfile = async (user: User, displayName: string) => {
     try {
-      const userData: UserProfile = {
-        uid: firebaseUser.uid,
-        displayName: firebaseUser.displayName || 'Dawntasy Explorer',
-        email: firebaseUser.email || '',
+      const profile: UserProfile = {
+        uid: user.uid,
+        displayName: displayName,
+        email: user.email,
         role: UserRole.USER,
         credits: 100,
         lastLogin: new Date(),
@@ -120,119 +117,86 @@ export const useAuthStore = defineStore('auth', () => {
           notifications: true
         }
       };
-
-      await setDoc(doc(db, 'users', firebaseUser.uid), userData);
-      userProfile.value = userData;
-    } catch (error) {
-      console.error('🚨 Failed to create user profile:', error);
+      await setDoc(doc(db(), "users", user.uid), profile);
+      userProfile.value = profile;
+    } catch (e: any) {
+      error.value = e.message;
     }
   };
 
-  // 🌟 REGISTER A NEW USER
-  const registerUser = async (email: string, password: string, displayName: string) => {
+  // 🌟 REGISTER
+  const register = async (email: string, password: string, displayName: string) => {
+    loading.value = true;
+    error.value = null;
     try {
-      authState.value.isLoading = true;
-      authState.value.error = null;
-
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, { displayName });
-      }
-
-      await createUserProfile(userCredential.user);
-      user.value = userCredential.user;
-
-      return userCredential;
-    } catch (err: any) {
-      console.error('🚨 Registration error:', err);
-      authState.value.error = err.message || 'Failed to register';
-      throw err;
-    } finally {
-      authState.value.isLoading = false;
+      const { user: firebaseUser } = await createUserWithEmailAndPassword(auth(), email, password);
+      await updateProfile(firebaseUser, { displayName });
+      await createUserProfile(firebaseUser, displayName);
+      loading.value = false;
+    } catch (e: any) {
+      error.value = e.message;
+      loading.value = false;
+      throw e;
     }
   };
 
   // 🌟 LOGIN
   const login = async (email: string, password: string) => {
+    loading.value = true;
+    error.value = null;
     try {
-      authState.value.isLoading = true;
-      authState.value.error = null;
-
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      user.value = userCredential.user;
-      await fetchOrCreateUserProfile(userCredential.user);
-
-      await updateDoc(doc(db, 'users', userCredential.user.uid), {
-        lastLogin: serverTimestamp()
-      });
-
-      return userCredential;
-    } catch (err: any) {
-      console.error('🚨 Login error:', err);
-      authState.value.error = err.message || 'Failed to login';
-      throw err;
-    } finally {
-      authState.value.isLoading = false;
+      const { user: firebaseUser } = await signInWithEmailAndPassword(auth(), email, password);
+      await fetchUserProfile(firebaseUser.uid);
+      loading.value = false;
+    } catch (e: any) {
+      error.value = e.message;
+      loading.value = false;
+      throw e;
     }
   };
 
   // 🌟 LOGOUT
   const logout = async () => {
+    loading.value = true;
+    error.value = null;
     try {
-      authState.value.isLoading = true;
-      authState.value.error = null;
-
-      await signOut(auth);
+      await signOut(auth());
       user.value = null;
       userProfile.value = null;
-      
-      return true;
-    } catch (err: any) {
-      console.error('🚨 Logout error:', err);
-      authState.value.error = err.message || 'Failed to logout';
-      throw err;
-    } finally {
-      authState.value.isLoading = false;
+      loading.value = false;
+    } catch (e: any) {
+      error.value = e.message;
+      loading.value = false;
+      throw e;
     }
   };
 
   // 🌟 RESET PASSWORD
   const resetPassword = async (email: string) => {
+    loading.value = true;
+    error.value = null;
     try {
-      authState.value.isLoading = true;
-      authState.value.error = null;
-
-      await sendPasswordResetEmail(auth, email);
-      return true;
-    } catch (err: any) {
-      console.error('🚨 Password reset error:', err);
-      authState.value.error = err.message || 'Failed to send password reset email';
-      throw err;
-    } finally {
-      authState.value.isLoading = false;
+      await sendPasswordResetEmail(auth(), email);
+      loading.value = false;
+    } catch (e: any) {
+      error.value = e.message;
+      loading.value = false;
+      throw e;
     }
   };
-
-  // 🌠 WATCH FOR CRITICAL STATE CHANGES
-  watch(user, (newUser) => {
-    if (newUser) {
-      console.log('User state updated:', newUser);
-      // Future analytics/logging can go here
-    }
-  });
 
   return {
     user,
     userProfile,
-    authState,
-    authStatus,
-    loginStrategies,
+    loading,
+    error,
+    isAuthenticated,
+    userRole,
+    availableCredits,
     initAuth,
-    registerUser,
+    register,
     login,
     logout,
-    resetPassword,
-    fetchOrCreateUserProfile
+    resetPassword
   };
 });
