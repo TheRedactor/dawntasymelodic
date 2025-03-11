@@ -1,8 +1,9 @@
+// src/main.js
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from './router';
-import { initializeFirebase } from '@/firebase/init';
+import { getFirebaseServices } from '@/firebase/init';
 
 // Import icons
 import 'remixicon/fonts/remixicon.css';
@@ -74,8 +75,8 @@ function registerGlobalDirectives(app) {
     
     // ⚡ PARALLEL INITIALIZATION
     // Initialize Firebase and router in parallel for speed
-    const [firebaseApp] = await Promise.all([
-      initializeFirebase(),
+    const [firebaseServices] = await Promise.all([
+      getFirebaseServices(), // FIXED: Using proper Firebase initialization
       router.isReady()
     ]);
     
@@ -97,7 +98,7 @@ function registerGlobalDirectives(app) {
     registerGlobalDirectives(app);
     
     // Provide Firebase globally
-    app.provide('firebase', firebaseApp);
+    app.provide('firebase', firebaseServices);
     
     // Mount app
     app.mount('#app');

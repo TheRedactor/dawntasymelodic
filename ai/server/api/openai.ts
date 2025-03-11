@@ -1,12 +1,14 @@
 // src/server/api/openai.ts
+// src/server/api/openai.ts
 import axios from 'axios';
 import { ref } from 'vue';
 import { serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { useAuthStore } from '@/store/auth';
 import { db } from '@/firebase/init';
 
-// API Configuration with subfolder path support
-const API_URL = import.meta.env.VITE_OPENAI_API_KEY || 'https://api.openai.com/v1/chat/completions';
+// API Configuration with subfolder path support - FIXED CRITICAL BUG
+const API_URL = import.meta.env.VITE_OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
+const API_KEY = import.meta.env.VITE_OPENAI_API_KEY; // Separated API key from URL
 const API_PATH = '/api/openai'; // For proxied requests if needed
 const DEFAULT_MODEL = 'gpt-4-turbo-preview';
 const FALLBACK_MODEL = 'gpt-3.5-turbo';
@@ -19,6 +21,15 @@ export async function callOpenAI(messages: any[], model: string = DEFAULT_MODEL)
     console.error('Error in callOpenAI:', error);
     throw error;
   }
+}
+
+// For external import compatibility
+export function sendChatMessage(chatId: string, messages: any[]) {
+  // Implementation for chat service
+  return openaiService.generateCompletion(
+    messages[messages.length - 1].content,
+    messages.slice(0, -1)
+  );
 }
 
 // Dawntasy system prompts - PROPERLY FORMATTED AS A STRING
@@ -671,9 +682,8 @@ export const useOpenAI = () => {
         max_tokens: options.maxTokens
       };
       
-      // Get API key
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      if (!apiKey) {
+      // Get API key - FIXED CRITICAL ISSUE
+      if (!API_KEY) {
         throw new Error('OpenAI API key is missing');
       }
       
@@ -694,7 +704,7 @@ export const useOpenAI = () => {
           {
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${apiKey}`
+              'Authorization': `Bearer ${API_KEY}` // FIXED: Using proper API key
             },
             signal: controller.signal
           }
@@ -770,9 +780,8 @@ export const useOpenAI = () => {
         stream: true
       };
       
-      // Get API key
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      if (!apiKey) {
+      // Get API key - FIXED CRITICAL ISSUE
+      if (!API_KEY) {
         throw new Error('OpenAI API key is missing');
       }
       
@@ -792,7 +801,7 @@ export const useOpenAI = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
+            'Authorization': `Bearer ${API_KEY}` // FIXED: Using proper API key
           },
           body: JSON.stringify(request),
           signal: controller.signal
@@ -879,7 +888,7 @@ export const useOpenAI = () => {
       if (!authStore.isAuthenticated || !authStore.uid) return;
       
       // Add chat to Firestore
-      const userChatsRef = doc(db, 'users', authStore.uid, 'chats', new Date().toISOString());
+      const userChatsRef = doc(db(), 'users', authStore.uid, 'chats', new Date().toISOString());
       await setDoc(userChatsRef, {
         timestamp: serverTimestamp(),
         messages,
@@ -901,4 +910,3 @@ export const useOpenAI = () => {
 
 // Export single instance for consistent state
 export const openaiService = useOpenAI();
-

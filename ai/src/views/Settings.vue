@@ -65,12 +65,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
+import { ref, watchEffect, onMounted } from 'vue';
 import { useAuthStore } from '../store/auth';
+import { useThemeStore } from '../store/theme'; // FIXED: Added missing import
 import { useRouter } from 'vue-router';
 
 // Stores
 const authStore = useAuthStore();
+const themeStore = useThemeStore(); // FIXED: Added missing store instance
 const router = useRouter();
 
 // Theme settings
@@ -84,24 +86,55 @@ const themes = ref([
 const selectedTheme = ref(themeStore.currentTheme);
 const notificationsEnabled = ref(false);
 
+// Set theme function
+function setTheme(themeId) {
+  themeStore.setTheme(themeId);
+  selectedTheme.value = themeId;
+}
+
 // Watch theme changes
 watchEffect(() => {
+  selectedTheme.value = themeStore.currentTheme;
+});
+
+// Initialize theme on component mount
+onMounted(() => {
+  // Try to load notification preferences from localStorage
+  const savedNotificationPref = localStorage.getItem('dawntasy-notifications');
+  if (savedNotificationPref !== null) {
+    notificationsEnabled.value = savedNotificationPref === 'true';
+  }
 });
 
 // Logout function
 async function logout() {
-  const result = await authStore.signOut();
-  if (result.success) {
+  try {
+    await authStore.logout();
     router.push('/login');
+  } catch (error) {
+    console.error('Logout failed:', error);
   }
 }
 
 // Save settings
 function saveSettings() {
+  // Save notification preferences
+  localStorage.setItem('dawntasy-notifications', notificationsEnabled.value.toString());
+  
   console.log("Settings saved:", {
     theme: selectedTheme.value,
     notifications: notificationsEnabled.value
   });
-  alert("Settings saved successfully!");
+  
+  // Show a confirmation message
+  const confirmMessage = document.createElement('div');
+  confirmMessage.className = 'fixed top-4 right-4 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg';
+  confirmMessage.textContent = 'Settings saved successfully!';
+  document.body.appendChild(confirmMessage);
+  
+  // Remove message after 3 seconds
+  setTimeout(() => {
+    confirmMessage.remove();
+  }, 3000);
 }
 </script>
