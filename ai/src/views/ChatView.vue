@@ -193,7 +193,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { marked } from 'marked';
 import { useAuthStore } from '@/store/auth';
-import { useOpenAI } from '@/services/openaiService';
+import { useOpenAI } from '../../server/api/openai';
 import { format } from 'date-fns';
 import hljs from 'highlight.js';
 import gsap from 'gsap';
