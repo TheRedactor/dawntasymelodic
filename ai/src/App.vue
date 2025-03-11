@@ -77,7 +77,6 @@ import CosmicBackground from '@/components/CosmicBackground.vue';
 import NavigationPortal from '@/components/NavigationPortal.vue';
 import AppHeader from '@/components/AppHeader.vue'; // Using enhanced header
 import AppSidebar from '@/components/AppSidebar.vue';
-import NotificationCenter from '@/components/NotificationCenter.vue';
 
 // Store initialization
 const authStore = useAuthStore();
