@@ -1,7 +1,12 @@
-// cleanup.js - Run with "node cleanup.js" before deploying
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+// cleanup.js - ES Modules version
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
+
+// ES Modules don't have __dirname, so we create it
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 console.log('🧹 Starting cleanup process...');
 
@@ -9,28 +14,29 @@ console.log('🧹 Starting cleanup process...');
 const dirsToClean = [
   'dist',
   'dist-ai',
-  'ai/dist-ai',
-  'ai/ai/dist-ai',
+  path.join('ai', 'dist-ai'),
+  path.join('ai', 'ai', 'dist-ai'),
   '.netlify'
 ];
 
 // Clean directories
-dirsToClean.forEach(dir => {
+for (const dir of dirsToClean) {
   try {
-    if (fs.existsSync(dir)) {
-      console.log(`Removing directory: ${dir}`);
-      fs.rmSync(dir, { recursive: true, force: true });
+    const fullPath = path.resolve(__dirname, dir);
+    if (fs.existsSync(fullPath)) {
+      console.log(`Removing directory: ${fullPath}`);
+      fs.rmSync(fullPath, { recursive: true, force: true });
     }
   } catch (err) {
     console.error(`Error cleaning directory ${dir}:`, err);
   }
-});
+}
 
-// Create _redirects file
+// Create _redirects file - only for /ai/* paths
 try {
   console.log('Creating _redirects file...');
-  const redirectsContent = '/*    /index.html   200';
-  fs.writeFileSync('_redirects', redirectsContent);
+  const redirectsContent = '/ai/*    /ai/index.html   200';
+  fs.writeFileSync(path.join(__dirname, '_redirects'), redirectsContent);
   console.log('Created _redirects file in project root');
 } catch (err) {
   console.error('Error creating _redirects file:', err);
