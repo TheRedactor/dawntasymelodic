@@ -48,4 +48,9 @@
   <p>Sorry, traveler! This page doesn’t exist in our cosmic realm.</p>
   <a href="/" class="home-link">🔮 Return Home</a>
 </body>
+<script>
+  // SPA Routing Fix for GitHub Pages
+  sessionStorage.redirect = window.location.pathname;
+  window.location.href = '/ai/';
+</script>
 </html>

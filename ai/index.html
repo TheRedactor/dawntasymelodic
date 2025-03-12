@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="cosmic">
   <head>
+    <script>
+      // Check if we're coming from a redirect
+      (function() {
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== window.location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
     <!-- META TAGS -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
