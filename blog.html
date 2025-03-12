@@ -1,211 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Celestial Blog - Fantasy Chronicles</title>
-  <!-- GSAP -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <!-- Anime.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-  <!-- Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <!-- Note: Framer Motion is React-only, so we simulate its vibe with GSAP/Anime.js -->
-  <style>
-    /* Cosmic, Celestial, and Professional Styling */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html {
-      font-family: 'Poppins', sans-serif;
-      background-color: #000;
-      color: #fff;
-      overflow-x: hidden;
-      scroll-behavior: smooth;
-    }
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 1000;
-      padding: 20px;
-      background: rgba(0, 0, 0, 0.7);
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    header h1 {
-      font-size: 2rem;
-      letter-spacing: 2px;
-    }
-    #canvas-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-    }
-    .blog-section {
-      position: relative;
-      min-height: 100vh;
-      padding: 150px 50px 50px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .blog-post {
-      max-width: 800px;
-      width: 100%;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 40px;
-      margin: 20px 0;
-      border-radius: 10px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(10px);
-      cursor: pointer;
-      overflow: hidden;
-      position: relative;
-      transition: transform 0.3s ease;
-    }
-    .blog-post:hover {
-      transform: translateY(-10px);
-    }
-    .blog-post h2 {
-      font-size: 2.5rem;
-      margin-bottom: 20px;
-    }
-    .blog-post p {
-      font-size: 1.2rem;
-      line-height: 1.6;
-    }
-    /* Parallax layering */
-    .parallax {
-      transform: translateZ(0);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>DAWNTASYAI COSMIC BLOG ✨📖</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- 3D Cosmic Background -->
-  <div id="canvas-container"></div>
+    <!-- 3D COSMIC BACKGROUND CANVAS -->
+    <canvas id="cosmicCanvas"></canvas>
 
-  <!-- Fixed Header -->
-  <header>
-    <h1>Celestial Blog: Fantasy Chronicles</h1>
-  </header>
-
-  <!-- Blog Section -->
-  <section class="blog-section">
-    <div class="blog-post" id="blog-post">
-      <h2 id="blog-title">Epic Fantasy Post Title</h2>
-      <p id="blog-content">
-        This is a placeholder for your epic fantasy blog post. Each week, this space will automatically refresh with a new, mesmerizing post full of cosmic lore and mystical adventures.
-      </p>
+    <!-- CELESTIAL BLOG CONTAINER -->
+    <div class="blog-container">
+        <!-- DYNAMIC BLOG CONTENT LOADS HERE -->
     </div>
-  </section>
 
-  <script>
-    /*********************
-     * Dynamic Weekly Blog Switcher
-     *********************/
-    const blogs = [
-      {
-        title: "The Dawn of the Cosmic Kingdom",
-        content: "Explore the rise of the Celestial Empire where magic meets technology and ancient secrets are revealed beneath the starlit sky."
-      },
-      {
-        title: "Mystic Realms: Portals to Other Worlds",
-        content: "Journey through hidden portals that lead to enchanting realms filled with wonder, danger, and mysteries beyond imagination."
-      },
-      {
-        title: "Dragons and Destiny: The Prophecy Unfolds",
-        content: "Dive into the lore of dragons, where fiery legends and epic destinies collide to shape the fate of kingdoms."
-      },
-      {
-        title: "Celestial Chronicles: Scrolls of Time",
-        content: "Unearth ancient scrolls that capture the wisdom of the cosmos, guiding heroes on their perilous quest through the annals of time."
-      }
-      // More posts can be added here...
-    ];
-
-    // Determine current week number and select blog post cyclically
-    function getCurrentBlog() {
-      const now = new Date();
-      const oneJan = new Date(now.getFullYear(), 0, 1);
-      const numberOfDays = Math.floor((now - oneJan) / (24 * 60 * 60 * 1000));
-      const weekNumber = Math.ceil((now.getDay() + 1 + numberOfDays) / 7);
-      const index = weekNumber % blogs.length;
-      return blogs[index];
-    }
-    function updateBlog() {
-      const blog = getCurrentBlog();
-      document.getElementById("blog-title").textContent = blog.title;
-      document.getElementById("blog-content").textContent = blog.content;
-    }
-    updateBlog();
-
-    /*********************
-     * GSAP Entrance Animations
-     *********************/
-    gsap.from("header", { duration: 1, y: -50, opacity: 0, ease: "power2.out" });
-    gsap.from(".blog-post", { duration: 1.5, y: 50, opacity: 0, delay: 0.5, ease: "power2.out" });
-
-    /*********************
-     * Anime.js Hover Effects for Blog Post
-     *********************/
-    document.querySelectorAll('.blog-post').forEach(item => {
-      item.addEventListener('mouseenter', () => {
-        anime({ targets: item, scale: 1.05, duration: 300, easing: 'easeInOutQuad' });
-      });
-      item.addEventListener('mouseleave', () => {
-        anime({ targets: item, scale: 1, duration: 300, easing: 'easeInOutQuad' });
-      });
-    });
-
-    /*********************
-     * Three.js Cosmic Background
-     *********************/
-    let scene, camera, renderer, stars;
-    function initThreeJS() {
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.z = 1;
-      renderer = new THREE.WebGLRenderer({ alpha: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-      // Create stars
-      const starGeometry = new THREE.BufferGeometry();
-      const starCount = 10000;
-      const starVertices = [];
-      for (let i = 0; i < starCount; i++) {
-        const x = THREE.MathUtils.randFloatSpread(2000);
-        const y = THREE.MathUtils.randFloatSpread(2000);
-        const z = THREE.MathUtils.randFloatSpread(2000);
-        starVertices.push(x, y, z);
-      }
-      starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-      const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
-      stars = new THREE.Points(starGeometry, starMaterial);
-      scene.add(stars);
-
-      animateThreeJS();
-    }
-    function animateThreeJS() {
-      requestAnimationFrame(animateThreeJS);
-      stars.rotation.x += 0.0005;
-      stars.rotation.y += 0.0005;
-      renderer.render(scene, camera);
-    }
-    initThreeJS();
-
-    /*********************
-     * Parallax Scrolling Effect (using GSAP ScrollTrigger simulation)
-     * Note: To use ScrollTrigger, include the plugin; here we simulate a basic effect.
-     *********************/
-    window.addEventListener("scroll", () => {
-      const scrollPos = window.scrollY;
-      gsap.to(".blog-section", { y: scrollPos * -0.2, ease: "power1.out", duration: 0.5 });
-    });
-  </script>
+    <!-- GALACTIC SCRIPTS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@6.5.1/dist/framer-motion.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
