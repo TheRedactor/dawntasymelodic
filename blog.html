@@ -2,23 +2,276 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DAWNTASYAI COSMIC BLOG ✨📖</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Celestial Chronicles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.12.3/dist/framer-motion.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Playfair Display', serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        .hero {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .blog-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .blog-post {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .blog-post:hover {
+            transform: translateY(-5px);
+        }
+
+        .week-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+        }
+
+        .next-week-preview {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .next-week-preview:hover {
+            opacity: 1;
+        }
+
+        .parallax-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+            z-index: -1;
+            will-change: transform;
+        }
+
+        .celestial-particle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: float 3s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
 </head>
 <body>
-    <!-- 3D COSMIC BACKGROUND CANVAS -->
-    <canvas id="cosmicCanvas"></canvas>
+    <div class="week-indicator" id="weekIndicator">Week 1</div>
+    <div class="parallax-bg" id="parallaxBg"></div>
+    
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="title">Celestial Chronicles</h1>
+            <p class="subtitle">Weekly Dispatches from the Edge of Imagination</p>
+        </div>
+    </section>
 
-    <!-- CELESTIAL BLOG CONTAINER -->
-    <div class="blog-container">
-        <!-- DYNAMIC BLOG CONTENT LOADS HERE -->
+    <div class="blog-container" id="blogContainer">
+        <!-- Blog posts will be dynamically inserted here -->
     </div>
 
-    <!-- GALACTIC SCRIPTS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="https://unpkg.com/framer-motion@6.5.1/dist/framer-motion.js"></script>
-    <script src="app.js"></script>
+    <div class="next-week-preview" id="nextPreview">
+        Next Week: <span id="nextTitle">The Astral Forge</span>
+    </div>
+
+    <script>
+        // Configuration
+        const blogData = [
+            {
+                week: 1,
+                title: "The Celestial Veil",
+                content: "In the beginning, there was only the Void...",
+                image: "https://source.unsplash.com/1600x900/?cosmos,stars"
+            },
+            {
+                week: 2,
+                title: "The Astral Forge",
+                content: "Where stars are born from cosmic fire...",
+                image: "https://source.unsplash.com/1600x900/?nebula,galaxy"
+            }
+            // Add more weekly entries here
+        ];
+
+        // Three.js setup
+        let scene, camera, renderer, stars;
+        function initThree() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+            
+            const geometry = new THREE.BufferGeometry();
+            const vertices = [];
+            for(let i = 0; i < 1000; i++) {
+                const x = THREE.MathUtils.randFloatSpread(2000);
+                const y = THREE.MathUtils.randFloatSpread(2000);
+                const z = THREE.MathUtils.randFloatSpread(2000);
+                vertices.push(x, y, z);
+            }
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            
+            const material = new THREE.PointsMaterial({ color: 0xffffff, size: 0.7 });
+            stars = new THREE.Points(geometry, material);
+            scene.add(stars);
+            
+            camera.position.z = 5;
+            animateThree();
+        }
+
+        function animateThree() {
+            requestAnimationFrame(animateThree);
+            stars.rotation.x += 0.0005;
+            stars.rotation.y += 0.0005;
+            renderer.render(scene, camera);
+        }
+
+        // GSAP Animations
+        function setupAnimations() {
+            gsap.to(".title", {
+                duration: 2,
+                y: 0,
+                opacity: 1,
+                ease: "power4.out",
+                scrollTrigger: {
+                    trigger: ".hero",
+                    start: "top top"
+                }
+            });
+
+            gsap.utils.toArray(".blog-post").forEach(post => {
+                ScrollTrigger.create({
+                    trigger: post,
+                    start: "top 80%",
+                    onEnter: () => {
+                        anime({
+                            targets: post,
+                            scale: [0.9, 1],
+                            opacity: [0, 1],
+                            duration: 800,
+                            easing: 'easeOutExpo'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Weekly Content Switcher
+        function updateContent() {
+            const now = new Date();
+            const start = new Date(2024, 0, 1); // Start date of blog
+            const currentWeek = Math.floor((now - start) / (7 * 24 * 60 * 60 * 1000)) + 1;
+            
+            const currentBlog = blogData.find(b => b.week === currentWeek) || blogData[0];
+            const nextBlog = blogData.find(b => b.week === currentWeek + 1) || blogData[0];
+            
+            document.getElementById('weekIndicator').textContent = `Week ${currentWeek}`;
+            document.getElementById('nextTitle').textContent = nextBlog.title;
+            
+            const container = document.getElementById('blogContainer');
+            container.innerHTML = `
+                <div class="blog-post">
+                    <h2>${currentBlog.title}</h2>
+                    <img src="${currentBlog.image}" style="width:100%; border-radius:10px; margin:20px 0;">
+                    <p>${currentBlog.content}</p>
+                </div>
+            `;
+        }
+
+        // Framer Motion Hover Effects
+        document.querySelectorAll('.blog-post').forEach(post => {
+            const motionPost = post;
+            motionPost.addEventListener('mouseenter', () => {
+                motionPost.style.scale = 1.05;
+                motionPost.style.boxShadow = '0 10px 20px rgba(255,255,255,0.2)';
+            });
+            motionPost.addEventListener('mouseleave', () => {
+                motionPost.style.scale = 1;
+                motionPost.style.boxShadow = 'none';
+            });
+        });
+
+        // Parallax Setup
+        function setupParallax() {
+            ScrollTrigger.create({
+                onUpdate: (self) => {
+                    gsap.to("#parallaxBg", {
+                        y: self.direction * 50,
+                        x: self.direction * -30,
+                        ease: "none"
+                    });
+                }
+            });
+        }
+
+        // Initialization
+        window.onload = () => {
+            initThree();
+            updateContent();
+            setupAnimations();
+            setupParallax();
+            
+            // Add celestial particles
+            for(let i = 0; i < 100; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'celestial-particle';
+                particle.style.width = `${Math.random() * 5 + 2}px`;
+                particle.style.height = particle.style.width;
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                particle.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                document.body.appendChild(particle);
+            }
+        };
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
