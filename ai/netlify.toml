@@ -1,6 +1,6 @@
 [build]
   command = "npm run build"
-  publish = "dist-ai/ai/dist-ai"
+  publish = "dist-ai"
 
 [build.environment]
   NODE_VERSION = "18"
