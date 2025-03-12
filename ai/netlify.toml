@@ -1,25 +1,11 @@
 [build]
   command = "npm run build"
-  publish = "dist-ai"
-
-[build.environment]
-  NODE_VERSION = "18"
-  VITE_APP_VERSION = "1.0.0"
-  VITE_DEPLOYMENT_ENV = "production"
-
-# Specific App Route - CRITICAL FIX - Must come after the catch-all rule
-[[redirects]]
-  from = "/ai/*"
-  to = "/ai/index.html"
-  status = 200
-  force = true
-
-# Subdomain setup - redirects from ai.dawntasy.com to main site's /ai path
-[[redirects]]
-  from = "https://ai.dawntasy.com/*"
-  to = "https://dawntasy.com/ai/:splat"
-  status = 200
-  force = true
+  publish = "dist-ai/ai/dist-ai"  # ✅ Target the innermost build folder
+  environment = {
+    NODE_VERSION = "18",
+    VITE_APP_VERSION = "1.0.0",
+    VITE_DEPLOYMENT_ENV = "production"
+  }
 
 # Security Headers
 [[headers]]
@@ -31,6 +17,13 @@
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Subdomain Redirect (ai.dawntasy.com → dawntasy.com/ai)
+[[redirects]]
+  from = "https://ai.dawntasy.com/*"
+  to = "https://dawntasy.com/ai/:splat"
+  status = 200
+  force = true
 
 # Cache Optimization
 [[headers]]
@@ -47,3 +40,10 @@
   for = "/ai/assets/*"
   [headers.values]
     X-DNS-Prefetch-Control = "on"
+
+# Vue Router Redirects (MUST BE LAST)
+[[redirects]]
+  from = "/ai/*"
+  to = "/ai/index.html"
+  status = 200
+  force = true

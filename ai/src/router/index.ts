@@ -1,3 +1,4 @@
+
 // src/router/index.ts
 import { createRouter, createWebHistory, RouteRecordRaw, NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
 import { auth } from '@/firebase/init';
@@ -5,7 +6,6 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 
-// Make NProgress configuration more elegant
 NProgress.configure({ 
   easing: 'ease',
   speed: 500,
@@ -14,16 +14,15 @@ NProgress.configure({
   minimum: 0.1
 });
 
-// Enhanced route metadata
 interface EnhancedRouteMetadata {
   requiresAuth: boolean;
   transition: string;
   roleRequired?: 'user' | 'admin' | 'guest';
   analyticsTrack?: boolean;
-  title?: string; // For document title
+  title?: string;
 }
 
-const routes: Array<RouteRecordRaw> = [
+const routes: Array<RouteRecordRaw & { meta: EnhancedRouteMetadata }> = [
   {
     path: '/',
     name: 'Landing',
@@ -119,39 +118,30 @@ const routes: Array<RouteRecordRaw> = [
     }
   }
 ];
-
-// CRITICAL FIX: Use '/ai/' for subfolder deployment
 const router = createRouter({
   history: createWebHistory('/ai/'),
   routes,
   scrollBehavior(to, from, savedPosition) {
     return new Promise((resolve) => {
-      // Add subtle delay for transition effect
       setTimeout(() => {
-        if (savedPosition) {
-          resolve(savedPosition);
-        } else if (to.hash) {
+        if (savedPosition) resolve(savedPosition);
+        else if (to.hash) {
           resolve({
             el: to.hash,
             behavior: 'smooth',
-            top: 80 // Offset for header
+            top: 80
           });
         } else {
-          resolve({ 
-            top: 0, 
-            behavior: 'smooth'
-          });
+          resolve({ top: 0, behavior: 'smooth' });
         }
       }, 300);
     });
   }
 });
 
-// Enhanced user authentication resolution
 const getCurrentUser = (): Promise<User | null> => {
   return new Promise((resolve, reject) => {
-    const unsubscribe = onAuthStateChanged(
-      auth, 
+    const unsubscribe = onAuthStateChanged(auth, 
       (user) => {
         unsubscribe();
         resolve(user);
@@ -164,28 +154,15 @@ const getCurrentUser = (): Promise<User | null> => {
   });
 };
 
-// Improved navigation guards with progress bar
-router.beforeEach(async (
-  to: RouteLocationNormalized, 
-  from: RouteLocationNormalized, 
-  next: NavigationGuardNext
-) => {
-  // Start progress bar
+router.beforeEach(async (to, from, next) => {
   NProgress.start();
-  
-  // Add smooth page transition class
   document.body.classList.add('page-transitioning');
 
   try {
-    // Get current user
     const user = await getCurrentUser();
-    const requiresAuth = to.matched.some(record => (record.meta as unknown as EnhancedRouteMetadata).requiresAuth);
-    
-    // Set document title
-    const pageTitle = ((to.meta as unknown) as EnhancedRouteMetadata).title || 'DawntasyAI';
-    document.title = pageTitle;
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+    document.title = to.meta.title || 'DawntasyAI';
 
-    // Auth check
     if (requiresAuth && !user) {
       NProgress.done();
       return next({ 
@@ -194,7 +171,6 @@ router.beforeEach(async (
       });
     }
 
-    // Ready to proceed
     next();
   } catch (error) {
     console.error('Navigation error:', error);
@@ -203,21 +179,10 @@ router.beforeEach(async (
   }
 });
 
-// After route change completion
 router.afterEach(() => {
-  // Complete progress bar
   NProgress.done();
-  
-  // Remove transition class with slight delay for smooth effect
-  setTimeout(() => {
-    document.body.classList.remove('page-transitioning');
-  }, 100);
-  
-  // Scroll to top with smooth behavior
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
+  document.body.classList.remove('page-transitioning');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 export default router;

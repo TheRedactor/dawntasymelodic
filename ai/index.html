@@ -1,51 +1,52 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="cosmic">
+<html lang="en">
   <head>
-    <script>
-      // Enhanced SPA routing handling - CRITICAL FIX
-      (function() {
-        var redirect = sessionStorage.redirect;
-        delete sessionStorage.redirect;
-        if (redirect && redirect !== window.location.href) {
-          // Properly handle redirects by replacing state with the original URL
-          history.replaceState(null, null, redirect);
-          // Force Vue router to recognize the path
-          var event = new PopStateEvent('popstate');
-          window.dispatchEvent(event);
-        }
-      })();
-    </script>
-    <!-- META TAGS -->
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/ai/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DawntasyAI - The AI That Makes You Think</title>
-    <meta name="description" content="Dawntasy AI is an advanced chatbot merging fantasy, music, and cutting-edge AI technology from the Dawntasy universe." />
-
-    <!-- OPEN GRAPH & SEO OPTIMIZATION -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://ai.dawntasy.com" />
-    <meta property="og:title" content="DawntasyAI - The AI That Makes You Think" />
-    <meta property="og:description" content="Experience DawntasyAI, an advanced chatbot merging fantasy lore with cutting-edge AI technology." />
-    <meta property="og:image" content="/images/og-image.jpg" />
-
-    <!-- PERFORMANCE & PWA ENHANCEMENTS -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0f172a">
-
-    <!-- PERFORMANCE META -->
-    <meta http-equiv="x-dns-prefetch-control" content="on">
-    <meta name="format-detection" content="telephone=no">
-
-    <!-- FONTS -->
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" 
+      content="default-src 'self'; 
+               script-src 'self' https://cdn.jsdelivr.net;
+               style-src 'self' https://fonts.googleapis.com;
+               font-src 'self' https://fonts.gstatic.com;
+               img-src 'self' data:;">
+    
+    <!-- SEO & OPEN GRAPH -->
+    <meta name="description" content="Dawntasy AI merges fantasy, music, and cutting-edge AI from the Dawntasy universe.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dawntasy.com/ai">
+    <meta property="og:title" content="DawntasyAI - The AI That Makes You Think">
+    <meta property="og:description" content="Advanced chatbot blending fantasy lore with AI technology.">
+    <meta property="og:image" content="/ai/images/og-image.jpg">
+    
+    <!-- Preloads -->
+    <link rel="preload" href="/ai/src/main.js" as="script">
+    <link rel="preload" href="/ai/manifest.json" as="fetch">
+    
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- ICONS -->
+    <!-- Icons -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
-
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/ai/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    
+    <!-- Accessibility -->
+    <meta name="format-detection" content="telephone=no">
+    
+    <!-- Styles -->
     <style>
-      /* DARK MODE & THEME SUPPORT */
       @media (prefers-color-scheme: dark) {
         :root {
           --cosmic-dark: #0a0e17;
@@ -53,7 +54,6 @@
         }
       }
 
-      /* ACCESSIBILITY ENHANCEMENTS */
       @media (prefers-reduced-motion: reduce) {
         .cosmic-orbit, 
         .cosmic-spinner, 
@@ -62,7 +62,6 @@
         }
       }
       
-      /* Cosmic Background */
       body {
         font-family: 'Inter', sans-serif;
         background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #4c1d95 100%);
@@ -72,7 +71,6 @@
         padding: 0;
       }
 
-      /* Loader */
       #app-loader {
         position: fixed;
         top: 0;
@@ -156,23 +154,35 @@
         to { box-shadow: 0 0 30px #a78bfa, 0 0 50px #a78bfa; }
       }
     </style>
+    
+    <!-- Loader Script -->
+    <script>
+      (function() {
+        const redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        
+        if (redirect) {
+          const correctedPath = redirect.startsWith('/ai/') 
+            ? redirect 
+            : `/ai${redirect}`;
+            
+          history.replaceState(null, null, correctedPath);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }
+      })();
+    </script>
   </head>
   <body>
-    <!-- ACCESSIBILITY ANNOUNCEMENT -->
     <div id="a11y-announcer" aria-live="polite" class="sr-only"></div>
-
-    <!-- LOADER -->
-    <div id="app-loader">
-      <div class="cosmic-orbit orbit-1"></div>
-      <div class="cosmic-spinner"></div>
-      <div class="cosmic-core"></div>
+    
+    <div id="app-loader" role="status" aria-live="polite">
+      <div class="cosmic-orbit orbit-1" aria-hidden="true"></div>
+      <div class="cosmic-spinner" aria-hidden="true"></div>
+      <div class="cosmic-core" aria-hidden="true"></div>
       <p class="loading-text">Initializing DawntasyAI...</p>
     </div>
 
-    <!-- APP MOUNT POINT -->
     <div id="app"></div>
-
-    <!-- MAIN SCRIPT - FIXED PATH -->
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/ai/src/main.js"></script>
   </body>
 </html>
