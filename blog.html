@@ -3,190 +3,2815 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cosmic Chronicles | Celestial Fantasy Blog</title>
+    <title>Celestial Chronicles | Official Blog</title>
+    <meta name="description" content="Journey through the realms of fantasy with the official blog of Celestial Chronicles. New magical insights every week.">
     
-    <!-- CDN Links -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="https://unpkg.com/particles.js@2.0.0/particles.js"></script>
-
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
     <style>
         :root {
-            --cosmic-purple: #6C31F0;
-            --nebula-blue: #2D9BEF;
-            --stardust: rgba(255, 255, 255, 0.1);
+            /* Cosmic Theme Color Palette */
+            --void-black: #090619;
+            --deep-space: #131034;
+            --nebula-purple: #6733b0;
+            --cosmic-blue: #1e6cf9;
+            --star-glow: #f1dede;
+            --celestial-gold: #f9b857;
+            --time-red: #ee2a67;
+            --mystic-teal: #41e9d3;
+            
+            /* Typography */
+            --title-font: 'Cinzel', serif;
+            --body-font: 'Cormorant Garamond', serif;
+            --ui-font: 'Inter', sans-serif;
+            
+            /* Dimensions */
+            --content-width: 1200px;
+            --header-height: 80px;
+            
+            /* Animation Speeds */
+            --transition-slow: 0.7s;
+            --transition-medium: 0.4s;
+            --transition-fast: 0.2s;
         }
-
-        body {
+        
+        /* Reset & Base Styles */
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
-            background: radial-gradient(circle at center, #0A0820, #000000);
-            color: white;
-            font-family: 'Arial Nova', sans-serif;
+            padding: 0;
+        }
+        
+        html, body {
+            height: 100%;
+            background-color: var(--void-black);
+            color: var(--star-glow);
+            font-family: var(--body-font);
+            font-size: 18px;
+            line-height: 1.6;
             overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--nebula-purple) var(--deep-space);
         }
-
-        .cosmic-header {
+        
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        body::-webkit-scrollbar-track {
+            background: var(--deep-space);
+        }
+        
+        body::-webkit-scrollbar-thumb {
+            background-color: var(--nebula-purple);
+            border-radius: 20px;
+        }
+        
+        a {
+            color: var(--celestial-gold);
+            text-decoration: none;
+            transition: color var(--transition-fast) ease;
+        }
+        
+        a:hover {
+            color: var(--mystic-teal);
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--title-font);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: white;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            letter-spacing: 1px;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            margin-top: 3rem;
+        }
+        
+        h3 {
+            font-size: 1.8rem;
+            color: var(--celestial-gold);
+        }
+        
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--mystic-teal);
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: var(--star-glow);
+        }
+        
+        .ui-text {
+            font-family: var(--ui-font);
+        }
+        
+        /* Layout */
+        .container {
+            max-width: var(--content-width);
+            margin: 0 auto;
+            padding: 0 2rem;
             position: relative;
-            height: 100vh;
-            overflow: hidden;
+            z-index: 2;
         }
-
-        .starfield {
+        
+        section {
+            padding: 4rem 0;
+            position: relative;
+        }
+        
+        /* Header & Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            transition: background-color var(--transition-medium) ease, 
+                        box-shadow var(--transition-medium) ease;
+            height: var(--header-height);
+        }
+        
+        header.scrolled {
+            background-color: rgba(9, 6, 25, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 100%;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-image {
+            height: 50px;
+            margin-right: 1rem;
+        }
+        
+        .logo-text {
+            font-family: var(--title-font);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            font-family: var(--ui-font);
+        }
+        
+        .nav-link {
+            color: var(--star-glow);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .nav-link::after {
+            content: '';
             position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--celestial-gold);
+            transition: width var(--transition-medium) ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .nav-link.active {
+            color: var(--celestial-gold);
+        }
+        
+        .nav-link.active::after {
+            width: 100%;
+        }
+        
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding-top: var(--header-height);
+        }
+        
+        .hero-content {
+            max-width: 50%;
+            position: relative;
+            z-index: 5;
+        }
+        
+        .hero-title {
+            font-size: 4.5rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 20px rgba(241, 222, 222, 0.3);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: var(--celestial-gold);
+        }
+        
+        .hero-description {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+        
+        .book-cover {
+            position: absolute;
+            right: 10%;
+            top: 50%;
+            transform: translateY(-50%);
+            max-height: 70vh;
+            box-shadow: 0 0 30px rgba(103, 51, 176, 0.6);
+            border-radius: 5px;
+            z-index: 3;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-family: var(--ui-font);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all var(--transition-medium) ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            z-index: 1;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, var(--nebula-purple), var(--cosmic-blue));
+            color: white;
+            border: none;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
+            background: linear-gradient(45deg, var(--cosmic-blue), var(--nebula-purple));
+            z-index: -1;
+            transition: opacity var(--transition-medium) ease;
+            opacity: 0;
         }
-
-        .blog-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-primary:hover::before {
+            opacity: 1;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--celestial-gold);
+            border: 2px solid var(--celestial-gold);
+            margin-left: 1rem;
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--celestial-gold);
+            color: var(--void-black);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Blog Container */
+        .blog-container {
+            padding: 6rem 0;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .blog-header {
+            text-align: center;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+        
+        .blog-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--celestial-gold), transparent);
+        }
+        
+        .blog-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(241, 222, 222, 0.2);
+        }
+        
+        .blog-meta {
+            display: flex;
+            align-items: center;
             gap: 2rem;
-            padding: 4rem;
-            perspective: 1500px;
+            font-family: var(--ui-font);
+            font-size: 0.9rem;
         }
-
-        .blog-card {
-            background: linear-gradient(45deg, var(--stardust), transparent);
-            border-radius: 20px;
-            padding: 2rem;
-            backdrop-filter: blur(10px);
-            transform-style: preserve-3d;
-            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        
+        .blog-date, .blog-author, .blog-category {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .blog-date i, .blog-author i, .blog-category i {
+            color: var(--celestial-gold);
+        }
+        
+        .blog-navigation {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .blog-nav-button {
+            background: none;
+            border: none;
+            color: var(--star-glow);
             cursor: pointer;
-            border: 1px solid var(--cosmic-purple);
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all var(--transition-fast) ease;
         }
-
-        .blog-card:hover {
-            transform: translateZ(50px) rotateX(5deg) rotateY(5deg);
-            box-shadow: 0 0 50px var(--nebula-blue);
+        
+        .blog-nav-button:hover {
+            background-color: rgba(241, 222, 222, 0.1);
+            transform: scale(1.1);
         }
-
-        .celestial-orb {
-            position: fixed;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, var(--cosmic-purple), transparent 70%);
-            filter: blur(100px);
-            opacity: 0.3;
+        
+        .blog-nav-button i {
+            font-size: 1.2rem;
+        }
+        
+        .blog-content {
+            display: flex;
+            gap: 3rem;
+            position: relative;
+        }
+        
+        .blog-main {
+            flex: 2;
+            position: relative;
+        }
+        
+        .blog-sidebar {
+            flex: 1;
+            position: sticky;
+            top: 120px;
+            align-self: flex-start;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            padding-right: 10px;
+        }
+        
+        .blog-sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .blog-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .blog-sidebar::-webkit-scrollbar-thumb {
+            background-color: var(--nebula-purple);
+            border-radius: 20px;
+        }
+        
+        .featured-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .sidebar-section {
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            background-color: rgba(19, 16, 52, 0.5);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(241, 222, 222, 0.1);
+        }
+        
+        .sidebar-title {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--nebula-purple);
+        }
+        
+        .sidebar-content {
+            font-family: var(--ui-font);
+        }
+        
+        .archive-list {
+            list-style: none;
+        }
+        
+        .archive-item {
+            margin-bottom: 0.8rem;
+        }
+        
+        .archive-link {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(241, 222, 222, 0.1);
+            transition: all var(--transition-fast) ease;
+        }
+        
+        .archive-link:hover {
+            padding-left: 0.5rem;
+            border-bottom-color: var(--celestial-gold);
+        }
+        
+        .archive-date {
+            color: var(--star-glow);
+            opacity: 0.7;
+            font-size: 0.8rem;
+        }
+        
+        .about-author {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .author-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--celestial-gold);
+            margin-bottom: 1rem;
+        }
+        
+        .author-name {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .author-bio {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--deep-space);
+            color: var(--star-glow);
+            transition: all var(--transition-fast) ease;
+        }
+        
+        .social-link:hover {
+            background-color: var(--celestial-gold);
+            color: var(--void-black);
+            transform: translateY(-3px);
+        }
+        
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .tag {
+            background-color: rgba(103, 51, 176, 0.3);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            transition: all var(--transition-fast) ease;
+        }
+        
+        .tag:hover {
+            background-color: var(--nebula-purple);
+            transform: scale(1.05);
+        }
+        
+        /* Blog Content Styling */
+        .blog-post {
+            font-size: 1.2rem;
+            line-height: 1.7;
+        }
+        
+        .blog-post h2 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+        
+        .blog-post h3 {
+            margin-top: 1.8rem;
+            margin-bottom: 1rem;
+            font-size: 1.6rem;
+        }
+        
+        .blog-post p {
+            margin-bottom: 1.5rem;
+        }
+        
+        .blog-post img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 2rem 0;
+        }
+        
+        .blog-post a {
+            color: var(--celestial-gold);
+            border-bottom: 1px dotted var(--celestial-gold);
+            padding-bottom: 2px;
+            transition: all var(--transition-fast) ease;
+        }
+        
+        .blog-post a:hover {
+            color: var(--mystic-teal);
+            border-bottom-color: var(--mystic-teal);
+        }
+        
+        .blog-footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(241, 222, 222, 0.2);
+        }
+        
+        .share-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .share-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-family: var(--ui-font);
+            font-size: 0.9rem;
+            transition: all var(--transition-fast) ease;
+        }
+        
+        .share-button.twitter {
+            background-color: #1DA1F2;
+            color: white;
+        }
+        
+        .share-button.facebook {
+            background-color: #4267B2;
+            color: white;
+        }
+        
+        .share-button.pinterest {
+            background-color: #E60023;
+            color: white;
+        }
+        
+        .share-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .post-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+        }
+        
+        .nav-previous, .nav-next {
+            max-width: 48%;
+        }
+        
+        .nav-title {
+            font-family: var(--title-font);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: var(--celestial-gold);
+        }
+        
+        .nav-link {
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1.4;
+            transition: all var(--transition-fast) ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--mystic-teal);
+        }
+        
+        /* Floating Elements */
+        .floating-elements {
+            position: absolute;
+            inset: 0;
             pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        .constellation {
+            position: absolute;
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .constellation-1 {
+            top: 15%;
+            left: 10%;
+            transform: rotate(15deg);
+        }
+        
+        .constellation-2 {
+            bottom: 20%;
+            right: 8%;
+            transform: rotate(-10deg);
+        }
+        
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: 0;
+        }
+        
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background-color: rgba(103, 51, 176, 0.3);
+            top: 10%;
+            left: -5%;
+        }
+        
+        .orb-2 {
+            width: 250px;
+            height: 250px;
+            background-color: rgba(30, 108, 249, 0.2);
+            bottom: 15%;
+            right: -5%;
+        }
+        
+        .orb-3 {
+            width: 200px;
+            height: 200px;
+            background-color: rgba(238, 42, 103, 0.15);
+            top: 40%;
+            right: 20%;
+        }
+        
+        /* Weekly Blog Switcher */
+        .blog-switcher {
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        
+        .switcher-title {
+            font-family: var(--ui-font);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            color: var(--celestial-gold);
+        }
+        
+        .switcher-weeks {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--nebula-purple) transparent;
+        }
+        
+        .switcher-weeks::-webkit-scrollbar {
+            height: 5px;
+        }
+        
+        .switcher-weeks::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .switcher-weeks::-webkit-scrollbar-thumb {
+            background-color: var(--nebula-purple);
+            border-radius: 20px;
+        }
+        
+        .week-button {
+            flex: 0 0 auto;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background-color: rgba(103, 51, 176, 0.3);
+            border: 1px solid rgba(241, 222, 222, 0.1);
+            color: var(--star-glow);
+            font-family: var(--ui-font);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all var(--transition-fast) ease;
+        }
+        
+        .week-button:hover {
+            background-color: rgba(103, 51, 176, 0.5);
+        }
+        
+        .week-button.active {
+            background-color: var(--nebula-purple);
+            color: white;
+        }
+        
+        /* Three.js Canvas */
+        #celestial-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.7;
+        }
+        
+        /* Magic quotes */
+        .magic-quote {
+            position: relative;
+            padding: 2rem 3rem;
+            margin: 3rem 0;
+            background-color: rgba(19, 16, 52, 0.5);
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            border-left: 4px solid var(--celestial-gold);
+            font-style: italic;
+            font-size: 1.4rem;
+            color: white;
+        }
+        
+        .magic-quote::before {
+            content: '"';
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 4rem;
+            font-family: var(--title-font);
+            color: var(--celestial-gold);
+            opacity: 0.5;
+        }
+        
+        .quote-source {
+            display: block;
+            text-align: right;
+            margin-top: 1rem;
+            font-size: 1rem;
+            font-style: normal;
+            color: var(--celestial-gold);
+        }
+        
+        /* Comments section */
+        .comments-section {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(241, 222, 222, 0.2);
+        }
+        
+        .comments-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .comments-title i {
+            color: var(--celestial-gold);
+        }
+        
+        .comment {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(241, 222, 222, 0.1);
+        }
+        
+        .comment-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        .comment-content {
+            flex-grow: 1;
+        }
+        
+        .comment-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .comment-author {
+            font-weight: 700;
+            color: var(--celestial-gold);
+        }
+        
+        .comment-date {
+            font-size: 0.9rem;
+            color: var(--star-glow);
+            opacity: 0.7;
+        }
+        
+        .comment-text {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .comment-actions {
+            display: flex;
+            gap: 1rem;
+            font-family: var(--ui-font);
+            font-size: 0.9rem;
+        }
+        
+        .comment-action {
+            color: var(--star-glow);
+            opacity: 0.7;
+            transition: all var(--transition-fast) ease;
+        }
+        
+        .comment-action:hover {
+            color: var(--celestial-gold);
+            opacity: 1;
+        }
+        
+        .comment-form {
+            margin-top: 3rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-family: var(--ui-font);
+            font-size: 1rem;
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background-color: rgba(19, 16, 52, 0.5);
+            border: 1px solid rgba(241, 222, 222, 0.2);
+            border-radius: 5px;
+            color: white;
+            font-family: var(--ui-font);
+            transition: all var(--transition-fast) ease;
+        }
+        
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--celestial-gold);
+            box-shadow: 0 0 5px rgba(249, 184, 87, 0.3);
+        }
+        
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--deep-space);
+            padding: 4rem 0 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .footer-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            z-index: 0;
+            background-image: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986');
+            background-size: cover;
+            background-position: center;
+            filter: blur(5px);
+        }
+        
+        .footer-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .footer-top {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+        }
+        
+        .footer-column {
+            flex: 1;
+            padding: 0 1rem;
+        }
+        
+        .footer-title {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .footer-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background-color: var(--celestial-gold);
+        }
+        
+        .footer-nav {
+            list-style: none;
+        }
+        
+        .footer-nav-item {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-nav-link {
+            display: block;
+            color: var(--star-glow);
+            transition: all var(--transition-fast) ease;
+            padding: 0.3rem 0;
+        }
+        
+        .footer-nav-link:hover {
+            color: var(--celestial-gold);
+            transform: translateX(5px);
+        }
+        
+        .footer-newsletter {
+            margin-top: 1.5rem;
+        }
+        
+        .newsletter-form {
+            display: flex;
+            margin-top: 1rem;
+        }
+        
+        .newsletter-input {
+            flex-grow: 1;
+            padding: 0.8rem 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(241, 222, 222, 0.2);
+            border-radius: 5px 0 0 5px;
+            border-right: none;
+            color: white;
+        }
+        
+        .newsletter-input:focus {
+            outline: none;
+            border-color: var(--celestial-gold);
+        }
+        
+        .newsletter-button {
+            padding: 0.8rem 1.5rem;
+            background-color: var(--celestial-gold);
+            color: var(--void-black);
+            font-weight: 600;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            transition: all var(--transition-fast) ease;
+        }
+        
+        .newsletter-button:hover {
+            background-color: var(--mystic-teal);
+        }
+        
+        .footer-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(241, 222, 222, 0.2), transparent);
+            margin: 2rem 0;
+        }
+        
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--ui-font);
+            font-size: 0.9rem;
+        }
+        
+        .copyright {
+            color: var(--star-glow);
+            opacity: 0.7;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .footer-social-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--star-glow);
+            transition: all var(--transition-fast) ease;
+        }
+        
+        .footer-social-link:hover {
+            background-color: var(--celestial-gold);
+            color: var(--void-black);
+            transform: translateY(-3px);
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 90%;
+            }
+            
+            .blog-content {
+                flex-direction: column;
+            }
+            
+            .blog-sidebar {
+                position: static;
+                max-height: none;
+                overflow-y: visible;
+                margin-top: 3rem;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            html, body {
+                font-size: 16px;
+            }
+            
+            h1 {
+                font-size: 3rem;
+            }
+            
+            h2 {
+                font-size: 2.2rem;
+            }
+            
+            .hero-content {
+                max-width: 70%;
+            }
+            
+            .hero-title {
+                font-size: 3.5rem;
+            }
+            
+            .book-cover {
+                right: 5%;
+                max-height: 60vh;
+            }
+            
+            .footer-top {
+                flex-wrap: wrap;
+            }
+            
+            .footer-column {
+                flex: 0 0 50%;
+                margin-bottom: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-inner {
+                padding: 0 1rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .hero-content {
+                max-width: 100%;
+                text-align: center;
+                padding: 0 1rem;
+            }
+            
+            .hero-description {
+                max-width: 100%;
+            }
+            
+            .book-cover {
+                display: none;
+            }
+            
+            .blog-info {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .blog-meta {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            
+            .post-navigation {
+                flex-direction: column;
+                gap: 2rem;
+            }
+            
+            .nav-previous, .nav-next {
+                max-width: 100%;
+            }
+            
+            .footer-column {
+                flex: 0 0 100%;
+            }
+            
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1.5rem;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .hero {
+                padding-top: calc(var(--header-height) + 2rem);
+            }
+            
+            .hero-title {
+                font-size: 2.8rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.4rem;
+            }
+            
+            .btn {
+                display: block;
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+            
+            .btn-secondary {
+                margin-left: 0;
+            }
+            
+            .share-buttons {
+                flex-wrap: wrap;
+            }
+            
+            .share-button {
+                flex: 1 0 40%;
+            }
+        }
+        
+        /* Animation Classes */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .slide-up {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        
+        .slide-right {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        
+        .slide-left {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        
+        .scale-in {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        
+        .blur-in {
+            opacity: 0;
+            filter: blur(10px);
+        }
+        
+        /* Parallax Elements */
+        .parallax-element {
+            will-change: transform;
         }
     </style>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <!-- Cosmic Background -->
-    <div id="starfield" class="starfield"></div>
-    <div class="celestial-orb" style="top: 20%; left: 30%"></div>
-    <div class="celestial-orb" style="top: 70%; left: 60%"></div>
-
-    <!-- Main Content -->
-    <div class="cosmic-header">
-        <canvas id="galaxyCanvas"></canvas>
-        <h1 class="cosmic-title">Chronicles of the Celestial Realm</h1>
-    </div>
-
-    <div class="blog-grid" id="blogContainer"></div>
-
-    <script>
-        // Initialize Three.js Galaxy
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('galaxyCanvas'), alpha: true });
-        
-        // Create cosmic particles
-        const geometry = new THREE.BufferGeometry();
-        const vertices = [];
-        for (let i = 0; i < 5000; i++) {
-            vertices.push(
-                Math.random() * 2000 - 1000,
-                Math.random() * 2000 - 1000,
-                Math.random() * 2000 - 1000
-            );
-        }
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        const stars = new THREE.Points(geometry, new THREE.PointsMaterial({ color: 0xFFFFFF }));
-        scene.add(stars);
-        camera.position.z = 1000;
-
-        // GSAP Initial Animations
-        gsap.from(".blog-card", {
-            duration: 1.5,
-            y: 100,
-            opacity: 0,
-            stagger: 0.1,
-            ease: "power4.out"
-        });
-
-        // Anime.js Hover Effects
-        document.querySelectorAll('.blog-card').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                anime({
-                    targets: card,
-                    scale: 1.05,
-                    rotateY: 5,
-                    rotateX: 5,
-                    duration: 800,
-                    easing: 'spring(1, 80, 10, 0)'
-                });
-            });
-
-            card.addEventListener('mouseleave', () => {
-                anime({
-                    targets: card,
-                    scale: 1,
-                    rotateY: 0,
-                    rotateX: 0,
-                    duration: 600,
-                    easing: 'easeOutElastic(1, .5)'
-                });
-            });
-        });
-
-        // Dynamic Blog Loading
-        const blogs = [
-            { title: "The Dawn of Arcane Skies", content: "In the beginning...", date: "Starfall 3, AE 5023" },
-            { title: "Whispers of the Void Dragon", content: "Deep in the cosmic abyss...", date: "Starfall 10, AE 5023" },
-            // Add more blog entries
-        ];
-
-        function updateBlogs() {
-            const container = document.getElementById('blogContainer');
-            container.innerHTML = blogs.map(blog => `
-                <div class="blog-card">
-                    <h3 class="cosmic-gradient-text">${blog.title}</h3>
-                    <p>${blog.content}</p>
-                    <div class="stardate">${blog.date}</div>
+    <!-- Three.js Background Canvas -->
+    <canvas id="celestial-background"></canvas>
+    
+    <!-- Header -->
+    <header id="site-header">
+        <div class="container header-inner">
+            <div class="logo">
+                <svg class="logo-image" width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="25" cy="25" r="23" stroke="#F9B857" stroke-width="2"/>
+                    <path d="M25 10L30 20L40 22L32.5 30L35 40L25 35L15 40L17.5 30L10 22L20 20L25 10Z" fill="#F9B857"/>
+                </svg>
+                <div class="logo-text">Celestial Chronicles</div>
+            </div>
+            
+            <nav class="site-nav">
+                <div class="nav-links">
+                    <a href="#" class="nav-link active">Home</a>
+                    <a href="#" class="nav-link">The Book</a>
+                    <a href="#" class="nav-link">Blog</a>
+                    <a href="#" class="nav-link">Characters</a>
+                    <a href="#" class="nav-link">World</a>
+                    <a href="#" class="nav-link">Author</a>
                 </div>
-            `).join('');
-        }
-
-        // Auto-rotate blogs every week
-        setInterval(() => {
-            // Add your blog rotation logic here
-            updateBlogs();
-        }, 604800000); // 1 week interval
-
-        // Parallax Effect
-        document.addEventListener('mousemove', (e) => {
-            const x = (e.clientX / window.innerWidth - 0.5) * 30;
-            const y = (e.clientY / window.innerHeight - 0.5) * 30;
-            gsap.to(".blog-card", {
-                duration: 2,
-                rotationY: x,
-                rotationX: y,
-                ease: "power2.out"
-            });
+                <button class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="floating-elements">
+            <!-- Stars and constellations are added via JS -->
+            <div class="glow-orb orb-1"></div>
+            <div class="glow-orb orb-2"></div>
+            <div class="glow-orb orb-3"></div>
+        </div>
+        
+        <div class="container">
+            <div class="hero-content slide-right" data-animation-delay="0.3">
+                <h1 class="hero-title">Chronicles of the Celestial Realms</h1>
+                <p class="hero-subtitle">Journey beyond the stars into a world of magic and mystery</p>
+                <p class="hero-description">Discover the secrets of The Rift, follow the path of the Time Smith, and unravel the mysteries of the Plain and Pale Clock in this epic fantasy series.</p>
+                <div>
+                    <a href="#" class="btn btn-primary">Read the Latest</a>
+                    <a href="#" class="btn btn-secondary">Explore the World</a>
+                </div>
+            </div>
+            <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23" alt="Book Cover" class="book-cover slide-left" data-animation-delay="0.5">
+        </div>
+    </section>
+    
+    <!-- Blog Container -->
+    <section class="blog-container">
+        <div class="container">
+            <header class="blog-header fade-in" data-animation-delay="0.3">
+                <h1>The Cosmic Chronicles Blog</h1>
+                <p>Weekly insights into the world of Celestial Chronicles</p>
+            </header>
+            
+            <!-- Weekly Blog Switcher -->
+            <div class="blog-switcher fade-in" data-animation-delay="0.4">
+                <h3 class="switcher-title">Browse by Week</h3>
+                <div class="switcher-weeks" id="week-switcher">
+                    <!-- Week buttons are generated by JS -->
+                </div>
+            </div>
+            
+            <div class="blog-info fade-in" data-animation-delay="0.5">
+                <div class="blog-meta">
+                    <div class="blog-date">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="current-date">March 5, 2025</span>
+                    </div>
+                    <div class="blog-author">
+                        <i class="fas fa-feather-alt"></i>
+                        <span>Author Name</span>
+                    </div>
+                    <div class="blog-category">
+                        <i class="fas fa-bookmark"></i>
+                        <span>World Building</span>
+                    </div>
+                </div>
+                <div class="blog-navigation">
+                    <button class="blog-nav-button" id="prev-blog">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="blog-nav-button" id="next-blog">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="blog-content">
+                <main class="blog-main fade-in" data-animation-delay="0.6">
+                    <img src="https://images.unsplash.com/photo-1419242902214-272b3f66ee7a" alt="Featured Image" class="featured-image" id="featured-image">
+                    
+                    <article class="blog-post" id="blog-content">
+                        <!-- Blog content is loaded dynamically via JS -->
+                        <h2>The Origins of The Rift</h2>
+                        
+                        <p>Long before time was woven into the fabric of reality, before the stars themselves took their first breath, there existed a void of pure potential. It was from this primordial canvas that The Rift first emerged—a fracture between what is and what could be.</p>
+                        
+                        <p>Many scholars in the realm of Aetheria have dedicated their lives to understanding The Rift's true nature. Some believe it to be the birthplace of all magic, while others view it as a wound in reality that never fully healed after the Celestial War.</p>
+                        
+                        <div class="magic-quote">
+                            "The Rift is neither beginning nor end, neither creation nor destruction. It simply is—a mirror that reflects not what we are, but what we might become."
+                            <span class="quote-source">— Archivist Thalen, Keeper of Forgotten Lore</span>
+                        </div>
+                        
+                        <h3>The Seven Veils of The Rift</h3>
+                        
+                        <p>Those who have ventured close to The Rift speak of seven distinct layers, or "veils," each pulsing with its own unique energy and governing different aspects of magical potential:</p>
+                        
+                        <ol>
+                            <li><strong>The Veil of Whispers</strong> — Where thoughts become echoes that ripple through time</li>
+                            <li><strong>The Veil of Essence</strong> — The source of all elemental magic</li>
+                            <li><strong>The Veil of Shadows</strong> — Where forgotten memories find refuge</li>
+                            <li><strong>The Veil of Light</strong> — The birthplace of stars and celestial bodies</li>
+                            <li><strong>The Veil of Life</strong> — Governing the flow of life force throughout the realms</li>
+                            <li><strong>The Veil of Harmony</strong> — Where balance between opposing forces is maintained</li>
+                            <li><strong>The Veil of Infinity</strong> — The deepest layer, said to connect to all possible realities</li>
+                        </ol>
+                        
+                        <p>Each veil resonates with different magical disciplines, and mages often specialize in drawing power from a specific layer. The most powerful magic users, however, learn to weave energy from multiple veils simultaneously—a dangerous practice that has consumed the minds of many ambitious spellcasters.</p>
+                        
+                        <h3>The Time Smith's Connection</h3>
+                        
+                        <p>No discussion of The Rift would be complete without mentioning the enigmatic figure known as the Time Smith. Ancient texts describe this being not as a person but as a role—a guardian chosen by The Rift itself to maintain the integrity of time's flow.</p>
+                        
+                        <p>The Time Smith is said to forge moments like links in a chain, connecting past to present to future. Their workshop exists somewhere between realities, accessible only through dreams or during celestial alignments. The Plain and Pale Clock, their most precious creation, is rumored to be the mechanism through which they monitor and adjust the flow of time when necessary.</p>
+                        
+                        <div class="magic-quote">
+                            "I have glimpsed the Smith's workshop only once, in a dream that lasted both an instant and an eternity. The walls were lined with countless hourglasses, each flowing at a different rate. And in the center stood the Clock—its face unmarked, its hands moving in patterns that defied comprehension."
+                            <span class="quote-source">— From the journal of Lyra Starcaller</span>
+                        </div>
+                        
+                        <p>In next week's entry, we'll explore the most notable manifestations of The Rift throughout history, and the mysterious creatures that sometimes emerge from its depths during periods of magical convergence.</p>
+                        
+                        <p>Until then, may your own journey through time be filled with wonder and discovery.</p>
+                    </article>
+                    
+                    <div class="blog-footer">
+                        <div class="share-buttons">
+                            <a href="#" class="share-button twitter">
+                                <i class="fab fa-twitter"></i>
+                                Share on Twitter
+                            </a>
+                            <a href="#" class="share-button facebook">
+                                <i class="fab fa-facebook-f"></i>
+                                Share on Facebook
+                            </a>
+                            <a href="#" class="share-button pinterest">
+                                <i class="fab fa-pinterest-p"></i>
+                                Save
+                            </a>
+                        </div>
+                        
+                        <div class="post-navigation">
+                            <div class="nav-previous">
+                                <div class="nav-title">Previous Post</div>
+                                <a href="#" class="nav-link">The Celestial Map: Navigating by Ancient Stars</a>
+                            </div>
+                            <div class="nav-next">
+                                <div class="nav-title">Next Post</div>
+                                <a href="#" class="nav-link">Whispers of the Void: Lost Languages of Magic</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <section class="comments-section">
+                        <h2 class="comments-title">
+                            <i class="fas fa-comments"></i>
+                            Reader Comments
+                        </h2>
+                        
+                        <div class="comments">
+                            <div class="comment">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330" alt="Avatar" class="comment-avatar">
+                                <div class="comment-content">
+                                    <div class="comment-meta">
+                                        <div class="comment-author">Lyra Moonwhisper</div>
+                                        <div class="comment-date">2 days ago</div>
+                                    </div>
+                                    <div class="comment-text">
+                                        <p>This description of The Rift matches what I've been visualizing while reading the series! I especially love the concept of the seven veils. Do you think the Time Smith will play a larger role in the next book?</p>
+                                    </div>
+                                    <div class="comment-actions">
+                                        <a href="#" class="comment-action">Reply</a>
+                                        <a href="#" class="comment-action">Like</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="comment">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d" alt="Avatar" class="comment-avatar">
+                                <div class="comment-content">
+                                    <div class="comment-meta">
+                                        <div class="comment-author">Thorne Shadowbinder</div>
+                                        <div class="comment-date">1 day ago</div>
+                                    </div>
+                                    <div class="comment-text">
+                                        <p>The description of the Smith's workshop sent chills down my spine. I can almost hear the ticking of countless timepieces! Your world-building continues to amaze me with each new post.</p>
+                                    </div>
+                                    <div class="comment-actions">
+                                        <a href="#" class="comment-action">Reply</a>
+                                        <a href="#" class="comment-action">Like</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <form class="comment-form">
+                            <div class="form-group">
+                                <label for="comment-name" class="form-label">Name</label>
+                                <input type="text" id="comment-name" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="comment-email" class="form-label">Email</label>
+                                <input type="email" id="comment-email" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="comment-text" class="form-label">Comment</label>
+                                <textarea id="comment-text" class="form-textarea" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Comment</button>
+                        </form>
+                    </section>
+                </main>
+                
+                <aside class="blog-sidebar fade-in" data-animation-delay="0.7">
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">About the Author</h3>
+                        <div class="sidebar-content about-author">
+                            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d" alt="Author" class="author-image">
+                            <h4 class="author-name">Author Name</h4>
+                            <p class="author-bio">Creator of the Celestial Chronicles series and lifelong explorer of fantastical realms. When not writing, they can be found stargazing or collecting ancient tomes.</p>
+                            <div class="social-links">
+                                <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                                <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                                <a href="#" class="social-link"><i class="fab fa-goodreads-g"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">Blog Archives</h3>
+                        <div class="sidebar-content">
+                            <ul class="archive-list" id="archive-list">
+                                <!-- Archives are generated by JS -->
+                                <li class="archive-item">
+                                    <a href="#" class="archive-link">
+                                        <span>The Celestial Map: Navigating by Ancient Stars</span>
+                                        <span class="archive-date">Feb 26, 2025</span>
+                                    </a>
+                                </li>
+                                <li class="archive-item">
+                                    <a href="#" class="archive-link">
+                                        <span>Magical Systems: The Art of Runic Casting</span>
+                                        <span class="archive-date">Feb 19, 2025</span>
+                                    </a>
+                                </li>
+                                <li class="archive-item">
+                                    <a href="#" class="archive-link">
+                                        <span>Creatures of the Void: Unseen Companions</span>
+                                        <span class="archive-date">Feb 12, 2025</span>
+                                    </a>
+                                </li>
+                                <li class="archive-item">
+                                    <a href="#" class="archive-link">
+                                        <span>The Seven Kingdoms: A Historical Overview</span>
+                                        <span class="archive-date">Feb 5, 2025</span>
+                                    </a>
+                                </li>
+                                <li class="archive-item">
+                                    <a href="#" class="archive-link">
+                                        <span>Ancient Prophecies: Decoding the Stellar Scrolls</span>
+                                        <span class="archive-date">Jan 29, 2025</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">Explore Tags</h3>
+                        <div class="sidebar-content">
+                            <div class="tag-cloud">
+                                <a href="#" class="tag">World Building</a>
+                                <a href="#" class="tag">Magic Systems</a>
+                                <a href="#" class="tag">Characters</a>
+                                <a href="#" class="tag">Lore</a>
+                                <a href="#" class="tag">Mythology</a>
+                                <a href="#" class="tag">The Rift</a>
+                                <a href="#" class="tag">Time Smith</a>
+                                <a href="#" class="tag">Celestial Magic</a>
+                                <a href="#" class="tag">Ancient History</a>
+                                <a href="#" class="tag">Prophecies</a>
+                                <a href="#" class="tag">Magical Creatures</a>
+                                <a href="#" class="tag">Realms</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <h3 class="sidebar-title">Newsletter</h3>
+                        <div class="sidebar-content">
+                            <p>Subscribe to receive updates about new blog posts and book releases.</p>
+                            <form class="newsletter-form">
+                                <input type="email" placeholder="Your email address" class="newsletter-input" required>
+                                <button type="submit" class="newsletter-button">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-bg"></div>
+        <div class="container footer-content">
+            <div class="footer-top">
+                <div class="footer-column">
+                    <h3 class="footer-title">Celestial Chronicles</h3>
+                    <p>An epic fantasy series that takes readers on a journey through cosmic realms, ancient magic, and the eternal struggle between time and chaos.</p>
+                    <div class="footer-social">
+                        <a href="#" class="footer-social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-pinterest"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-nav">
+                        <li class="footer-nav-item">
+                            <a href="#" class="footer-nav-link">Home</a>
+                        </li>
+                        <li class="footer-nav-item">
+                            <a href="#" class="footer-nav-link">About the Series</a>
+                        </li>
+                        <li class="footer-nav-item">
+                            <a href="#" class="footer-nav-link">Books</a>
+                        </li>
+                        <li class="footer-nav-item">
+                            <a href="#" class="footer-nav-link">Blog</a>
+                        </li>
+                        <li class="footer-nav-item">
+                            <a href="#" class="footer-nav-link">Character Profiles</a>
+                        </li>
+                        <li class="footer-nav-item">
+                            <a href="#" class="footer-nav-link">World Map</a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3 class="footer-title">Contact</h3>
+                    <ul class="footer-nav">
+                        <li class="footer-nav-item">
+                            <i class="fas fa-envelope"></i> author@celestialchronicles.com
+                        </li>
+                        <li class="footer-nav-item">
+                            <i class="fas fa-map-marker-alt"></i> Publisher Address, Fantasy Avenue, Cosmic City
+                        </li>
+                        <li class="footer-nav-item">
+                            Literary Agent: Agent Name
+                        </li>
+                    </ul>
+                    <div class="footer-newsletter">
+                        <h4>Join the Newsletter</h4>
+                        <form class="newsletter-form">
+                            <input type="email" placeholder="Your email address" class="newsletter-input" required>
+                            <button type="submit" class="newsletter-button">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-divider"></div>
+            
+            <div class="footer-bottom">
+                <div class="copyright">© 2025 Celestial Chronicles. All rights reserved.</div>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a> | 
+                    <a href="#">Terms of Use</a> | 
+                    <a href="#">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Load libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- Main Script -->
+    <script>
+        // Initialize when DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Register GSAP plugins
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // Initialize Three.js Background
+            initThreeJsBackground();
+            
+            // Initialize Weekly Blog Switcher
+            initBlogSwitcher();
+            
+            // Initialize animations
+            initAnimations();
+            
+            // Header scroll effect
+            initHeaderScroll();
+            
+            // Parallax effect
+            initParallax();
+            
+            // Current date display
+            updateCurrentDate();
+            
+            // Blog navigation buttons
+            document.getElementById('prev-blog').addEventListener('click', () => navigateBlog('prev'));
+            document.getElementById('next-blog').addEventListener('click', () => navigateBlog('next'));
         });
-
-        // Animation Loop
-        function animate() {
-            requestAnimationFrame(animate);
-            stars.rotation.x += 0.0005;
-            stars.rotation.y += 0.0005;
-            renderer.render(scene, camera);
+        
+        // Initialize Three.js Background
+        function initThreeJsBackground() {
+            const canvas = document.getElementById('celestial-background');
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 50;
+            
+            // Stars
+            const starGeometry = new THREE.BufferGeometry();
+            const starVertices = [];
+            const starColors = [];
+            
+            // Create 2000 stars
+            for (let i = 0; i < 2000; i++) {
+                const x = (Math.random() - 0.5) * 2000;
+                const y = (Math.random() - 0.5) * 2000;
+                const z = (Math.random() - 0.5) * 2000;
+                
+                starVertices.push(x, y, z);
+                
+                // Star colors - mix of white, light blue, and purple
+                const colorChoice = Math.random();
+                if (colorChoice < 0.7) {
+                    // White
+                    starColors.push(1, 1, 1);
+                } else if (colorChoice < 0.9) {
+                    // Light blue
+                    starColors.push(0.7, 0.8, 1);
+                } else {
+                    // Purple
+                    starColors.push(0.8, 0.7, 1);
+                }
+            }
+            
+            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+            starGeometry.setAttribute('color', new THREE.Float32BufferAttribute(starColors, 3));
+            
+            const starMaterial = new THREE.PointsMaterial({
+                size: 2,
+                vertexColors: true,
+                transparent: true,
+            });
+            
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+            
+            // Add nebula clouds
+            const nebulaCount = 5;
+            const nebulae = [];
+            
+            for (let i = 0; i < nebulaCount; i++) {
+                const nebulaGeometry = new THREE.PlaneGeometry(200, 200);
+                
+                // Create nebula material with different colors
+                const color = new THREE.Color();
+                
+                if (i % 3 === 0) {
+                    // Purple nebula
+                    color.setHSL(0.75, 0.8, 0.5);
+                } else if (i % 3 === 1) {
+                    // Blue nebula
+                    color.setHSL(0.6, 0.8, 0.5);
+                } else {
+                    // Gold nebula
+                    color.setHSL(0.15, 0.8, 0.5);
+                }
+                
+                const nebulaMaterial = new THREE.MeshBasicMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: 0.05,
+                    side: THREE.DoubleSide,
+                    blending: THREE.AdditiveBlending
+                });
+                
+                const nebula = new THREE.Mesh(nebulaGeometry, nebulaMaterial);
+                
+                // Position randomly in space
+                nebula.position.x = (Math.random() - 0.5) * 100;
+                nebula.position.y = (Math.random() - 0.5) * 100;
+                nebula.position.z = (Math.random() - 0.5) * 100;
+                
+                // Random rotation
+                nebula.rotation.x = Math.random() * Math.PI;
+                nebula.rotation.y = Math.random() * Math.PI;
+                nebula.rotation.z = Math.random() * Math.PI;
+                
+                scene.add(nebula);
+                nebulae.push(nebula);
+            }
+            
+            // Window resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            // Mouse move for subtle parallax
+            let mouseX = 0;
+            let mouseY = 0;
+            let targetX = 0;
+            let targetY = 0;
+            
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX - window.innerWidth / 2) * 0.001;
+                mouseY = (event.clientY - window.innerHeight / 2) * 0.001;
+            });
+            
+            // Animate
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Smooth mouse follow
+                targetX += (mouseX - targetX) * 0.03;
+                targetY += (mouseY - targetY) * 0.03;
+                
+                // Rotate stars slowly
+                stars.rotation.x += 0.0002;
+                stars.rotation.y += 0.0003;
+                
+                // Add mouse influence
+                stars.rotation.x += targetY * 0.5;
+                stars.rotation.y += targetX * 0.5;
+                
+                // Animate nebulae
+                nebulae.forEach((nebula, index) => {
+                    nebula.rotation.x += 0.0003 * (index % 2 === 0 ? 1 : -1);
+                    nebula.rotation.y += 0.0002 * (index % 3 === 0 ? 1 : -1);
+                });
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
         }
-        animate();
+        
+        // Initialize Blog Switcher
+        function initBlogSwitcher() {
+            const weekSwitcher = document.getElementById('week-switcher');
+            
+            // Sample blog data
+            const blogs = [
+                {
+                    week: 'Week 1',
+                    date: 'March 5, 2025',
+                    title: 'The Origins of The Rift',
+                    image: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a',
+                    content: document.getElementById('blog-content').innerHTML, // Current content
+                },
+                {
+                    week: 'Week 2',
+                    date: 'March 12, 2025',
+                    title: 'The Plain and Pale Clock: Measuring Eternity',
+                    image: 'https://images.unsplash.com/photo-1501139083538-0139583c060f',
+                    content: `
+                        <h2>The Plain and Pale Clock: Measuring Eternity</h2>
+                        
+                        <p>In the countless realms of Celestial Chronicles, few artifacts carry as much significance as the enigmatic Plain and Pale Clock. Neither ornate nor imposing, its unassuming appearance belies its profound power over the fabric of time itself.</p>
+                        
+                        <p>The Clock first appears in the ancient text "Temporal Whispers," described as "a timepiece of utter simplicity, with a face as pale as dawn's first light, hands that move to rhythms beyond mortal comprehension, and a voice that speaks only to those chosen to hear its secrets."</p>
+                        
+                        <div class="magic-quote">
+                            "The Clock measures not minutes nor hours, but the space between heartbeats, the pause between thoughts, the moment between what was and what will be."
+                            <span class="quote-source">— From "Temporal Whispers," Third Era manuscripts</span>
+                        </div>
+                        
+                        <h3>Beyond Conventional Time</h3>
+                        
+                        <p>Unlike ordinary timepieces, the Plain and Pale Clock doesn't follow a consistent rhythm. Witnesses report that its hands sometimes move forward, sometimes backward, and occasionally stand perfectly still for days on end. Most curiously, these movements appear to correlate with significant magical events throughout the realms.</p>
+                        
+                        <p>Archmage Everin, who dedicated forty years to studying temporal anomalies, believed the Clock doesn't merely measure time—it influences it. In his journal, he wrote of observing the Clock's minute hand tremble just before a temporal storm blanketed the Northern Kingdoms, suspending everyone in a moment that lasted three days from the outside, yet felt like mere seconds to those within.</p>
+                        
+                        <h3>The Time Smith's Most Guarded Creation</h3>
+                        
+                        <p>According to legend, the Clock was forged by the Time Smith using materials from the heart of The Rift itself. While most of the Smith's creations served practical purposes—sunstones that never fade, hourglasses that measure lifespans—the Clock's purpose remains shrouded in mystery.</p>
+                        
+                        <p>Some scholars believe it serves as a cosmic balancing mechanism, preventing any one timeline from gaining dominance over others. Others suggest it's a communication device, allowing the Smith to receive messages from future selves or alternate realities.</p>
+                        
+                        <div class="magic-quote">
+                            "I've held the Clock just once, for the briefest moment. It felt lighter than it should have, as if partially existing elsewhere. And though its surface appeared smooth, my fingers detected intricate engravings that my eyes could not see—a language written in time rather than space."
+                            <span class="quote-source">— Keeper Selena, before her disappearance</span>
+                        </div>
+                        
+                        <h3>Guardians of the Clock</h3>
+                        
+                        <p>Throughout history, the Plain and Pale Clock has been protected by a secretive order known as the Chronomancers. Selected through means unknown, these guardians demonstrate an innate sensitivity to temporal fluctuations.</p>
+                        
+                        <p>The Chronomancers' primary duty is to ensure the Clock never falls into the hands of those who would manipulate time for personal gain. Their secondary purpose, according to fragmented records, involves "listening to the Clock's counsel" and acting upon its guidance during periods of cosmic instability.</p>
+                        
+                        <p>In next week's entry, we'll explore the mysterious figure known as Ursa Minor, whose connection to both The Rift and the Plain and Pale Clock hints at a destiny intertwined with the fate of all realms.</p>
+                        
+                        <p>Until then, may your moments be meaningful, whether they pass swiftly or linger like twilight.</p>
+                    `
+                },
+                {
+                    week: 'Week 3',
+                    date: 'March 19, 2025',
+                    title: 'Ursa Minor: The Celestial Guardian',
+                    image: 'https://images.unsplash.com/photo-1534447677768-be436bb09401',
+                    content: `
+                        <h2>Ursa Minor: The Celestial Guardian</h2>
+                        
+                        <p>Among the myriad characters who walk the paths of the Celestial Chronicles, perhaps none is as enigmatic or pivotal as Ursa Minor. First introduced as a seemingly minor character—a stargazer's apprentice with an unusual birthmark resembling the constellation for which she is named—Ursa's true significance unfolds gradually, like a celestial event visible only to those patient enough to watch the night sky.</p>
+                        
+                        <div class="magic-quote">
+                            "The stars have always spoken to me. Not in words, but in patterns and pulses of light that form thoughts in my mind. They warned me of The Rift's awakening long before the first tremors shook the realm."
+                            <span class="quote-source">— Ursa Minor, in conversation with the Archivist</span>
+                        </div>
+                        
+                        <h3>Child of Two Worlds</h3>
+                        
+                        <p>Born during a rare stellar alignment known as the Convergence of Seven, Ursa's origins remain shrouded in mystery. Orphaned as an infant and raised by the reclusive Celestial Observers on Mount Astrum, she displayed an uncanny ability to interpret stellar movements from an early age.</p>
+                        
+                        <p>What few know is that Ursa's bloodline traces back to both human and celestial ancestry. The silver flecks in her eyes—often mistaken for simple reflections—are actually tiny fragments of stardust embedded in her irises, a physical manifestation of her dual heritage.</p>
+                        
+                        <h3>The Celestial Guardian's Role</h3>
+                        
+                        <p>Ancient prophecies speak of a guardian who would "stand between realms when the boundaries grow thin." For centuries, scholars debated whether this referred to a physical being or a metaphorical concept. With Ursa's emergence, many now believe she embodies this long-awaited guardian.</p>
+                        
+                        <p>Unlike traditional protectors who rely on weapons or conventional magic, Ursa's power stems from her unique connection to celestial forces. She can read the language of stars, perceive ripples in the fabric of reality, and—on rare occasions—channel pure stellar energy to create shields or pathways between worlds.</p>
+                        
+                        <div class="magic-quote">
+                            "I witnessed her stop a temporal fracture with nothing but her outstretched hand. Where the air had been tearing apart, revealing the chaotic energies of The Rift, she simply traced a pattern with her fingers and sealed it as effortlessly as closing a book."
+                            <span class="quote-source">— From the journal of Thorne Nightwalker</span>
+                        </div>
+                        
+                        <h3>Connection to the Plain and Pale Clock</h3>
+                        
+                        <p>Perhaps most intriguing is Ursa's relationship with the Plain and Pale Clock. While the Chronomancers have guarded the artifact for generations, only Ursa can hear its ticking without having to physically stand near it. This connection allows her to sense temporal disturbances anywhere in the realm.</p>
+                        
+                        <p>On the night of the Great Convergence, when all seven celestial paths aligned for the first time in a millennium, witnesses reported seeing Ursa conversing with the Clock as if it were a person. What guidance she received remains her closely guarded secret, though her actions in the days that followed prevented a catastrophic merging of multiple timelines.</p>
+                        
+                        <h3>The Burden of Foresight</h3>
+                        
+                        <p>Ursa's greatest gift is also her heaviest burden. Through her connection to the stars, she occasionally glimpses potential futures—branching paths of possibility that shift with each decision made across the realms.</p>
+                        
+                        <p>These visions rarely offer clear guidance. Instead, they present symbolic imagery that Ursa must interpret, often with limited context. The consequences of misinterpretation weigh heavily upon her, creating a solitude that even her closest allies cannot fully penetrate.</p>
+                        
+                        <p>In next week's entry, we'll explore the forgotten language of the stars—the celestial script that Ursa reads with such fluency, and its applications in magical practice throughout the history of the realms.</p>
+                        
+                        <p>Until then, may the stars guide your path through even the darkest of nights.</p>
+                    `
+                },
+                {
+                    week: 'Week 4',
+                    date: 'March 26, 2025',
+                    title: 'The Language of Stars: Celestial Magic',
+                    image: 'https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3',
+                    content: `
+                        <h2>The Language of Stars: Celestial Magic</h2>
+                        
+                        <p>Before words were written, before songs were sung, the stars spoke their silent language across the cosmos. Their patterns and pulses of light formed the first magical script—a language not of sounds or symbols, but of pure celestial energy woven into the fabric of creation itself.</p>
+                        
+                        <p>In the world of Celestial Chronicles, this primordial language remains accessible to those rare individuals born with the gift to perceive it, and to those dedicated scholars who spend lifetimes deciphering its complex syntax through mathematical precision and mystical intuition.</p>
+                        
+                        <div class="magic-quote">
+                            "The stars do not speak of mundane matters. Their concerns are eternity, patterns that ripple across eons, and the delicate balance between light and void. To learn their language is to think in terms of centuries rather than moments."
+                            <span class="quote-source">— Master Astronomer Elara Nightweaver</span>
+                        </div>
+                        
+                        <h3>The Celestial Alphabet</h3>
+                        
+                        <p>Unlike human languages with their finite alphabets, the stellar lexicon comprises countless "letters," each representing a specific celestial body or cosmic phenomenon. Constellations serve as the "words" in this language, their meanings shifting subtly based on their positions relative to one another.</p>
+                        
+                        <p>The most basic form of celestial communication involves seven primary stars known as the Cosmic Constants. These stars—each representing a fundamental force such as time, space, or consciousness—form the foundation upon which more complex stellar statements are built.</p>
+                        
+                        <h3>Practical Applications in Magic</h3>
+                        
+                        <p>Celestial magic differs fundamentally from elemental or runic traditions. Rather than commanding forces directly, practitioners of stellar magic align themselves with cosmic patterns to achieve their intended effects.</p>
+                        
+                        <p>This alignment takes various forms:</p>
+                        
+                        <ul>
+                            <li><strong>Constellation Casting</strong> — Tracing the exact pattern of a constellation in the air while channeling magical energy to invoke its associated properties</li>
+                            <li><strong>Astral Timing</strong> — Performing magical workings at precise moments when celestial alignments naturally amplify specific effects</li>
+                            <li><strong>Star Binding</strong> — Forging a permanent connection between an object and a particular star, imbuing the item with that star's qualities</li>
+                            <li><strong>Cosmic Resonance</strong> — Attuning one's own magical aura to match the frequency of selected celestial bodies</li>
+                        </ul>
+                        
+                        <div class="magic-quote">
+                            "I have witnessed a true master of stellar magic heal a mortal wound by simply aligning the patient's heartbeat with the pulse of the Star of Life. No incantations, no complicated preparations—just perfect celestial harmony."
+                            <span class="quote-source">— From "Observations on Mystical Practices," by Scholar Thalen</span>
+                        </div>
+                        
+                        <h3>The Stellar Observatory</h3>
+                        
+                        <p>Nestled in the highest peaks of the Crystal Mountains stands the Stellar Observatory, the foremost institution dedicated to the study and practice of celestial magic. Its central dome, crafted from enchanted glass that filters and amplifies starlight, houses the Grand Orrery—a massive mechanical model of the known cosmos.</p>
+                        
+                        <p>Within this sacred space, astronomers and mages work together to map the night sky with extraordinary precision, documenting stellar movements and their correlations with magical phenomena throughout the realms. Their archives contain star charts dating back thousands of years, revealing patterns that unfold across vast stretches of time.</p>
+                        
+                        <h3>Ursa's Unique Fluency</h3>
+                        
+                        <p>While many scholars spend decades mastering even basic celestial communication, Ursa Minor demonstrates an intuitive fluency that defies conventional understanding. For her, the language of stars is as natural as breathing.</p>
+                        
+                        <p>This gift manifests in several extraordinary abilities:</p>
+                        
+                        <ul>
+                            <li>She can read stellar messages without instruments, even during daylight hours</li>
+                            <li>She perceives subtle nuances in starlight that reveal the emotional context behind cosmic communications</li>
+                            <li>She can engage in two-way conversation with specific stars, something previously thought impossible</li>
+                            <li>She understands extinct dialects of celestial language that haven't been actively used since the First Era</li>
+                        </ul>
+                        
+                        <p>In next week's entry, we'll explore the legendary locations where The Rift's influence is most strongly felt, including the fabled Nexus Points where multiple realms overlap, creating pockets of extraordinary magical potential.</p>
+                        
+                        <p>Until then, may you find meaning in the patterns that surround you, whether written in stars or in the more subtle constellations of daily life.</p>
+                    `
+                },
+                {
+                    week: 'Week 5',
+                    date: 'April 2, 2025',
+                    title: 'Nexus Points: Where Realms Converge',
+                    image: 'https://images.unsplash.com/photo-1454789548928-9efd52dc4031',
+                    content: `
+                        <h2>Nexus Points: Where Realms Converge</h2>
+                        
+                        <p>Throughout the vast expanse of the Celestial Chronicles universe, reality is not a seamless whole but rather a tapestry of overlapping realms. At certain locations—rare and often hidden—these separate worlds draw extraordinarily close, creating what scholars call Nexus Points: locations where the boundaries between dimensions grow so thin that they occasionally dissolve altogether.</p>
+                        
+                        <div class="magic-quote">
+                            "To stand at a true Nexus is to exist in multiple places simultaneously. Your body remains in one realm, but your senses extend into others. Colors you've never imagined flood your vision. The air tastes of possibilities. And if you listen carefully, you can hear echoes of lives you might have lived."
+                            <span class="quote-source">— Wayfinder Elian, from "Cartography of the Impossible"</span>
+                        </div>
+                        
+                        <h3>The Seven Major Nexus Points</h3>
+                        
+                        <p>While minor convergences exist in numerous locations, seven major Nexus Points have been documented across the known realms. Each possesses unique properties based on the specific dimensions that intersect there:</p>
+                        
+                        <ol>
+                            <li><strong>The Twilight Spire</strong> — Where our realm meets the Shadowlands and the Astral Plane, creating a place where physical matter, shadow, and thought exist in perfect equilibrium</li>
+                            <li><strong>The Cerulean Depths</strong> — An underwater location where our world intersects with the Elemental Plane of Water and the mysterious Abyssal Realm</li>
+                            <li><strong>The Prismatic Desert</strong> — A vast expanse where reality overlaps with the Plane of Fire and the Crystalline Dimension, causing sand to occasionally transform into flame or crystal</li>
+                            <li><strong>The Whispering Forest</strong> — Where our realm, the Fae Wilds, and the Ancestral Domain converge, allowing communication with nature spirits and glimpses of past and future versions of the land</li>
+                            <li><strong>The Void Peaks</strong> — Mountain summits where our world meets both the Celestial Realm and the Void, creating unpredictable magical conditions influenced by stellar alignments</li>
+                            <li><strong>The Temporal Marshlands</strong> — Swamps where our reality intersects with the Realm of Time and the Land of Mists, causing temporal anomalies and prophetic visions</li>
+                            <li><strong>The Convergence</strong> — The most powerful Nexus, where all seven major realms temporarily align during rare cosmic events, creating a point of unlimited magical potential</li>
+                        </ol>
+                        
+                        <h3>Magical Properties and Dangers</h3>
+                        
+                        <p>Nexus Points generate extraordinary magical effects that defy conventional understanding. Spells cast at these locations may be amplified beyond recognition, operate according to different rules, or produce entirely unexpected results.</p>
+                        
+                        <p>These properties make Nexus Points invaluable for certain magical workings:</p>
+                        
+                        <ul>
+                            <li>Enchantments performed at a Nexus can produce artifacts of remarkable power</li>
+                            <li>Divination rituals often yield clearer and more detailed insights</li>
+                            <li>Healing magic can transcend normal limitations, sometimes even reversing conditions thought permanent</li>
+                            <li>Transportation spells can reach destinations normally beyond their range</li>
+                        </ul>
+                        
+                        <p>However, these benefits come with substantial risks. The unstable nature of reality at Nexus Points can lead to:</p>
+                        
+                        <ul>
+                            <li>Unpredictable magical backlash</li>
+                            <li>Accidental transport to other realms</li>
+                            <li>Exposure to entities from dimensions with different natural laws</li>
+                            <li>Temporal distortions that age or rejuvenate visitors unpredictably</li>
+                        </ul>
+                        
+                        <div class="magic-quote">
+                            "I've witnessed a simple light spell cast at the Prismatic Desert create a column of rainbow fire that burned for seven years without fuel. I've also seen an experienced mage attempt a minor transformation at the Temporal Marshlands and age thirty years in an instant. Approach Nexus magic with extreme caution—or better yet, don't approach it at all."
+                            <span class="quote-source">— Warning from Archmage Thorne to his apprentices</span>
+                        </div>
+                        
+                        <h3>The Time Smith's Interest</h3>
+                        
+                        <p>Ancient records suggest that the Time Smith frequently visits Nexus Points, particularly the Temporal Marshlands and The Convergence. Some scholars theorize that the Smith uses these locations to make adjustments to the flow of time across multiple realms simultaneously.</p>
+                        
+                        <p>The Plain and Pale Clock reportedly behaves unusually when brought to a Nexus—its hands sometimes spinning rapidly, stopping completely, or moving in impossible patterns. Those sensitive to temporal energies describe hearing multiple "versions" of its ticking overlapping, as if the Clock exists in several timelines at once.</p>
+                        
+                        <h3>Ursa Minor and The Convergence</h3>
+                        
+                        <p>Of particular note is Ursa Minor's connection to The Convergence. Unlike other visitors who can only safely remain at this most powerful Nexus for brief periods, Ursa has been observed meditating at its center for days without apparent harm.</p>
+                        
+                        <p>During the most recent alignment of realms, witnesses reported seeing her suspended in midair at the heart of The Convergence, her form seemingly transparent as starlight flowed through and around her. The exact nature of this communion remains unknown, though the stellar messages visible in the sky afterward spoke of "balance restored" and "paths realigned."</p>
+                        
+                        <p>In next week's entry, we'll explore the mysterious creatures known as Rift Walkers—beings that naturally exist between realms and the unique abilities that allow them to traverse The Rift without harm.</p>
+                        
+                        <p>Until then, may your journeys keep you safely within the boundaries of a single realm—unless, of course, adventure calls you beyond them.</p>
+                    `
+                }
+            ];
+            
+            // Create week buttons
+            blogs.forEach((blog, index) => {
+                const button = document.createElement('button');
+                button.className = 'week-button';
+                button.textContent = blog.week;
+                button.dataset.index = index;
+                
+                if (index === 0) {
+                    button.classList.add('active');
+                }
+                
+                button.addEventListener('click', () => {
+                    // Update active button
+                    document.querySelectorAll('.week-button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // Update blog content
+                    updateBlogContent(index);
+                });
+                
+                weekSwitcher.appendChild(button);
+            });
+            
+            // Current blog index
+            window.currentBlogIndex = 0;
+            window.blogs = blogs;
+            
+            // Function to update blog content
+            function updateBlogContent(index) {
+                const blog = blogs[index];
+                
+                // Fade out current content
+                const blogMain = document.querySelector('.blog-main');
+                blogMain.style.opacity = '0';
+                
+                setTimeout(() => {
+                    // Update content
+                    document.getElementById('current-date').textContent = blog.date;
+                    document.getElementById('featured-image').src = blog.image;
+                    document.getElementById('blog-content').innerHTML = blog.content;
+                    
+                    // Update current index
+                    window.currentBlogIndex = index;
+                    
+                    // Fade in new content
+                    blogMain.style.opacity = '1';
+                }, 300);
+            }
+        }
+        
+        // Navigate between blogs
+        function navigateBlog(direction) {
+            const blogs = window.blogs;
+            let newIndex = window.currentBlogIndex;
+            
+            if (direction === 'prev') {
+                newIndex = newIndex > 0 ? newIndex - 1 : blogs.length - 1;
+            } else {
+                newIndex = newIndex < blogs.length - 1 ? newIndex + 1 : 0;
+            }
+            
+            // Update week buttons
+            document.querySelectorAll('.week-button').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.dataset.index) === newIndex) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Update blog content
+            updateBlogContent(newIndex);
+            
+            // Helper function
+            function updateBlogContent(index) {
+                const blog = blogs[index];
+                
+                // Update with animation
+                gsap.to('.blog-main', {
+                    opacity: 0,
+                    y: 20,
+                    duration: 0.3,
+                    onComplete: () => {
+                        // Update content
+                        document.getElementById('current-date').textContent = blog.date;
+                        document.getElementById('featured-image').src = blog.image;
+                        document.getElementById('blog-content').innerHTML = blog.content;
+                        
+                        // Update current index
+                        window.currentBlogIndex = index;
+                        
+                        // Animate back in
+                        gsap.to('.blog-main', {
+                            opacity: 1,
+                            y: 0,
+                            duration: 0.5,
+                            ease: 'power2.out'
+                        });
+                    }
+                });
+            }
+        }
+        
+        // Initialize animations
+        function initAnimations() {
+            // GSAP animations
+            initGSAPAnimations();
+            
+            // Anime.js animations
+            initAnimeAnimations();
+            // GSAP scroll-triggered animations
+            function initGSAPAnimations() {
+                // Register ScrollTrigger
+                gsap.registerPlugin(ScrollTrigger);
+                
+                // Initial entrance animations
+                gsap.utils.toArray('[data-animation-delay]').forEach(element => {
+                    const delay = element.dataset.animationDelay || 0;
+                    
+                    if (element.classList.contains('fade-in')) {
+                        gsap.fromTo(element, 
+                            { opacity: 0, y: 20 },
+                            { opacity: 1, y: 0, duration: 1, delay: parseFloat(delay), ease: 'power3.out' }
+                        );
+                    } else if (element.classList.contains('slide-right')) {
+                        gsap.fromTo(element, 
+                            { opacity: 0, x: -50 },
+                            { opacity: 1, x: 0, duration: 1, delay: parseFloat(delay), ease: 'power3.out' }
+                        );
+                    } else if (element.classList.contains('slide-left')) {
+                        gsap.fromTo(element, 
+                            { opacity: 0, x: 50 },
+                            { opacity: 1, x: 0, duration: 1, delay: parseFloat(delay), ease: 'power3.out' }
+                        );
+                    } else if (element.classList.contains('scale-in')) {
+                        gsap.fromTo(element, 
+                            { opacity: 0, scale: 0.8 },
+                            { opacity: 1, scale: 1, duration: 1, delay: parseFloat(delay), ease: 'back.out(1.7)' }
+                        );
+                    } else if (element.classList.contains('blur-in')) {
+                        gsap.fromTo(element, 
+                            { opacity: 0, filter: 'blur(10px)' },
+                            { opacity: 1, filter: 'blur(0px)', duration: 1, delay: parseFloat(delay), ease: 'power3.out' }
+                        );
+                    }
+                });
+                
+                // Scroll-triggered animations
+                gsap.utils.toArray('.sidebar-section').forEach((section, i) => {
+                    gsap.fromTo(section,
+                        { y: 50, opacity: 0 },
+                        {
+                            y: 0,
+                            opacity: 1,
+                            duration: 1,
+                            ease: 'power3.out',
+                            scrollTrigger: {
+                                trigger: section,
+                                start: 'top 80%',
+                                once: true
+                            }
+                        }
+                    );
+                });
+                
+                // Magic quotes animation
+                gsap.utils.toArray('.magic-quote').forEach(quote => {
+                    gsap.fromTo(quote,
+                        { opacity: 0, scale: 0.95, boxShadow: '0 0 0 rgba(249, 184, 87, 0)' },
+                        {
+                            opacity: 1,
+                            scale: 1,
+                            boxShadow: '0 0 30px rgba(249, 184, 87, 0.2)',
+                            duration: 1.5,
+                            ease: 'power3.out',
+                            scrollTrigger: {
+                                trigger: quote,
+                                start: 'top 80%',
+                                once: true
+                            }
+                        }
+                    );
+                });
+                
+                // Animate blog content elements
+                const blogElements = document.querySelectorAll('.blog-post h2, .blog-post h3, .blog-post p, .blog-post ul, .blog-post ol');
+                blogElements.forEach((element, index) => {
+                    gsap.fromTo(element,
+                        { y: 30, opacity: 0 },
+                        {
+                            y: 0,
+                            opacity: 1,
+                            duration: 0.8,
+                            ease: 'power3.out',
+                            scrollTrigger: {
+                                trigger: element,
+                                start: 'top 85%',
+                                once: true
+                            },
+                            delay: index * 0.05 // Slight stagger effect
+                        }
+                    );
+                });
+                
+                // Footer reveal animation
+                gsap.fromTo('footer .footer-content',
+                    { y: 50, opacity: 0 },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 1,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: 'footer',
+                            start: 'top 90%',
+                            once: true
+                        }
+                    }
+                );
+                
+                // Animate tag cloud with staggered effect
+                gsap.fromTo('.tag',
+                    { scale: 0, opacity: 0 },
+                    {
+                        scale: 1,
+                        opacity: 1,
+                        duration: 0.8,
+                        stagger: 0.03,
+                        ease: 'back.out(1.7)',
+                        scrollTrigger: {
+                            trigger: '.tag-cloud',
+                            start: 'top 90%',
+                            once: true
+                        }
+                    }
+                );
+                
+                // Archive links animation
+                gsap.fromTo('.archive-item',
+                    { x: -20, opacity: 0 },
+                    {
+                        x: 0,
+                        opacity: 1,
+                        duration: 0.8,
+                        stagger: 0.1,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: '.archive-list',
+                            start: 'top 90%',
+                            once: true
+                        }
+                    }
+                );
+                
+                // Comments section reveal
+                gsap.fromTo('.comment',
+                    { y: 30, opacity: 0 },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 0.8,
+                        stagger: 0.2,
+                        ease: 'power3.out',
+                        scrollTrigger: {
+                            trigger: '.comments-section',
+                            start: 'top 80%',
+                            once: true
+                        }
+                    }
+                );
+                
+                // Create stellar sparkles that follow scroll
+                const sparkleTL = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: 'body',
+                        start: 'top top',
+                        end: 'bottom bottom',
+                        scrub: 1
+                    }
+                });
+                
+                // Add sparkles to timeline
+                for (let i = 0; i < 10; i++) {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'star';
+                    sparkle.style.width = `${Math.random() * 3 + 1}px`;
+                    sparkle.style.height = sparkle.style.width;
+                    sparkle.style.left = `${Math.random() * 100}%`;
+                    sparkle.style.top = `${10 + Math.random() * 80}%`;
+                    sparkle.style.opacity = Math.random() * 0.7 + 0.3;
+                    
+                    document.querySelector('.floating-elements').appendChild(sparkle);
+                    
+                    sparkleTL.to(sparkle, {
+                        y: `${Math.random() * 200 - 100}`,
+                        x: `${Math.random() * 200 - 100}`,
+                        opacity: Math.random() * 0.5 + 0.2,
+                        duration: 0.5,
+                        ease: 'none'
+                    }, i * 0.02);
+                }
+                
+                // Glow orb animation
+                gsap.to('.glow-orb', {
+                    opacity: 0.7,
+                    scale: 1.2,
+                    duration: 8,
+                    repeat: -1,
+                    yoyo: true,
+                    ease: 'sine.inOut',
+                    stagger: 1
+                });
+                
+                // Subtle hover effects for various elements
+                const hoverElements = document.querySelectorAll('.btn, .blog-nav-button, .nav-link, .social-link, .tag, .archive-link');
+                hoverElements.forEach(element => {
+                    element.addEventListener('mouseenter', () => {
+                        gsap.to(element, {
+                            scale: 1.05,
+                            duration: 0.3,
+                            ease: 'power2.out',
+                            overwrite: true
+                        });
+                    });
+                    
+                    element.addEventListener('mouseleave', () => {
+                        gsap.to(element, {
+                            scale: 1,
+                            duration: 0.3,
+                            ease: 'power2.out',
+                            overwrite: true
+                        });
+                    });
+                });
+            }
+            
+            // Anime.js animations
+            function initAnimeAnimations() {
+                // Animate featured image
+                anime({
+                    targets: '.featured-image',
+                    boxShadow: [
+                        '0 10px 30px rgba(0, 0, 0, 0.5)',
+                        '0 15px 40px rgba(103, 51, 176, 0.5)',
+                        '0 10px 30px rgba(0, 0, 0, 0.5)'
+                    ],
+                    duration: 4000,
+                    easing: 'easeInOutSine',
+                    direction: 'alternate',
+                    loop: true
+                });
+                
+                // Floating constellation animation
+                anime({
+                    targets: '.constellation',
+                    translateY: function() {
+                        return anime.random(-15, 15);
+                    },
+                    translateX: function() {
+                        return anime.random(-10, 10);
+                    },
+                    rotate: function() {
+                        return anime.random(-5, 5);
+                    },
+                    opacity: [0.2, 0.4],
+                    easing: 'easeInOutQuad',
+                    duration: function() {
+                        return anime.random(6000, 10000);
+                    },
+                    loop: true,
+                    direction: 'alternate'
+                });
+                
+                // Animate social media icons
+                anime({
+                    targets: '.social-link i',
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 15, 0, -15, 0],
+                    duration: 6000,
+                    easing: 'easeInOutSine',
+                    delay: anime.stagger(200),
+                    loop: true
+                });
+                
+                // Animate author image
+                anime({
+                    targets: '.author-image',
+                    borderColor: [
+                        'rgba(249, 184, 87, 1)',
+                        'rgba(103, 51, 176, 1)',
+                        'rgba(30, 108, 249, 1)',
+                        'rgba(249, 184, 87, 1)'
+                    ],
+                    duration: 8000,
+                    easing: 'easeInOutSine',
+                    loop: true
+                });
+                
+                // Add magical particles around special elements
+                const magicalElements = document.querySelectorAll('.magic-quote, .btn-primary');
+                
+                magicalElements.forEach(element => {
+                    // Create particle container
+                    const particleContainer = document.createElement('div');
+                    particleContainer.className = 'particle-container';
+                    particleContainer.style.position = 'absolute';
+                    particleContainer.style.inset = '-20px';
+                    particleContainer.style.overflow = 'hidden';
+                    particleContainer.style.pointerEvents = 'none';
+                    particleContainer.style.zIndex = '-1';
+                    
+                    element.style.position = 'relative';
+                    element.appendChild(particleContainer);
+                    
+                    // Create particles
+                    for (let i = 0; i < 20; i++) {
+                        const particle = document.createElement('div');
+                        particle.className = 'magic-particle';
+                        particle.style.position = 'absolute';
+                        particle.style.width = '4px';
+                        particle.style.height = '4px';
+                        particle.style.borderRadius = '50%';
+                        particle.style.backgroundColor = 'rgba(249, 184, 87, 0.6)';
+                        particle.style.pointerEvents = 'none';
+                        
+                        // Random starting position
+                        particle.style.top = `${Math.random() * 100}%`;
+                        particle.style.left = `${Math.random() * 100}%`;
+                        
+                        particleContainer.appendChild(particle);
+                        
+                        // Animate particles
+                        anime({
+                            targets: particle,
+                            translateX: () => anime.random(-50, 50),
+                            translateY: () => anime.random(-50, 50),
+                            scale: [0, 1, 0],
+                            opacity: [0, 0.8, 0],
+                            easing: 'easeInOutSine',
+                            duration: () => anime.random(3000, 8000),
+                            delay: () => anime.random(0, 2000),
+                            loop: true
+                        });
+                    }
+                });
+                
+                // Animate celestial symbols
+                anime({
+                    targets: '.cosmic-symbol',
+                    rotateY: '1turn',
+                    opacity: [0.7, 1, 0.7],
+                    scale: [1, 1.2, 1],
+                    easing: 'easeInOutSine',
+                    duration: 10000,
+                    loop: true
+                });
+                
+                // Animate section titles with gradient shift
+                document.querySelectorAll('.section-title').forEach(title => {
+                    const gradient = document.createElement('div');
+                    gradient.className = 'title-gradient';
+                    gradient.style.position = 'absolute';
+                    gradient.style.inset = '0';
+                    gradient.style.backgroundImage = 'linear-gradient(90deg, transparent, rgba(249, 184, 87, 0.2), transparent)';
+                    gradient.style.zIndex = '-1';
+                    gradient.style.transform = 'translateX(-100%)';
+                    
+                    // Add positon relative to title if not already set
+                    if (window.getComputedStyle(title).position === 'static') {
+                        title.style.position = 'relative';
+                    }
+                    
+                    title.appendChild(gradient);
+                    
+                    // Animate gradient
+                    anime({
+                        targets: gradient,
+                        translateX: ['100%', '-100%'],
+                        easing: 'easeInOutSine',
+                        duration: 8000,
+                        delay: anime.random(0, 2000),
+                        loop: true
+                    });
+                });
+                
+                // Comment avatar pulse effect
+                anime({
+                    targets: '.comment-avatar',
+                    boxShadow: [
+                        '0 0 0 rgba(103, 51, 176, 0)',
+                        '0 0 10px rgba(103, 51, 176, 0.5)',
+                        '0 0 0 rgba(103, 51, 176, 0)'
+                    ],
+                    duration: 3000,
+                    easing: 'easeInOutSine',
+                    loop: true
+                });
+                
+                // Newsletter button hover effect
+                const newsletterButtons = document.querySelectorAll('.newsletter-button');
+                newsletterButtons.forEach(button => {
+                    button.addEventListener('mouseenter', () => {
+                        anime({
+                            targets: button,
+                            backgroundColor: '#41e9d3',
+                            scale: 1.05,
+                            duration: 300,
+                            easing: 'easeOutQuad'
+                        });
+                    });
+                    
+                    button.addEventListener('mouseleave', () => {
+                        anime({
+                            targets: button,
+                            backgroundColor: '#f9b857',
+                            scale: 1,
+                            duration: 300,
+                            easing: 'easeOutQuad'
+                        });
+                    });
+                });
+            }
+            
+            // Header scroll effect
+            function initHeaderScroll() {
+                const header = document.getElementById('site-header');
+                
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 50) {
+                        header.classList.add('scrolled');
+                    } else {
+                        header.classList.remove('scrolled');
+                    }
+                });
+                
+                // Initial check
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                }
+            }
+            
+            // Parallax effect
+            function initParallax() {
+                document.addEventListener('mousemove', e => {
+                    const mouseX = e.clientX / window.innerWidth - 0.5;
+                    const mouseY = e.clientY / window.innerHeight - 0.5;
+                    
+                    // Parallax elements
+                    const elements = document.querySelectorAll('.parallax-element');
+                    elements.forEach(element => {
+                        const speed = parseFloat(element.dataset.speed || 1);
+                        const x = mouseX * 20 * speed;
+                        const y = mouseY * 20 * speed;
+                        
+                        gsap.to(element, {
+                            x: x,
+                            y: y,
+                            duration: 1,
+                            ease: 'power1.out'
+                        });
+                    });
+                    
+                    // Hero content parallax
+                    gsap.to('.hero-content', {
+                        x: -mouseX * 30,
+                        y: -mouseY * 30,
+                        duration: 1,
+                        ease: 'power1.out'
+                    });
+                    
+                    // Book cover parallax
+                    gsap.to('.book-cover', {
+                        x: mouseX * 50,
+                        y: mouseY * 30,
+                        rotation: mouseX * 5,
+                        duration: 1,
+                        ease: 'power1.out'
+                    });
+                    
+                    // Glow orbs parallax
+                    gsap.to('.glow-orb', {
+                        x: mouseX * 40,
+                        y: mouseY * 40,
+                        duration: 1,
+                        ease: 'power1.out',
+                        stagger: 0.1
+                    });
+                });
+            }
+            
+            // Update current date
+            function updateCurrentDate() {
+                const currentDate = new Date();
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                document.getElementById('current-date').textContent = currentDate.toLocaleDateString('en-US', options);
+            }
+            
+            // Create stars in floating elements
+            function createStars() {
+                const floatingElements = document.querySelector('.floating-elements');
+                
+                // Create stars
+                for (let i = 0; i < 100; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    
+                    // Random size
+                    const size = Math.random() * 3 + 1;
+                    star.style.width = `${size}px`;
+                    star.style.height = `${size}px`;
+                    
+                    // Random position
+                    star.style.top = `${Math.random() * 100}%`;
+                    star.style.left = `${Math.random() * 100}%`;
+                    
+                    // Random opacity
+                    star.style.opacity = Math.random() * 0.7 + 0.3;
+                    
+                    floatingElements.appendChild(star);
+                    
+                    // Pulse animation with GSAP
+                    gsap.to(star, {
+                        opacity: Math.random() * 0.5 + 0.1,
+                        duration: Math.random() * 3 + 2,
+                        repeat: -1,
+                        yoyo: true,
+                        ease: 'sine.inOut',
+                        delay: Math.random() * 2
+                    });
+                }
+                
+                // Create constellations
+                const constellation1 = document.createElement('div');
+                constellation1.className = 'constellation constellation-1';
+                constellation1.innerHTML = `
+                    <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="30" r="2" fill="white"/>
+                        <circle cx="80" cy="50" r="2" fill="white"/>
+                        <circle cx="110" cy="70" r="2" fill="white"/>
+                        <circle cx="140" cy="100" r="2" fill="white"/>
+                        <circle cx="120" cy="130" r="2" fill="white"/>
+                        <circle cx="70" cy="120" r="2" fill="white"/>
+                        <circle cx="40" cy="90" r="2" fill="white"/>
+                        <line x1="50" y1="30" x2="80" y2="50" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                        <line x1="80" y1="50" x2="110" y2="70" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                        <line x1="110" y1="70" x2="140" y2="100" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                        <line x1="140" y1="100" x2="120" y2="130" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                        <line x1="120" y1="130" x2="70" y2="120" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                        <line x1="70" y1="120" x2="40" y2="90" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                        <line x1="40" y1="90" x2="50" y2="30" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                    </svg>
+                `;
+                
+                const constellation2 = document.createElement('div');
+                constellation2.className = 'constellation constellation-2';
+                constellation2.innerHTML = `
+                    <svg width="150" height="150" viewBox="0 0 150 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="30" cy="30" r="2" fill="white"/>
+                        <circle cx="60" cy="20" r="2" fill="white"/>
+                        <circle cx="90" cy="40" r="2" fill="white"/>
+                        <circle cx="110" cy="70" r="2" fill="white"/>
+                        <circle cx="80" cy="100" r="2" fill="white"/>
+                        <circle cx="40" cy="90" r="2" fill="white"/>
+                        <line x1="30" y1="30" x2="60" y2="20" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                        <line x1="60" y1="20" x2="90" y2="40" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                        <line x1="90" y1="40" x2="110" y2="70" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                        <line x1="110" y1="70" x2="80" y2="100" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                        <line x1="80" y1="100" x2="40" y2="90" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                        <line x1="40" y1="90" x2="30" y2="30" stroke="white" stroke-width="0.5" stroke-opacity="0.5"/>
+                    </svg>
+                `;
+                
+                floatingElements.appendChild(constellation1);
+                floatingElements.appendChild(constellation2);
+            }
+            
+            // Call createStars on load
+            createStars();
+        });
     </script>
 </body>
 </html>
