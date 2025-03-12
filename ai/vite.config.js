@@ -1,10 +1,30 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
+import fs from 'fs';
 
 export default defineConfig({
-  base: '/ai/',
-  plugins: [vue()],
+  base: '/ai/', // Critical setting for base URL
+  plugins: [
+    vue(),
+    // Custom plugin to copy _redirects file to output directory
+    {
+      name: 'copy-netlify-redirects',
+      closeBundle() {
+        const redirectsContent = '/*    /index.html   200';
+        const outputDir = 'dist-ai';
+        
+        // Ensure output directory exists
+        if (!fs.existsSync(outputDir)) {
+          fs.mkdirSync(outputDir, { recursive: true });
+        }
+        
+        // Write _redirects file to output directory
+        fs.writeFileSync(path.resolve(outputDir, '_redirects'), redirectsContent);
+        console.log('✅ Created _redirects file in output directory');
+      }
+    }
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
@@ -18,7 +38,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'dist-ai',
+    outDir: 'dist-ai', // Critical: This must match publish dir in netlify.toml
     emptyOutDir: true,
     chunkSizeWarningLimit: 3000, // Increased for AGI prompts
     sourcemap: process.env.NODE_ENV === 'development',
