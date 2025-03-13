@@ -23,8 +23,8 @@
     <meta property="og:description" content="Advanced chatbot blending fantasy lore with AI technology.">
     <meta property="og:image" content="/images/og-image.jpg">
     
-    <!-- 🔥 FIXED: Absolute URLs for preloads -->
-    <link rel="preload" href="/assets/main.js" as="script">
+    <!-- 🔥 FIXED: Correct preload paths -->
+    <link rel="preload" href="/src/main.js" as="script">
     <link rel="preload" href="/manifest.json" as="fetch">
     
     <!-- DNS Prefetch -->
@@ -157,7 +157,7 @@
       }
     </style>
     
-    <!-- 🔥 FIXED: Session Handling Script -->
+    <!-- Session Handling Script -->
     <script>
       (function() {
         // Handle redirect from 404.html
@@ -186,7 +186,7 @@
     </div>
 
     <div id="app"></div>
-    <!-- 🔥 FIXED: Use root-relative path with proper JS bundle location -->
-    <script type="module" src="/assets/main.js"></script>
+    <!-- 🔥 MEGA-CRITICAL FIX: Point to SOURCE FILE not BUILD OUTPUT! -->
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>
