@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- 🔥 FIXED: No base tag to avoid conflicts! -->
+    <!-- 🔥 CRITICAL FIX: No base tag needed for subdomain -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DawntasyAI - The AI That Makes You Think</title>
@@ -22,10 +22,6 @@
     <meta property="og:title" content="DawntasyAI - The AI That Makes You Think">
     <meta property="og:description" content="Advanced chatbot blending fantasy lore with AI technology.">
     <meta property="og:image" content="/images/og-image.jpg">
-    
-    <!-- 🔥 FIXED: Correct preload paths -->
-    <link rel="preload" href="/src/main.js" as="script">
-    <link rel="preload" href="/manifest.json" as="fetch">
     
     <!-- DNS Prefetch -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -186,7 +182,7 @@
     </div>
 
     <div id="app"></div>
-    <!-- 🔥 MEGA-CRITICAL FIX: Point to SOURCE FILE not BUILD OUTPUT! -->
+    <!-- 🔥 CRITICAL FIX: Use correct source path -->
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

@@ -119,9 +119,9 @@ const routes: Array<RouteRecordRaw & { meta: EnhancedRouteMetadata }> = [
   }
 ];
 
-// 🔥 CRITICAL FIX: Router with clean history
+// 🔥 FIXED: Simple root history with NO path prefix
 const router = createRouter({
-  history: createWebHistory('/'), // Root history for subdomain
+  history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {

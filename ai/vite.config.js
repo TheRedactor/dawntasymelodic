@@ -2,11 +2,41 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
 import fs from 'fs';
+import { VitePWA } from 'vite-plugin-pwa';
+import viteCompression from 'vite-plugin-compression';
 
 export default defineConfig({
-  base: '/', // CRITICAL: Root base for subdomain
+  // 🔥 CRITICAL FIX: Root base path for subdomain deployment
+  base: '/',
   plugins: [
     vue(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+      manifest: {
+        name: 'DawntasyAI',
+        short_name: 'DawntasyAI',
+        description: 'Your cosmic AI companion',
+        theme_color: '#0f172a',
+        background_color: '#0f172a',
+        icons: [
+          {
+            src: '/android-chrome-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      }
+    }),
+    viteCompression({
+      algorithm: 'gzip',
+      ext: '.gz',
+    }),
     // Custom plugin to copy _redirects file to output directory
     {
       name: 'copy-netlify-redirects',
