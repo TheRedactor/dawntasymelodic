@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 
 export default defineConfig({
-  base: '/', // CHANGED: Root base for subdomain instead of /ai/
+  base: '/', // CRITICAL: Root base for subdomain
   plugins: [
     vue(),
     // Custom plugin to copy _redirects file to output directory
@@ -38,9 +38,9 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'dist-ai', // Critical: This must match publish dir in netlify.toml
+    outDir: 'dist-ai', // Ensure this matches Netlify publish dir
     emptyOutDir: true,
-    chunkSizeWarningLimit: 3000, // Increased for AGI prompts
+    chunkSizeWarningLimit: 3000,
     sourcemap: process.env.NODE_ENV === 'development',
     rollupOptions: {
       onwarn(warning, warn) {
@@ -51,14 +51,10 @@ export default defineConfig({
         main: path.resolve(__dirname, 'index.html'),
       },
       output: {
-        manualChunks(id) {
-          if (id.includes('firebase')) return 'firebase'
-          if (id.includes('vue')) return 'vue'
-          if (id.includes('openai')) return 'openai'
-        },
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        // 🔥 CRITICAL FIX: Ensure assets go to /assets/ folder
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]'
       },
       treeshake: {
         moduleSideEffects: (id) => {
@@ -71,7 +67,7 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       compress: {
-        keep_fnames: true, // Critical for AGI prompt stability
+        keep_fnames: true,
         drop_console: false,
         drop_debugger: true
       }
@@ -86,11 +82,11 @@ export default defineConfig({
       'firebase/auth',
       'gsap',
       'three',
-      'axios' // Explicitly include for AGI operations
+      'axios'
     ],
-    exclude: ['@rollup/plugin-alias'] // Prevent conflicts
+    exclude: ['@rollup/plugin-alias']
   },
   define: {
-    'process.env': process.env // Required for Firebase integration
+    'process.env': process.env
   }
 });

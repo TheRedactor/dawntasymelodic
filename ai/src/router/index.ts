@@ -1,12 +1,11 @@
 // src/router/index.ts
 import { createRouter, createWebHistory, RouteRecordRaw, NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
-import { getAuth } from 'firebase/auth';
-
-const auth = getAuth();
+import { auth } from '@/firebase/init';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 
+// 🔥 ENHANCED PROGRESS BAR CONFIG
 NProgress.configure({ 
   easing: 'ease',
   speed: 500,
@@ -119,30 +118,31 @@ const routes: Array<RouteRecordRaw & { meta: EnhancedRouteMetadata }> = [
     }
   }
 ];
+
+// 🔥 CRITICAL FIX: Router with clean history
 const router = createRouter({
-  history: createWebHistory('/'), // CHANGED: Root history for subdomain
+  history: createWebHistory('/'), // Root history for subdomain
   routes,
   scrollBehavior(to, from, savedPosition) {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (savedPosition) resolve(savedPosition);
-        else if (to.hash) {
-          resolve({
-            el: to.hash,
-            behavior: 'smooth',
-            top: 80
-          });
-        } else {
-          resolve({ top: 0, behavior: 'smooth' });
-        }
-      }, 300);
-    });
+    if (savedPosition) {
+      return savedPosition;
+    } else if (to.hash) {
+      return {
+        el: to.hash,
+        behavior: 'smooth',
+        top: 80
+      };
+    } else {
+      return { top: 0, behavior: 'smooth' };
+    }
   }
 });
 
+// Get current user promise
 const getCurrentUser = (): Promise<User | null> => {
   return new Promise((resolve, reject) => {
-    const unsubscribe = onAuthStateChanged(auth, 
+    const unsubscribe = onAuthStateChanged(
+      auth(), 
       (user) => {
         unsubscribe();
         resolve(user);
@@ -155,23 +155,36 @@ const getCurrentUser = (): Promise<User | null> => {
   });
 };
 
+// Route guard with improved error handling
 router.beforeEach(async (to, from, next) => {
+  // Start progress bar
   NProgress.start();
   document.body.classList.add('page-transitioning');
 
   try {
-    const user = await getCurrentUser();
-    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+    // Update document title
     document.title = to.meta.title || 'DawntasyAI';
-
-    if (requiresAuth && !user) {
-      NProgress.done();
+    
+    // Check authentication
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+    
+    if (!requiresAuth) {
+      // No auth required, proceed
+      return next();
+    }
+    
+    // Check if user is logged in
+    const user = await getCurrentUser();
+    
+    if (!user) {
+      // User not logged in, redirect to login
       return next({ 
         name: 'Login', 
         query: { redirect: to.fullPath } 
       });
     }
-
+    
+    // User is authenticated, proceed
     next();
   } catch (error) {
     console.error('Navigation error:', error);
@@ -181,9 +194,9 @@ router.beforeEach(async (to, from, next) => {
 });
 
 router.afterEach(() => {
+  // Complete progress bar
   NProgress.done();
   document.body.classList.remove('page-transitioning');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 export default router;

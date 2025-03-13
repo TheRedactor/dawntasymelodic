@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <base href="/">
   <meta charset="UTF-8">
   <meta name="description" content="🚀 404: Page Not Found – This cosmic page got lost in space!">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,8 +9,8 @@
   <!-- Security Headers -->
   <meta http-equiv="Content-Security-Policy" 
     content="default-src 'self'; 
-             script-src 'self';
-             style-src 'self' https://fonts.googleapis.com;
+             script-src 'self' 'unsafe-inline';
+             style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
              font-src 'self' https://fonts.gstatic.com;">
   
   <!-- Performance Optimizations -->
@@ -62,12 +61,22 @@
   <p>Sorry, traveler! This page doesn't exist in our cosmic realm.</p>
   <a href="/" class="home-link">🔮 Return Home</a>
   
+  <!-- 🔥 ENHANCED SESSION REDIRECT SCRIPT -->
   <script>
-    // Safe redirect logic for SPA
-    if (window.location.pathname !== '/' && !window.location.pathname.startsWith('/api/')) {
-      sessionStorage.redirect = window.location.pathname;
+    // Store current path in session storage and redirect to index
+    (function() {
+      // Get the current path excluding hostname/protocol
+      const path = window.location.pathname;
+      
+      // Store it in sessionStorage if it's not the root
+      if (path !== '/' && !path.includes('assets')) {
+        sessionStorage.redirect = path;
+        console.log('Stored redirect path:', path);
+      }
+      
+      // Redirect to the homepage
       window.location.href = '/';
-    }
+    })();
   </script>
 </body>
 </html>

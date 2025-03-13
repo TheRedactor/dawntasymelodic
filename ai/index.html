@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <base href="/">
+    <!-- 🔥 FIXED: No base tag to avoid conflicts! -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DawntasyAI - The AI That Makes You Think</title>
@@ -9,10 +9,11 @@
     <!-- Security Headers -->
     <meta http-equiv="Content-Security-Policy" 
       content="default-src 'self'; 
-               script-src 'self' https://cdn.jsdelivr.net;
-               style-src 'self' https://fonts.googleapis.com;
+               script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
                font-src 'self' https://fonts.gstatic.com;
-               img-src 'self' data:;">
+               img-src 'self' data: blob:;
+               connect-src 'self' https://api.openai.com https://*.firebaseio.com https://*.googleapis.com;">
     
     <!-- SEO & OPEN GRAPH -->
     <meta name="description" content="Dawntasy AI merges fantasy, music, and cutting-edge AI from the Dawntasy universe.">
@@ -22,13 +23,14 @@
     <meta property="og:description" content="Advanced chatbot blending fantasy lore with AI technology.">
     <meta property="og:image" content="/images/og-image.jpg">
     
-    <!-- Preloads -->
-    <link rel="preload" href="/src/main.js" as="script">
+    <!-- 🔥 FIXED: Absolute URLs for preloads -->
+    <link rel="preload" href="/assets/main.js" as="script">
     <link rel="preload" href="/manifest.json" as="fetch">
     
     <!-- DNS Prefetch -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link rel="dns-prefetch" href="//api.openai.com">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -155,20 +157,20 @@
       }
     </style>
     
-    <!-- Enhanced Session Handling Script -->
+    <!-- 🔥 FIXED: Session Handling Script -->
     <script>
       (function() {
-        // Set SameSite cookie policy
-        document.cookie = "SameSite=None; Secure";
-
-        // Process any redirects from 404.html
-        const redirect = sessionStorage.redirect;
-        delete sessionStorage.redirect;
-        
-        if (redirect && redirect !== '/' && !window.location.hash) {
-          console.log("Redirecting to:", redirect);
-          history.replaceState(null, null, redirect);
-          window.dispatchEvent(new PopStateEvent('popstate'));
+        // Handle redirect from 404.html
+        try {
+          const redirect = sessionStorage.redirect;
+          delete sessionStorage.redirect;
+          
+          if (redirect && redirect !== '/' && !window.location.pathname.includes(redirect)) {
+            console.log('Redirecting to:', redirect);
+            history.replaceState(null, null, redirect);
+          }
+        } catch (e) {
+          console.error('Session redirect error:', e);
         }
       })();
     </script>
@@ -184,6 +186,7 @@
     </div>
 
     <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+    <!-- 🔥 FIXED: Use root-relative path with proper JS bundle location -->
+    <script type="module" src="/assets/main.js"></script>
   </body>
 </html>
