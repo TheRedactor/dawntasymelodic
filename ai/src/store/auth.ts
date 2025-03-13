@@ -55,6 +55,8 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!user.value);
   const userRole = computed(() => userProfile.value?.role || UserRole.GUEST);
   const availableCredits = computed(() => userProfile.value?.credits || 0);
+  const displayName = computed(() => userProfile.value?.displayName || user.value?.displayName || null);
+  const uid = computed(() => user.value?.uid || null);
 
   // 🔑 GOOGLE AUTH PROVIDER
   const googleProvider = new GoogleAuthProvider();
@@ -124,7 +126,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  // 🌟 REGISTER
+  // 🌟 REGISTER - Enhanced with redirect handling
   const register = async (email: string, password: string, displayName: string) => {
     loading.value = true;
     error.value = null;
@@ -132,26 +134,42 @@ export const useAuthStore = defineStore('auth', () => {
       const { user: firebaseUser } = await createUserWithEmailAndPassword(auth(), email, password);
       await updateProfile(firebaseUser, { displayName });
       await createUserProfile(firebaseUser, displayName);
+      
+      // Ensure proper redirect on the subdomain
+      window.location.href = '/';
+      
       loading.value = false;
+      return { success: true };
     } catch (e: any) {
       error.value = e.message;
       loading.value = false;
-      throw e;
+      return { success: false, error: e.message };
     }
   };
 
-  // 🌟 LOGIN
+  // 🌟 LOGIN - Enhanced with redirect handling
   const login = async (email: string, password: string) => {
     loading.value = true;
     error.value = null;
     try {
       const { user: firebaseUser } = await signInWithEmailAndPassword(auth(), email, password);
       await fetchUserProfile(firebaseUser.uid);
+      
+      // Update last login
+      const userRef = doc(db(), "users", firebaseUser.uid);
+      await updateDoc(userRef, {
+        lastLogin: serverTimestamp()
+      });
+      
+      // Ensure proper redirect on the subdomain
+      window.location.href = '/';
+      
       loading.value = false;
+      return { success: true };
     } catch (e: any) {
       error.value = e.message;
       loading.value = false;
-      throw e;
+      return { success: false, error: e.message };
     }
   };
 
@@ -164,10 +182,11 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = null;
       userProfile.value = null;
       loading.value = false;
+      return { success: true };
     } catch (e: any) {
       error.value = e.message;
       loading.value = false;
-      throw e;
+      return { success: false, error: e.message };
     }
   };
 
@@ -178,10 +197,50 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await sendPasswordResetEmail(auth(), email);
       loading.value = false;
+      return { success: true };
     } catch (e: any) {
       error.value = e.message;
       loading.value = false;
-      throw e;
+      return { success: false, error: e.message };
+    }
+  };
+
+  // 🌟 GOOGLE SIGN IN - With subdomain support
+  const signInWithGoogle = async () => {
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      // Configure Google Auth Provider for subdomain
+      googleProvider.setCustomParameters({
+        'cookie_policy': 'none',
+        'prompt': 'select_account'
+      });
+      
+      const result = await signInWithPopup(auth(), googleProvider);
+      const firebaseUser = result.user;
+      
+      // Check if this is a new user
+      const userRef = doc(db(), "users", firebaseUser.uid);
+      const userDoc = await getDoc(userRef);
+      
+      if (!userDoc.exists()) {
+        // Create profile for new Google users
+        await createUserProfile(firebaseUser, firebaseUser.displayName || 'Google User');
+      } else {
+        // Fetch existing profile
+        await fetchUserProfile(firebaseUser.uid);
+      }
+      
+      // Ensure proper redirect
+      window.location.href = '/';
+      
+      loading.value = false;
+      return { success: true };
+    } catch (e: any) {
+      error.value = e.message;
+      loading.value = false;
+      return { success: false, error: e.message };
     }
   };
 
@@ -193,10 +252,13 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     userRole,
     availableCredits,
+    displayName,
+    uid,
     initAuth,
     register,
     login,
     logout,
-    resetPassword
+    resetPassword,
+    signInWithGoogle
   };
-});
+});e

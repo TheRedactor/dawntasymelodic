@@ -6,7 +6,9 @@ import {
   Auth,
   initializeAuth,
   browserLocalPersistence,
-  inMemoryPersistence
+  inMemoryPersistence,
+  browserSessionPersistence,
+  indexedDBLocalPersistence
 } from 'firebase/auth';
 import { 
   getFirestore, 
@@ -64,8 +66,19 @@ export function getFirebaseServices(): FirebaseServices {
 
     const app = initializeApp(firebaseConfig);
     
+    // Enhanced Auth with cross-subdomain cookie support
     const auth = initializeAuth(app, {
-      persistence: import.meta.env.SSR ? inMemoryPersistence : browserLocalPersistence
+      persistence: [
+        browserLocalPersistence,
+        indexedDBLocalPersistence,
+        browserSessionPersistence
+      ],
+      // Add cookieOptions for cross-domain support
+      cookieOptions: {
+        domain: '.dawntasy.com', // Note the dot prefix for all subdomains
+        secure: true,
+        sameSite: 'none'
+      }
     });
 
     const db = getFirestore(app);

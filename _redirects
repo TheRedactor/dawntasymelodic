@@ -1,0 +1,8 @@
+# This file should be placed in the main site's root, NOT in the AI subfolder
+# This ensures old /ai/* paths redirect to the ai.dawntasy.com subdomain
+
+# Redirect all /ai/* traffic to subdomain
+/ai/*  https://ai.dawntasy.com/:splat  301!
+
+# SPA fallback for main site
+/*  /index.html  200

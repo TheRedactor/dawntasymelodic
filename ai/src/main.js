@@ -8,6 +8,9 @@ import { getFirebaseServices } from '@/firebase/init';
 // Import icons
 import 'remixicon/fonts/remixicon.css';
 
+// Session handling for subdomain
+document.cookie = "SameSite=None; Secure";
+
 // Enhanced error handling
 const errorHandler = (err, vm, info) => {
   console.error('🚨 Application Error:', err);
@@ -117,7 +120,7 @@ function registerGlobalDirectives(app) {
     // Register service worker for PWA support
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/ai/sw.js')
+        navigator.serviceWorker.register('/sw.js')
           .then(registration => {
             console.log('✅ Service Worker registered:', registration.scope);
           })

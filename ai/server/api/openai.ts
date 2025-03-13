@@ -1,14 +1,13 @@
 // src/server/api/openai.ts
-// src/server/api/openai.ts
 import axios from 'axios';
 import { ref } from 'vue';
 import { serverTimestamp, doc, setDoc } from 'firebase/firestore';
 import { useAuthStore } from '@/store/auth';
 import { db } from '@/firebase/init';
 
-// API Configuration with subfolder path support - FIXED CRITICAL BUG
+// API Configuration updated for subdomain
 const API_URL = import.meta.env.VITE_OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
-const API_KEY = import.meta.env.VITE_OPENAI_API_KEY; // Separated API key from URL
+const API_KEY = import.meta.env.VITE_OPENAI_API_KEY; 
 const API_PATH = '/api/openai'; // For proxied requests if needed
 const DEFAULT_MODEL = 'gpt-4-turbo-preview';
 const FALLBACK_MODEL = 'gpt-3.5-turbo';
@@ -968,7 +967,7 @@ export const useOpenAI = () => {
       // Choose between direct OpenAI call or proxied endpoint
       const isProduction = import.meta.env.MODE === 'production';
       const apiEndpoint = isProduction 
-        ? `/ai${API_PATH}`  // Use subfolder path in production
+        ? `/api/openai`  // UPDATED for subdomain
         : API_URL;          // Use direct API in development
       
       // Make API call with error handling and timeout
@@ -982,7 +981,7 @@ export const useOpenAI = () => {
           {
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${API_KEY}` // FIXED: Using proper API key
+              'Authorization': `Bearer ${API_KEY}`
             },
             signal: controller.signal
           }
@@ -1066,7 +1065,7 @@ export const useOpenAI = () => {
       // Choose between direct OpenAI call or proxied endpoint
       const isProduction = import.meta.env.MODE === 'production';
       const apiEndpoint = isProduction 
-        ? `/ai${API_PATH}`  // Use subfolder path in production
+        ? `/api/openai`  // UPDATED for subdomain
         : API_URL;          // Use direct API in development
       
       // Configure timeout
@@ -1079,7 +1078,7 @@ export const useOpenAI = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${API_KEY}` // FIXED: Using proper API key
+            'Authorization': `Bearer ${API_KEY}`
           },
           body: JSON.stringify(request),
           signal: controller.signal

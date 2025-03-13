@@ -1,0 +1,11 @@
+# robots.txt for ai.dawntasy.com
+User-agent: *
+Allow: /
+Sitemap: https://ai.dawntasy.com/sitemap.xml
+
+# Keep bots away from authentication and sensitive areas
+Disallow: /login
+Disallow: /register
+Disallow: /profile
+Disallow: /settings
+Disallow: /api/

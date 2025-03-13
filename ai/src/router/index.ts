@@ -1,7 +1,8 @@
-
 // src/router/index.ts
 import { createRouter, createWebHistory, RouteRecordRaw, NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
-import { auth } from '@/firebase/init';
+import { getAuth } from 'firebase/auth';
+
+const auth = getAuth();
 import { onAuthStateChanged, User } from 'firebase/auth';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
@@ -119,7 +120,7 @@ const routes: Array<RouteRecordRaw & { meta: EnhancedRouteMetadata }> = [
   }
 ];
 const router = createRouter({
-  history: createWebHistory('/ai/'),
+  history: createWebHistory('/'), // CHANGED: Root history for subdomain
   routes,
   scrollBehavior(to, from, savedPosition) {
     return new Promise((resolve) => {

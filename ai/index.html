@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <base href="/ai/">
+    <base href="/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DawntasyAI - The AI That Makes You Think</title>
@@ -17,14 +17,14 @@
     <!-- SEO & OPEN GRAPH -->
     <meta name="description" content="Dawntasy AI merges fantasy, music, and cutting-edge AI from the Dawntasy universe.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://dawntasy.com/ai">
+    <meta property="og:url" content="https://ai.dawntasy.com">
     <meta property="og:title" content="DawntasyAI - The AI That Makes You Think">
     <meta property="og:description" content="Advanced chatbot blending fantasy lore with AI technology.">
-    <meta property="og:image" content="/ai/images/og-image.jpg">
+    <meta property="og:image" content="/images/og-image.jpg">
     
     <!-- Preloads -->
-    <link rel="preload" href="/ai/src/main.js" as="script">
-    <link rel="preload" href="/ai/manifest.json" as="fetch">
+    <link rel="preload" href="/src/main.js" as="script">
+    <link rel="preload" href="/manifest.json" as="fetch">
     
     <!-- DNS Prefetch -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -39,7 +39,7 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
     
     <!-- PWA -->
-    <link rel="manifest" href="/ai/manifest.json">
+    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0f172a">
     
     <!-- Accessibility -->
@@ -155,18 +155,19 @@
       }
     </style>
     
-    <!-- Loader Script -->
+    <!-- Enhanced Session Handling Script -->
     <script>
       (function() {
+        // Set SameSite cookie policy
+        document.cookie = "SameSite=None; Secure";
+
+        // Process any redirects from 404.html
         const redirect = sessionStorage.redirect;
         delete sessionStorage.redirect;
         
-        if (redirect) {
-          const correctedPath = redirect.startsWith('/ai/') 
-            ? redirect 
-            : `/ai${redirect}`;
-            
-          history.replaceState(null, null, correctedPath);
+        if (redirect && redirect !== '/' && !window.location.hash) {
+          console.log("Redirecting to:", redirect);
+          history.replaceState(null, null, redirect);
           window.dispatchEvent(new PopStateEvent('popstate'));
         }
       })();

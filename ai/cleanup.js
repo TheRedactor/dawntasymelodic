@@ -32,10 +32,10 @@ for (const dir of dirsToClean) {
   }
 }
 
-// Create _redirects file - only for /ai/* paths
+// Create _redirects file for SPA routing on the subdomain
 try {
   console.log('Creating _redirects file...');
-  const redirectsContent = '/ai/*    /ai/index.html   200';
+  const redirectsContent = '/* /index.html 200';
   fs.writeFileSync(path.join(__dirname, '_redirects'), redirectsContent);
   console.log('Created _redirects file in project root');
 } catch (err) {

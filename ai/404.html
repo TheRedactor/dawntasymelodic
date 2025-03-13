@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <base href="/ai/">
+  <base href="/">
   <meta charset="UTF-8">
   <meta name="description" content="🚀 404: Page Not Found – This cosmic page got lost in space!">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,13 +60,13 @@
 <body>
   <h1>🚀 404: Page Lost in Space</h1>
   <p>Sorry, traveler! This page doesn't exist in our cosmic realm.</p>
-  <a href="/ai/" class="home-link">🔮 Return Home</a>
+  <a href="/" class="home-link">🔮 Return Home</a>
   
   <script>
-    // Safe redirect logic
-    if (!window.location.pathname.startsWith('/ai/')) {
+    // Safe redirect logic for SPA
+    if (window.location.pathname !== '/' && !window.location.pathname.startsWith('/api/')) {
       sessionStorage.redirect = window.location.pathname;
-      window.location.href = '/ai/';
+      window.location.href = '/';
     }
   </script>
 </body>
