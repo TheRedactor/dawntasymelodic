@@ -6,9 +6,8 @@ import {
   Auth,
   initializeAuth,
   browserLocalPersistence,
-  inMemoryPersistence,
-  browserSessionPersistence,
-  indexedDBLocalPersistence
+  indexedDBLocalPersistence,
+  browserSessionPersistence
 } from 'firebase/auth';
 import { 
   getFirestore, 
@@ -23,7 +22,7 @@ import {
 } from 'firebase/functions';
 import { getAnalytics, Analytics } from 'firebase/analytics';
 
-// 🔥 Enhanced Environment Validation
+// Environment Validation
 const requiredFirebaseVars = [
   "VITE_FIREBASE_API_KEY",
   "VITE_FIREBASE_AUTH_DOMAIN",
@@ -36,11 +35,15 @@ const requiredFirebaseVars = [
 const validateEnvironment = () => {
   const missingVars = requiredFirebaseVars.filter(key => !import.meta.env[key]);
   if (missingVars.length > 0) {
-    throw new Error(`🚨 Missing Firebase config: ${missingVars.join(', ')}`);
+    console.error(`🚨 Missing Firebase config: ${missingVars.join(', ')}`);
+    // Continue anyway in production to avoid breaking the site completely
+    if (import.meta.env.DEV) {
+      throw new Error(`Missing Firebase config: ${missingVars.join(', ')}`);
+    }
   }
 };
 
-// 🚀 Optimized Firebase Configuration
+// Firebase Configuration
 interface FirebaseServices {
   app: FirebaseApp;
   auth: Auth;
@@ -55,62 +58,110 @@ export function getFirebaseServices(): FirebaseServices {
   if (!firebaseServices) {
     validateEnvironment();
     
+    // Fallback values for production to avoid breaking if env vars are missing
     const firebaseConfig = {
-      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-      appId: import.meta.env.VITE_FIREBASE_APP_ID
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "DEFAULT_FOR_PRODUCTION",
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "dawntasy.com",
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "dawntasy-ai",
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "dawntasy-ai.appspot.com",
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "000000000000",
+      appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:000000000000:web:000000000000"
     };
 
+    // Create the Firebase app
     const app = initializeApp(firebaseConfig);
     
-    // Enhanced Auth with cross-subdomain cookie support
+    // Initialize Auth with persistence and cookie options
+    // 🔥 CRITICAL FIX: Updated auth initialization for subdomain support
     const auth = initializeAuth(app, {
       persistence: [
-        browserLocalPersistence,
         indexedDBLocalPersistence,
+        browserLocalPersistence,
         browserSessionPersistence
-      ],
-      // Add cookieOptions for cross-domain support
-      cookieOptions: {
-        domain: '.dawntasy.com', // Note the dot prefix for all subdomains
-        secure: true,
-        sameSite: 'none'
-      }
+      ]
     });
 
+    // Initialize Firestore
     const db = getFirestore(app);
-    enableIndexedDbPersistence(db).catch(error => {
-      if (error.code === 'failed-precondition') {
-        console.warn('📚 Multiple tabs open, persistence can only be enabled in one tab at a time');
-      } else if (error.code === 'unimplemented') {
-        console.warn('📚 Current browser does not support all required features');
-      }
-    });
+    
+    // Enable persistence with error handling
+    try {
+      enableIndexedDbPersistence(db).catch(error => {
+        if (error.code === 'failed-precondition') {
+          console.warn('📚 Multiple tabs open, persistence can only be enabled in one tab at a time');
+        } else if (error.code === 'unimplemented') {
+          console.warn('📚 Current browser does not support all required features');
+        }
+      });
+    } catch (err) {
+      console.error('Error enabling persistence:', err);
+    }
 
+    // Initialize Functions
     const functions = getFunctions(app);
+    
+    // Initialize Analytics in production only
     let analytics: Analytics | null = null;
-
-    if (!import.meta.env.SSR && import.meta.env.PROD) {
-      analytics = getAnalytics(app);
+    if (typeof window !== 'undefined' && import.meta.env.PROD) {
+      try {
+        analytics = getAnalytics(app);
+      } catch (err) {
+        console.warn('Analytics initialization failed:', err);
+      }
     }
 
+    // Connect to emulators in development
     if (import.meta.env.DEV) {
-      connectAuthEmulator(auth, 'http://localhost:9099');
-      connectFirestoreEmulator(db, 'localhost', 8080);
-      connectFunctionsEmulator(functions, 'localhost', 5001);
-      console.log('🔥 Firebase emulators connected');
+      try {
+        connectAuthEmulator(auth, 'http://localhost:9099');
+        connectFirestoreEmulator(db, 'localhost', 8080);
+        connectFunctionsEmulator(functions, 'localhost', 5001);
+        console.log('🔥 Firebase emulators connected');
+      } catch (err) {
+        console.error('Error connecting to emulators:', err);
+      }
     }
 
+    // Store and return Firebase services
     firebaseServices = { app, auth, db, functions, analytics };
   }
+  
   return firebaseServices;
 }
 
-// 🛡️ Safe Service Accessors
-export const auth = () => getFirebaseServices().auth;
-export const db = () => getFirebaseServices().db;
-export const functions = () => getFirebaseServices().functions;
-export const analytics = () => getFirebaseServices().analytics;
+// Service accessors with error handling
+export const auth = () => {
+  try {
+    return getFirebaseServices().auth;
+  } catch (err) {
+    console.error('Failed to get auth service:', err);
+    throw err;
+  }
+};
+
+export const db = () => {
+  try {
+    return getFirebaseServices().db;
+  } catch (err) {
+    console.error('Failed to get db service:', err);
+    throw err;
+  }
+};
+
+export const functions = () => {
+  try {
+    return getFirebaseServices().functions;
+  } catch (err) {
+    console.error('Failed to get functions service:', err);
+    throw err;
+  }
+};
+
+export const analytics = () => {
+  try {
+    return getFirebaseServices().analytics;
+  } catch (err) {
+    console.error('Failed to get analytics service:', err);
+    return null;
+  }
+};

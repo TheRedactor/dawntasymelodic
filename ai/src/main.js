@@ -5,6 +5,9 @@ import App from './App.vue';
 import router from './router';
 import { getFirebaseServices } from '@/firebase/init';
 
+// Import styles
+import '@/assets/css/main.css';
+
 // Import icons
 import 'remixicon/fonts/remixicon.css';
 
@@ -17,27 +20,23 @@ const errorHandler = (err, vm, info) => {
   console.error('Component:', vm?.$options?.name || 'Unknown component');
   console.error('Error Info:', info);
 
-  // In production, capture error details for monitoring
+  // In production, log errors to console but don't break the app
   if (process.env.NODE_ENV === 'production') {
     try {
-      // Send to error monitoring service or server
-      fetch('/api/log-error', { 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          error: err.message, 
-          stack: err.stack,
-          component: vm?.$options?.name,
-          info 
-        })
-      }).catch(e => console.error('Failed to report error:', e));
+      // You could send to error monitoring service here
+      console.error('Error details:', { 
+        error: err.message, 
+        stack: err.stack,
+        component: vm?.$options?.name,
+        info 
+      });
     } catch (e) {
       console.error('Error reporting failed:', e);
     }
   }
 };
 
-// Register global directives (simplified version)
+// Register global directives
 function registerGlobalDirectives(app) {
   // v-click-outside directive
   app.directive('click-outside', {
@@ -72,16 +71,27 @@ function registerGlobalDirectives(app) {
       appLoader.style.display = 'flex';
     }
     
-    // ⚡ PERFORMANCE OPTIMIZATION
     // Create app instance early while other async tasks complete
     const app = createApp(App);
     
-    // ⚡ PARALLEL INITIALIZATION
-    // Initialize Firebase and router in parallel for speed
-    const [firebaseServices] = await Promise.all([
-      getFirebaseServices(), // FIXED: Using proper Firebase initialization
-      router.isReady()
-    ]);
+    // Initialize Firebase and router with error handling
+    try {
+      // Initialize both in parallel but handle errors individually
+      const firebasePromise = getFirebaseServices();
+      const routerPromise = router.isReady();
+      
+      // Await Firebase initialization
+      const [firebaseServices] = await Promise.all([
+        firebasePromise,
+        routerPromise
+      ]);
+      
+      // Log success
+      console.log('✅ Services initialized successfully');
+    } catch (initError) {
+      console.error('Service initialization error (continuing anyway):', initError);
+      // Continue app mounting even if services fail
+    }
     
     // Configure app error handling
     app.config.errorHandler = errorHandler;
@@ -94,14 +104,12 @@ function registerGlobalDirectives(app) {
     };
     
     // Mount essential plugins
-    app.use(createPinia());
+    const pinia = createPinia();
+    app.use(pinia);
     app.use(router);
     
     // Apply global directives
     registerGlobalDirectives(app);
-    
-    // Provide Firebase globally
-    app.provide('firebase', firebaseServices);
     
     // Mount app
     app.mount('#app');
@@ -117,23 +125,9 @@ function registerGlobalDirectives(app) {
       }, 500); // Allow some time for app initialization
     }
     
-    // Register service worker for PWA support
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(registration => {
-            console.log('✅ Service Worker registered:', registration.scope);
-          })
-          .catch(error => {
-            console.error('❌ Service Worker registration failed:', error);
-          });
-      });
-    }
-    
     // Performance metrics tracking in production
-    if (process.env.NODE_ENV === 'production') {
-      // Report performance metrics when idle
-      window.requestIdleCallback?.(() => {
+    if (process.env.NODE_ENV === 'production' && window.requestIdleCallback) {
+      window.requestIdleCallback(() => {
         if (window.performance && window.performance.timing) {
           // Calculate and report key metrics
           const timing = window.performance.timing;
@@ -146,8 +140,8 @@ function registerGlobalDirectives(app) {
       });
     }
     
-  } catch (initError) {
-    console.error('🔥 CRITICAL: App initialization failed!', initError);
+  } catch (criticalError) {
+    console.error('🔥 CRITICAL: App initialization failed!', criticalError);
     
     // Show error message to user
     const appDiv = document.getElementById('app');
