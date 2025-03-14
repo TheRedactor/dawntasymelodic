@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DoodleJump Whale – Cosmic Bounce</title>
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <style>
+    /* Base resets */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html { width: 100%; height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; }
+    /* Canvas full screen */
+    #gameCanvas { 
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: radial-gradient(ellipse at center, #06061f, #0d0d3d);
+    }
+    /* HUD (score display) */
+    #hud {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      z-index: 10;
+      color: #fff;
+      font-size: 1.25rem;
+      text-shadow: 0 0 8px #06a6ee;
+    }
+    /* Mobile control overlay (left/right zones) */
+    .control-zone {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 50%;
+      z-index: 20;
+    }
+    .control-left { left: 0; }
+    .control-right { right: 0; }
+    /* Cosmic starfield overlay using Three.js will be drawn on canvas */
+  </style>
+</head>
+<body>
+  <!-- HUD for score/highscore -->
+  <div id="hud">Score: 0 | High Score: 0</div>
+  <!-- Game canvas -->
+  <canvas id="gameCanvas"></canvas>
+  <!-- Mobile control zones -->
+  <div class="control-zone control-left"></div>
+  <div class="control-zone control-right"></div>
+
+  <script>
+    // ===== GLOBAL VARIABLES =====
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    // Score & high score (from localStorage)
+    let score = 0, highScore = +localStorage.getItem('highScore') || 0;
+    const hud = document.getElementById('hud');
+    function updateHUD() {
+      hud.innerText = `Score: ${Math.floor(score)} | High Score: ${highScore}`;
+    }
+
+    // ===== THREE.JS STARFIELD BACKGROUND =====
+    let threeScene, threeCamera, threeRenderer, starField;
+    function initThreeJS() {
+      threeScene = new THREE.Scene();
+      threeCamera = new THREE.PerspectiveCamera(75, width / height, 1, 2000);
+      threeCamera.position.z = 400;
+      threeRenderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+      threeRenderer.setSize(width, height);
+      // Create a starfield using Points
+      const starGeo = new THREE.BufferGeometry();
+      const starVertices = [];
+      for (let i = 0; i < 5000; i++) {
+        starVertices.push(
+          THREE.MathUtils.randFloatSpread(2000),
+          THREE.MathUtils.randFloatSpread(2000),
+          THREE.MathUtils.randFloatSpread(2000)
+        );
+      }
+      starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+      const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1, transparent: true, opacity: 0.6 });
+      starField = new THREE.Points(starGeo, starMat);
+      threeScene.add(starField);
+    }
+    function animateThreeJS() {
+      requestAnimationFrame(animateThreeJS);
+      starField.rotation.y += 0.0005;
+      threeRenderer.render(threeScene, threeCamera);
+    }
+
+    // ===== GAME OBJECTS =====
+    // Whale character
+    const whale = {
+      x: width / 2,
+      y: height - 150,
+      radius: 30,
+      vx: 0,
+      vy: -10,
+      color: '#06a6ee',
+      boost: 0, // extra boost from powerups
+      magnet: false // activated by rip current powerup
+    };
+
+    // Platforms array – each platform is { x, y, width, height }
+    let platforms = [];
+    const platformWidth = 80;
+    const platformHeight = 12;
+    function createInitialPlatforms() {
+      // Create platforms from bottom to top at regular intervals
+      const gap = 120;
+      for (let y = height - 50; y > -height; y -= gap) {
+        const x = Math.random() * (width - platformWidth);
+        platforms.push({ x, y, width: platformWidth, height: platformHeight });
+      }
+    }
+
+    // Power-ups array – each powerup is { x, y, type, collected }
+    let powerups = [];
+    const powerupTypes = ['Wave', 'Bombora', 'RipCurrent', 'Whirlpool'];
+    function spawnPowerup() {
+      // Spawn a powerup at a random platform or random x, y above current view
+      const x = Math.random() * (width - 40) + 20;
+      const y = whale.y - Math.random() * 400 - 200; // above the whale
+      const type = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+      powerups.push({ x, y, type, collected: false });
+    }
+
+    // ===== GAME PHYSICS =====
+    const gravity = 0.4;
+    const friction = 0.99;
+
+    // ===== CONTROLS =====
+    let keys = {};
+    window.addEventListener('keydown', (e) => { keys[e.code] = true; });
+    window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+    // Mobile touch controls: split screen left/right
+    document.querySelector('.control-left').addEventListener('touchstart', (e) => {
+      keys['ArrowLeft'] = true;
+      e.preventDefault();
+    });
+    document.querySelector('.control-left').addEventListener('touchend', (e) => {
+      keys['ArrowLeft'] = false;
+      e.preventDefault();
+    });
+    document.querySelector('.control-right').addEventListener('touchstart', (e) => {
+      keys['ArrowRight'] = true;
+      e.preventDefault();
+    });
+    document.querySelector('.control-right').addEventListener('touchend', (e) => {
+      keys['ArrowRight'] = false;
+      e.preventDefault();
+    });
+
+    // ===== GAME LOOP =====
+    function gameLoop() {
+      requestAnimationFrame(gameLoop);
+      update();
+      draw();
+    }
+
+    function update() {
+      // Horizontal controls
+      if (keys['ArrowLeft']) whale.vx = -5;
+      else if (keys['ArrowRight']) whale.vx = 5;
+      else whale.vx *= friction;
+
+      whale.x += whale.vx;
+      whale.y += whale.vy;
+      
+      // Gravity and powerup boosts
+      whale.vy += gravity - whale.boost;
+      if (whale.magnet) {
+        // Pull upward slowly
+        whale.vy = -2;
+      }
+
+      // Wrap whale horizontally
+      if (whale.x < -whale.radius) whale.x = width + whale.radius;
+      if (whale.x > width + whale.radius) whale.x = -whale.radius;
+      
+      // Collision with platforms (only when falling)
+      if (whale.vy > 0) {
+        for (let plat of platforms) {
+          if (whale.x > plat.x && whale.x < plat.x + plat.width &&
+              whale.y + whale.radius > plat.y && whale.y + whale.radius < plat.y + plat.height) {
+            // Bounce with a boost if a powerup effect is active
+            whale.vy = -10 - (whale.boost * 5);
+            score += 10;
+          }
+        }
+      }
+      
+      // Move platforms downward as whale ascends
+      if (whale.y < height / 2) {
+        let dy = height / 2 - whale.y;
+        whale.y = height / 2;
+        platforms.forEach(plat => { plat.y += dy; });
+        powerups.forEach(p => { p.y += dy; });
+        score += dy * 0.1;
+      }
+      
+      // Remove platforms and spawn new ones at top
+      platforms = platforms.filter(plat => plat.y < height + 50);
+      while (platforms.length < 10) {
+        const lastY = platforms.length ? Math.min(...platforms.map(p => p.y)) : height;
+        const newY = lastY - 120;
+        const newX = Math.random() * (width - platformWidth);
+        platforms.push({ x: newX, y: newY, width: platformWidth, height: platformHeight });
+        // Randomly spawn a powerup on new platforms
+        if (Math.random() < 0.3) spawnPowerup();
+      }
+      
+      // Check for collecting powerups
+      for (let p of powerups) {
+        if (!p.collected && Math.hypot(whale.x - p.x, whale.y - p.y) < whale.radius + 15) {
+          p.collected = true;
+          applyPowerup(p.type);
+        }
+      }
+      
+      // Remove collected or off-screen powerups
+      powerups = powerups.filter(p => !p.collected && p.y < height + 100);
+      
+      // Update high score
+      if (score > highScore) {
+        highScore = Math.floor(score);
+        localStorage.setItem('highScore', highScore);
+      }
+      
+      updateHUD();
+      
+      // Game over if whale falls off screen
+      if (whale.y - whale.radius > height) {
+        alert("Game Over! Your score: " + Math.floor(score));
+        resetGame();
+      }
+    }
+
+    function applyPowerup(type) {
+      switch (type) {
+        case 'Wave':
+          whale.boost = 0.4;
+          setTimeout(() => whale.boost = 0, 2000);
+          break;
+        case 'Bombora':
+          whale.boost = 1.2; // Triple boost effect
+          setTimeout(() => whale.boost = 0, 2000);
+          break;
+        case 'RipCurrent':
+          whale.magnet = true;
+          setTimeout(() => whale.magnet = false, 3000);
+          break;
+        case 'Whirlpool':
+          // Slow down gravity temporarily
+          const oldGravity = gravity;
+          gravity = 0.1;
+          setTimeout(() => gravity = 0.4, 3000);
+          break;
+      }
+    }
+
+    function resetGame() {
+      score = 0;
+      whale.x = width / 2;
+      whale.y = height - 150;
+      whale.vx = 0;
+      whale.vy = -10;
+      platforms = [];
+      powerups = [];
+      createInitialPlatforms();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+      
+      // Draw platforms
+      ctx.fillStyle = "#4d4fdb";
+      platforms.forEach(plat => {
+        ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
+      });
+      
+      // Draw powerups
+      powerups.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 15, 0, Math.PI * 2);
+        switch (p.type) {
+          case 'Wave': ctx.fillStyle = "#06a6ee"; break;
+          case 'Bombora': ctx.fillStyle = "#ff3a70"; break;
+          case 'RipCurrent': ctx.fillStyle = "#10b981"; break;
+          case 'Whirlpool': ctx.fillStyle = "#a78bfa"; break;
+        }
+        ctx.fill();
+        ctx.closePath();
+        // Draw powerup label
+        ctx.fillStyle = "#fff";
+        ctx.font = "10px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(p.type, p.x, p.y + 3);
+      });
+      
+      // Draw whale (as a doodle whale shape)
+      ctx.save();
+      ctx.translate(whale.x, whale.y);
+      ctx.fillStyle = whale.color;
+      ctx.beginPath();
+      // Whale body: ellipse
+      ctx.ellipse(0, 0, whale.radius, whale.radius * 0.6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Whale tail: simple triangle
+      ctx.beginPath();
+      ctx.moveTo(-whale.radius, 0);
+      ctx.lineTo(-whale.radius - 15, -10);
+      ctx.lineTo(-whale.radius - 15, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // ===== INPUT & MOBILE CONTROLS =====
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'ArrowLeft') whale.vx = -5;
+      if (e.code === 'ArrowRight') whale.vx = 5;
+    });
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') whale.vx = 0;
+    });
+
+    // Touch controls: left/right half screens
+    document.querySelector('.control-left').addEventListener('touchstart', (e) => {
+      whale.vx = -5;
+      e.preventDefault();
+    });
+    document.querySelector('.control-left').addEventListener('touchend', (e) => {
+      whale.vx = 0;
+      e.preventDefault();
+    });
+    document.querySelector('.control-right').addEventListener('touchstart', (e) => {
+      whale.vx = 5;
+      e.preventDefault();
+    });
+    document.querySelector('.control-right').addEventListener('touchend', (e) => {
+      whale.vx = 0;
+      e.preventDefault();
+    });
+
+    // ===== RESIZE HANDLER =====
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      threeCamera.aspect = width / height;
+      threeCamera.updateProjectionMatrix();
+      threeRenderer.setSize(width, height);
+    });
+
+    // ===== INITIALIZATION =====
+    initThreeJS();
+    animateThreeJS();
+    createInitialPlatforms();
+    updateHUD();
+    gameLoop();
+
+    // Expose animateParticles for button hover animation (optional)
+    function animateParticles() {
+      const particles = document.querySelectorAll('.particle');
+      particles.forEach(particle => {
+        gsap.to(particle, {
+          x: `random(-150, 150)`,
+          y: `random(-150, 150)`,
+          opacity: 0,
+          scale: `random(1, 3)`,
+          duration: `random(1, 2)`,
+          ease: 'power3.out',
+          onComplete: () => {
+            gsap.set(particle, {
+              x: 0,
+              y: 0,
+              opacity: `random(0.3, 0.7)`,
+              scale: `random(0.2, 0.5)`
+            });
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
