@@ -1,6 +1,6 @@
 <template>
   <div class="cosmic-registration-container" ref="container">
-    <!-- THREE.JS COSMIC BACKGROUND -->
+    <!-- THREE.JS COSMIC STARFIELD BACKGROUND -->
     <canvas ref="threeCanvas" class="cosmic-canvas"></canvas>
 
     <!-- PARALLAX COSMIC DUST LAYERS -->
@@ -301,6 +301,7 @@ export default {
     const container = ref(null);
     const threeCanvas = ref(null);
     const parallaxContainer = ref(null);
+    // These dust layers exist in RegisterView’s template
     const dustLayer1 = ref(null);
     const dustLayer2 = ref(null);
     const dustLayer3 = ref(null);
@@ -308,9 +309,9 @@ export default {
     const registrationCard = ref(null);
     const cardGlow = ref(null);
     const portalHeader = ref(null);
-    const nameField = ref(null);
-    const emailField = ref(null);
-    const passwordField = ref(null);
+    const nameFieldRef = ref(null);
+    const emailFieldRef = ref(null);
+    const passwordFieldRef = ref(null);
     const nameInput = ref(null);
     const emailInput = ref(null);
     const passwordInput = ref(null);
@@ -331,7 +332,7 @@ export default {
     const modalBackdrop = ref(null);
     const termsModal = ref(null);
 
-    // Three.js variables
+    // THREE.JS variables
     let scene, camera, renderer;
     let starField, nebulaParticles;
     let mousePosNormalized = { x: 0, y: 0 };
@@ -447,11 +448,11 @@ export default {
     };
 
     const createNebula = () => {
-      const nebulaGeometry = new THREE.BufferGeometry();
       const nebulaCount = 300;
-      const nebulaPositions = [];
-      const nebulaSizes = [];
-      const nebulaColors = [];
+      const geometry = new THREE.BufferGeometry();
+      const positions = [];
+      const sizes = [];
+      const colors = [];
       for (let i = 0; i < nebulaCount; i++) {
         const angle = Math.random() * Math.PI * 2;
         const radius = 100 + Math.random() * 150;
@@ -459,16 +460,16 @@ export default {
         const x = Math.cos(angle) * radius;
         const y = height;
         const z = Math.sin(angle) * radius;
-        nebulaPositions.push(x, y, z);
-        nebulaSizes.push(Math.random() * 20 + 10);
+        positions.push(x, y, z);
+        sizes.push(Math.random() * 20 + 10);
         const blueIntensity = Math.random() * 0.5 + 0.5;
         const purpleIntensity = Math.random() * 0.5 + 0.5;
-        nebulaColors.push(purpleIntensity * 0.6, 0.2, blueIntensity);
+        colors.push(purpleIntensity * 0.6, 0.2, blueIntensity);
       }
-      nebulaGeometry.setAttribute('position', new THREE.Float32BufferAttribute(nebulaPositions, 3));
-      nebulaGeometry.setAttribute('size', new THREE.Float32BufferAttribute(nebulaSizes, 1));
-      nebulaGeometry.setAttribute('color', new THREE.Float32BufferAttribute(nebulaColors, 3));
-      const nebulaMaterial = new THREE.ShaderMaterial({
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+      geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      const material = new THREE.ShaderMaterial({
         uniforms: {
           time: { value: 0 },
           pixelRatio: { value: window.devicePixelRatio }
@@ -492,9 +493,9 @@ export default {
         fragmentShader: `
           varying vec3 vColor;
           void main() {
-            float distFromCenter = length(gl_PointCoord - vec2(0.5));
-            float strength = 1.0 - distFromCenter * 2.0;
-            if (strength < 0.0) discard;
+            float dist = length(gl_PointCoord - vec2(0.5));
+            float strength = 1.0 - dist * 2.0;
+            if(strength < 0.0) discard;
             gl_FragColor = vec4(vColor, strength * 0.3);
           }
         `,
@@ -502,7 +503,7 @@ export default {
         depthWrite: false,
         blending: THREE.AdditiveBlending
       });
-      nebulaParticles = new THREE.Points(nebulaGeometry, nebulaMaterial);
+      nebulaParticles = new THREE.Points(geometry, material);
       scene.add(nebulaParticles);
     };
 
@@ -538,6 +539,7 @@ export default {
       window.addEventListener('mousemove', (e) => {
         mousePosNormalized.x = (e.clientX / window.innerWidth) * 2 - 1;
         mousePosNormalized.y = (e.clientY / window.innerHeight) * 2 - 1;
+        // Animate dust layers if they exist
         if (dustLayer1.value && dustLayer2.value && dustLayer3.value) {
           gsap.to(dustLayer1.value, { x: mousePosNormalized.x * 20, y: mousePosNormalized.y * 20, duration: 1, ease: "power2.out" });
           gsap.to(dustLayer2.value, { x: mousePosNormalized.x * 40, y: mousePosNormalized.y * 40, duration: 1, ease: "power2.out" });
@@ -631,7 +633,7 @@ export default {
 
     // TERMS CHECKBOX HANDLER
     const handleTermsChange = () => {
-      // Optional: add animation for checkbox change.
+      // Optionally add checkbox animation here.
     };
 
     // MODAL CONTROLS
@@ -646,12 +648,13 @@ export default {
     };
 
     // HANDLE REGISTRATION (Firebase integration)
+    // When registration is successful, route to onboarding.
     const handleRegister = async () => {
       error.value = '';
       isLoading.value = true;
       try {
         await authStore.register({ name: name.value, email: email.value, password: password.value });
-        router.push('/dashboard');
+        router.push('/onboarding'); // Route to onboarding page.
       } catch (err) {
         error.value = err.message || "Registration failed. Please try again.";
       } finally {
@@ -687,9 +690,9 @@ export default {
       registrationCard,
       cardGlow,
       portalHeader,
-      nameField,
-      emailField,
-      passwordField,
+      nameField: nameFieldRef, // Renamed ref to avoid conflict with local name variable.
+      emailField: emailFieldRef,
+      passwordField: passwordFieldRef,
       nameInput,
       emailInput,
       passwordInput,
@@ -735,7 +738,7 @@ export default {
   background-color: #000;
 }
 
-/* THREE.JS Canvas */
+/* THREE.JS Cosmic Canvas */
 .cosmic-canvas {
   position: fixed;
   top: 0;
@@ -842,7 +845,7 @@ export default {
   padding: 40px;
   background: rgba(0,0,0,0.95);
   border-radius: 20px;
-  box-shadow: 0 0 40px rgba(0,200,255,0.7);
+  box-shadow: 0 0 40px rgba(0,200,255,0.9);
   transform: translate(-50%, -50%);
   z-index: 2;
   overflow: hidden;
@@ -862,7 +865,7 @@ export default {
   position: absolute;
   width: 15px;
   height: 15px;
-  background: rgba(0,200,255,0.9);
+  background: rgba(0,200,255,0.95);
   border-radius: 50%;
 }
 .corner.top-left { top: 10px; left: 10px; }
@@ -879,11 +882,11 @@ export default {
   font-family: 'Orbitron', sans-serif;
   font-size: 2.2rem;
   color: #00c8ff;
-  text-shadow: 0 0 10px #00c8ff;
+  text-shadow: 0 0 15px #00c8ff;
 }
 .cosmic-title .accent {
   color: #ff00c8;
-  text-shadow: 0 0 10px #ff00c8;
+  text-shadow: 0 0 15px #ff00c8;
 }
 
 /* Cosmic Form */
@@ -928,7 +931,7 @@ export default {
   font-size: 1rem;
   outline: none;
   border-radius: 4px;
-  box-shadow: 0 0 8px rgba(0,200,255,0.3);
+  box-shadow: 0 0 12px rgba(0,200,255,0.5);
 }
 .input-underline {
   position: relative;
@@ -1022,7 +1025,7 @@ export default {
   cursor: pointer;
   outline: none;
   margin-top: 10px;
-  box-shadow: 0 0 10px rgba(0,200,255,0.7);
+  box-shadow: 0 0 12px rgba(0,200,255,0.8);
 }
 .button-background {
   position: absolute;
@@ -1039,7 +1042,7 @@ export default {
   left: 50%;
   width: 140%;
   height: 140%;
-  background: radial-gradient(circle, rgba(0,200,255,0.7), transparent);
+  background: radial-gradient(circle, rgba(0,200,255,0.8), transparent);
   transform: translate(-50%, -50%);
   z-index: -1;
   opacity: 0;

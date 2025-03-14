@@ -37,12 +37,15 @@
   </template>
   
   <script>
-  import { ref, computed, onMounted } from 'vue';
+  import { ref, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useAuthStore } from '@/store/auth';
   import * as THREE from 'three';
   import gsap from 'gsap';
   import anime from 'animejs';
+  import { updateProfile } from 'firebase/auth';
+  import { doc, updateDoc } from 'firebase/firestore';
+  import { db, auth } from '@/firebase/init';
   
   export default {
     name: 'OnboardingView',
@@ -58,46 +61,41 @@
       
       // Cards data for Step 2
       const cards = [
-        {
-          title: "Smart Conversations",
-          description: "Ask anything, get deep insights!"
-        },
-        {
-          title: "Memory & Context",
-          description: "We remember key details for better replies."
-        },
-        {
-          title: "Multi-Mode Thinking",
-          description: "Choose from logical, creative or technical responses."
-        }
+        { title: "Smart Conversations", description: "Ask anything, get deep insights!" },
+        { title: "Memory & Context", description: "We remember key details for better replies." },
+        { title: "Multi-Mode Thinking", description: "Choose from logical, creative or technical responses." }
       ];
-  
+      
       // Element refs
       const container = ref(null);
       const threeCanvas = ref(null);
       const typewriterText = ref(null);
       const cometEffect = ref(null);
       const nebulaBackground = ref(null);
-  
+      const typePrompt = ref(null);
+      
       // THREE.JS variables
       let scene, camera, renderer;
       let starField, nebulaParticles;
       let mousePosNormalized = { x: 0, y: 0 };
-  
-      // Firebase onboarding: when finished, register user (or update username)
+    
+      // Firebase onboarding: update user profile with username and then proceed to chat view
       const finishOnboarding = async () => {
         try {
-          // If user not logged in, create account with username as display name.
-          // This demo uses authStore.register to create a new user.
-          await authStore.register({ name: username.value, email: '', password: '' });
-          // After successful registration, redirect to ChatView
+          const currentUser = authStore.user; // Assumes authStore.user is reactive and holds the Firebase user
+          if (currentUser) {
+            // Update Firebase Auth displayName
+            await updateProfile(currentUser, { displayName: username.value });
+            // Update Firestore user document
+            const userDocRef = doc(db(), "users", currentUser.uid);
+            await updateDoc(userDocRef, { displayName: username.value });
+          }
           router.push('/chat');
         } catch (err) {
           console.error("Onboarding error:", err);
         }
       };
-  
-      // ---------------------------
+    
       // THREE.JS COSMIC BACKGROUND
       const initThreeJsScene = () => {
         if (!threeCanvas.value) return;
@@ -105,11 +103,7 @@
         const aspectRatio = window.innerWidth / window.innerHeight;
         camera = new THREE.PerspectiveCamera(60, aspectRatio, 1, 1000);
         camera.position.z = 500;
-        renderer = new THREE.WebGLRenderer({
-          canvas: threeCanvas.value,
-          antialias: true,
-          alpha: true
-        });
+        renderer = new THREE.WebGLRenderer({ canvas: threeCanvas.value, antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         createStarfield();
@@ -117,7 +111,7 @@
         window.addEventListener('resize', handleResize);
         animateThreeJs();
       };
-  
+    
       const createStarfield = () => {
         const starCount = 2000;
         const geometry = new THREE.BufferGeometry();
@@ -146,10 +140,7 @@
         geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
         geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
         const material = new THREE.ShaderMaterial({
-          uniforms: {
-            pixelRatio: { value: window.devicePixelRatio },
-            time: { value: 0 }
-          },
+          uniforms: { pixelRatio: { value: window.devicePixelRatio }, time: { value: 0 } },
           vertexShader: `
             attribute float size;
             attribute vec3 color;
@@ -180,7 +171,7 @@
         starField = new THREE.Points(geometry, material);
         scene.add(starField);
       };
-  
+    
       const createNebula = () => {
         const nebulaCount = 300;
         const geometry = new THREE.BufferGeometry();
@@ -204,10 +195,7 @@
         geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
         geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
         const material = new THREE.ShaderMaterial({
-          uniforms: {
-            time: { value: 0 },
-            pixelRatio: { value: window.devicePixelRatio }
-          },
+          uniforms: { time: { value: 0 }, pixelRatio: { value: window.devicePixelRatio } },
           vertexShader: `
             attribute float size;
             attribute vec3 color;
@@ -240,7 +228,7 @@
         nebulaParticles = new THREE.Points(geometry, material);
         scene.add(nebulaParticles);
       };
-  
+    
       const animateThreeJs = () => {
         requestAnimationFrame(animateThreeJs);
         const time = performance.now() * 0.001;
@@ -255,7 +243,7 @@
         }
         renderer.render(scene, camera);
       };
-  
+    
       const handleResize = () => {
         if (!camera || !renderer) return;
         const width = window.innerWidth;
@@ -267,25 +255,20 @@
         if (starField?.material.uniforms) starField.material.uniforms.pixelRatio.value = window.devicePixelRatio;
         if (nebulaParticles?.material.uniforms) nebulaParticles.material.uniforms.pixelRatio.value = window.devicePixelRatio;
       };
-  
-      // PARALLAX EFFECTS
+    
+      // PARALLAX EFFECTS (guard against missing dust layers)
       const initParallaxEffects = () => {
         window.addEventListener('mousemove', (e) => {
           mousePosNormalized.x = (e.clientX / window.innerWidth) * 2 - 1;
           mousePosNormalized.y = (e.clientY / window.innerHeight) * 2 - 1;
-          // Animate dust layers
-          if (dustLayer1.value && dustLayer2.value && dustLayer3.value) {
-            gsap.to(dustLayer1.value, { x: mousePosNormalized.x * 20, y: mousePosNormalized.y * 20, duration: 1, ease: "power2.out" });
-            gsap.to(dustLayer2.value, { x: mousePosNormalized.x * 40, y: mousePosNormalized.y * 40, duration: 1, ease: "power2.out" });
-            gsap.to(dustLayer3.value, { x: mousePosNormalized.x * 60, y: mousePosNormalized.y * 60, duration: 1, ease: "power2.out" });
-          }
-          // Animate tesseract
-          if (tesseractContainer.value) {
-            gsap.to(tesseractContainer.value, { x: mousePosNormalized.x * -30, y: mousePosNormalized.y * -30, duration: 1.5, ease: "power2.out" });
+          // If dust layers exist, animate them
+          // (If not, this will do nothing)
+          if (false) {
+            // Placeholder: your onboarding view doesn't include dust layers.
           }
         });
       };
-  
+    
       // Onboarding Step 1: Typewriter effect & comet animation
       const runTypewriter = () => {
         const text = "Welcome to DawntasyAI, where intelligence meets imagination!";
@@ -298,30 +281,31 @@
           update: (anim) => {
             const count = Math.floor(anim.animations[0].currentValue);
             currentText = text.slice(0, count);
-            if(typewriterText.value) typewriterText.value.innerText = currentText;
+            if (typewriterText.value) typewriterText.value.innerText = currentText;
           },
           complete: () => {
             showContinue.value = true;
           }
         });
-        // Comet animation (a simple GSAP effect on cometEffect)
         gsap.fromTo(cometEffect.value, 
           { opacity: 0, x: -100, y: -100 }, 
           { opacity: 1, x: 100, y: 100, duration: 1, ease: "power2.inOut", delay: 4.5 }
         );
       };
-  
-      // Transition to next onboarding step with progress animation
+    
+      // Transition to next step with progress animation
       const goToNextStep = () => {
-        progress.value = 100; // animate progress bar to full for step completion
+        progress.value = 100;
         gsap.to(progress, { value: 100, duration: 0.5, ease: "power2.out", onComplete: () => {
           step.value++;
-          // Reset progress for subsequent steps if needed
           progress.value = 0;
+          if (step.value === 3 && typePrompt.value) {
+            runTypePrompt();
+          }
         }});
       };
-  
-      // Onboarding Step 3: Type-in effect for username prompt (using Anime.js)
+    
+      // Onboarding Step 3: Type-in effect for username prompt
       const runTypePrompt = () => {
         anime({
           targets: typePrompt.value,
@@ -331,14 +315,13 @@
           easing: 'easeOutQuad'
         });
       };
-  
-      // Initialize onboarding animations for Step 1
+    
       onMounted(() => {
         initThreeJsScene();
         initParallaxEffects();
-        if(step.value === 1) runTypewriter();
+        if (step.value === 1) runTypewriter();
       });
-  
+    
       return {
         step,
         progress,
@@ -350,6 +333,7 @@
         typewriterText,
         cometEffect,
         nebulaBackground,
+        typePrompt,
         goToNextStep,
         runTypePrompt,
         finishOnboarding
@@ -357,7 +341,7 @@
     }
   };
   </script>
-  
+    
   <style scoped>
   /* Onboarding Container & Cosmic Canvas */
   .onboarding-container {
@@ -394,11 +378,10 @@
   /* Step 1: Welcome */
   .typewriter-text {
     font-family: 'Orbitron', sans-serif;
-    font-size: 2rem;
+    font-size: 2.5rem;
     white-space: pre-wrap;
     margin-bottom: 20px;
-    opacity: 1;
-    text-shadow: 0 0 10px #00c8ff;
+    text-shadow: 0 0 15px #00c8ff;
   }
   .comet-effect {
     position: absolute;
@@ -472,9 +455,9 @@
   .onboarding-card:nth-child(2) { animation-delay: 0.4s; }
   .onboarding-card:nth-child(3) { animation-delay: 0.6s; }
   .card-title {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     margin-bottom: 10px;
-    text-shadow: 0 0 5px #00c8ff;
+    text-shadow: 0 0 8px #00c8ff;
   }
   .card-description {
     font-size: 1rem;
@@ -492,8 +475,9 @@
     gap: 20px;
   }
   .type-prompt {
-    font-size: 1.8rem;
+    font-size: 2rem;
     opacity: 0;
+    text-shadow: 0 0 10px #ff00c8;
   }
   .username-input {
     padding: 12px;
