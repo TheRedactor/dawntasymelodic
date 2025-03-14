@@ -184,6 +184,15 @@
 
     <div id="app"></div>
     <!-- Make sure this points to the correct source file -->
+    <script>
+      window.addEventListener('error', function(e) {
+        console.error('Global error caught:', e.error);
+        document.body.innerHTML += '<div style="color: white; background: red; padding: 20px; margin: 20px; position: absolute; top: 0; left: 0; z-index: 10000;">' + 
+          '<h2>Error Detected</h2>' +
+          '<pre>' + e.error.stack + '</pre>' +
+          '</div>';
+      });
+    </script>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
