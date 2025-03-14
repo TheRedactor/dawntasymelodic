@@ -5,7 +5,7 @@
   >
     <!-- Cosmic particles background effect -->
     <div class="cosmic-particles-container">
-      <div v-for="n in 50" :key="`particle-${n}`" 
+      <div v-for="n in 100" :key="`particle-${n}`" 
            class="cosmic-particle"
            :style="{
              '--size': `${Math.random() * 4 + 1}px`,
@@ -18,7 +18,7 @@
       ></div>
     </div>
 
-    <!-- Cosmic Portal Transition Effect -->
+    <!-- ENHANCED Cosmic Portal Transition Effect -->
     <div class="cosmic-portal-transition" ref="portalTransition">
       <div class="portal-rings">
         <div class="portal-ring ring1"></div>
@@ -26,9 +26,18 @@
         <div class="portal-ring ring3"></div>
       </div>
       <div class="portal-core"></div>
+      <div class="portal-rays">
+        <div v-for="n in 12" :key="`ray-${n}`" 
+             class="portal-ray"
+             :style="{
+               '--rotation': `${n * 30}deg`,
+               '--delay': `${n * 0.1}s`
+             }"
+        ></div>
+      </div>
     </div>
 
-    <!-- Cosmic header with Quantum Transitions -->
+    <!-- LEGENDARY Cosmic header with Quantum Transitions -->
     <div class="chat-header" ref="chatHeader">
       <h1 class="chat-title">
         <span class="title-text" ref="titleText">DawntasyAI</span>
@@ -55,19 +64,20 @@
       </div>
     </div>
     
-    <!-- Messages Container with Cosmic Flow -->
+    <!-- ENHANCED Messages Container with Cosmic Flow -->
     <div 
       ref="messagesContainer"
       class="messages-container"
       @scroll="handleScroll"
     >
-      <!-- Floating Runes -->
+      <!-- LEGENDARY Floating Runes -->
       <div class="floating-runes">
         <div class="rune rune-time" ref="runeTime"></div>
         <div class="rune rune-rift" ref="runeRift"></div>
+        <div class="rune rune-cosmic" ref="runeCosmic"></div>
       </div>
       
-      <!-- Welcome Message with Quantum Entrance -->
+      <!-- MAGNIFICENT Welcome Message with Quantum Entrance -->
       <div 
         v-if="messages.length === 0" 
         class="welcome-message"
@@ -96,7 +106,7 @@
         </div>
       </div>
       
-      <!-- Message Bubbles with Quantum Animations -->
+      <!-- COSMIC Message Bubbles with Quantum Animations -->
       <transition-group 
         name="message-transition"
         tag="div"
@@ -109,23 +119,29 @@
           :class="{ 'user': message.role === 'user', 'assistant': message.role === 'assistant' }"
           :ref="`message-${index}`"
         >
-          <!-- User Avatar -->
+          <!-- LEGENDARY User Avatar -->
           <div v-if="message.role === 'user'" class="avatar user-avatar">
             <span class="avatar-letter">{{ userInitial }}</span>
+            <div class="avatar-glow"></div>
           </div>
           
-          <!-- Assistant Avatar -->
+          <!-- ENHANCED Assistant Avatar -->
           <div v-else class="avatar assistant-avatar">
             <div class="assistant-avatar-inner">
               <span class="cosmic-symbol">⟁</span>
               <div class="avatar-glow"></div>
+              <div class="avatar-rings">
+                <div class="avatar-ring"></div>
+                <div class="avatar-ring"></div>
+              </div>
             </div>
           </div>
           
-          <!-- Message Content -->
+          <!-- ENHANCED Message Content -->
           <div class="message-content">
             <div class="message-sender">
               {{ message.role === 'user' ? authStore.displayName || 'You' : 'DawntasyAI' }}
+              <div class="sender-underline"></div>
             </div>
             <div 
               class="message-text" 
@@ -136,7 +152,7 @@
         </div>
       </transition-group>
       
-      <!-- Thinking Indicator with Quantum Pulse -->
+      <!-- ENHANCED Thinking Indicator with Quantum Pulse -->
       <div 
         v-if="isLoading"
         class="thinking-indicator"
@@ -146,9 +162,18 @@
           <div v-for="n in 3" :key="`thinking-dot-${n}`" class="dot" :class="`dot-${n}`"></div>
         </div>
         <div class="thinking-text">Consulting The Rift...</div>
+        <div class="thinking-runes">
+          <div v-for="n in 5" :key="`thinking-rune-${n}`" 
+               class="thinking-rune"
+               :style="{
+                 '--rotation': `${n * 72}deg`,
+                 '--delay': `${n * 0.2}s`
+               }"
+          ></div>
+        </div>
       </div>
       
-      <!-- Scroll indicator -->
+      <!-- LEGENDARY Scroll indicator -->
       <div 
         v-if="showScrollIndicator" 
         class="scroll-indicator"
@@ -156,10 +181,11 @@
         ref="scrollIndicator"
       >
         <i class="ri-arrow-down-line"></i>
+        <div class="scroll-pulse"></div>
       </div>
     </div>
     
-    <!-- Input Area with Energy Field -->
+    <!-- ENHANCED Input Area with Energy Field -->
     <div 
       class="input-container"
       ref="inputContainer"
@@ -174,7 +200,20 @@
         :disabled="isLoading"
       ></textarea>
       
-      <div class="input-energy-field" ref="energyField" :class="{ 'active': userInput.length > 0 }"></div>
+      <div class="input-energy-field" ref="energyField" :class="{ 'active': userInput.length > 0 }">
+        <div class="energy-particles">
+          <div v-for="n in 20" :key="`energy-particle-${n}`" 
+               class="energy-particle"
+               :style="{
+                 '--size': `${Math.random() * 3 + 1}px`,
+                 '--x': `${Math.random() * 100}%`,
+                 '--y': `${Math.random() * 100}%`,
+                 '--duration': `${Math.random() * 3 + 2}s`,
+                 '--delay': `${Math.random() * -2}s`
+               }"
+          ></div>
+        </div>
+      </div>
       
       <button 
         class="send-button" 
@@ -193,16 +232,20 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { marked } from 'marked';
 import { useAuthStore } from '@/store/auth';
-import { useOpenAI } from '../../server/api/openai';
+import { useOpenAI } from '@/server/api/openai';
+import { useChatStore } from '@/store/chat';
 import { format } from 'date-fns';
 import hljs from 'highlight.js';
 import gsap from 'gsap';
 import * as THREE from 'three';
 import anime from 'animejs';
+import { useRoute } from 'vue-router';
 
 // Initialize services
 const authStore = useAuthStore();
 const openai = useOpenAI();
+const chatStore = useChatStore();
+const route = useRoute();
 
 // Refs
 const chatContainer = ref<HTMLElement | null>(null);
@@ -222,6 +265,7 @@ const energyField = ref<HTMLElement | null>(null);
 const sendButton = ref<HTMLElement | null>(null);
 const runeTime = ref<HTMLElement | null>(null);
 const runeRift = ref<HTMLElement | null>(null);
+const runeCosmic = ref<HTMLElement | null>(null);
 const scrollIndicator = ref<HTMLElement | null>(null);
 
 // State
@@ -243,21 +287,23 @@ const modes = {
 };
 const modeName = computed(() => modes[mode.value]);
 
-// Sample suggestions
+// Sample suggestions - HYPER LEGENDARY VERSION 🔥
 const suggestions = [
-  "Tell me about Time Smith and The Rift",
-  "What is Dawntasy about?",
-  "How does the Plain and Pale Clock relate to the story?", 
-  "Who is Ursa Minor in the Dawntasy universe?",
-  "What themes does Dawntasy explore?"
+  "Tell me about Time Smith and The Rift ✨",
+  "What cosmic secrets does Dawntasy hold? 🌌",
+  "How does the Plain and Pale Clock influence reality? ⏰", 
+  "Who is Ursa Minor in the Dawntasy universe? 🐻",
+  "Explore the quantum themes of Dawntasy with me! 🔮"
 ];
 
-// Three.js objects for animated background
+// Three.js objects for LEGENDARY animated background
 let scene: THREE.Scene;
 let camera: THREE.PerspectiveCamera;
 let renderer: THREE.WebGLRenderer;
 let backgroundCanvas: HTMLCanvasElement;
 let animationFrameId: number;
+let stars: THREE.Points;
+let nebula: THREE.Mesh;
 
 // Computed values
 const userInitial = computed(() => {
@@ -274,20 +320,20 @@ const setMode = (newMode: 'default' | 'archmage' | 'creative') => {
     if (plan === 'free') {
       // Show upgrade modal or message
       animatePortalTransition(() => {
-        alert('This mode is available with premium plans only. Upgrade to access advanced AI modes!');
+        alert('✨ UPGRADE REQUIRED! ✨ This LEGENDARY mode is available with premium plans only. Level up your journey to access advanced AI powers!');
       });
       return;
     }
   }
   
-  // Animate mode change
+  // Animate mode change with COSMIC EFFECTS
   animatePortalTransition(() => {
     mode.value = newMode;
   });
 };
 
 const formatMessage = (content: string) => {
-  // Parse markdown
+  // Parse markdown with ENHANCED formatting
   let html = marked(content, {
     gfm: true,
     breaks: true,
@@ -312,7 +358,7 @@ const formatMessage = (content: string) => {
     }
   });
   
-  // Add cosmic styling to Dawntasy references
+  // Add LEGENDARY cosmic styling to Dawntasy references
   const keywords = [
     'Time Smith', 'The Rift', 'Ursa Minor', 'Yaee', 
     'Dawntasy', "Time's True Name", 'Bear Village',
@@ -377,15 +423,18 @@ const sendMessage = async (text?: string) => {
   const messageText = text || userInput.value.trim();
   if (!messageText) return;
   
-  // Animate sending effect
+  // COSMIC LEGENDARY Animation effect when sending!
   if (sendButton.value && !text) {
     anime({
       targets: sendButton.value,
-      scale: [1, 0.8, 1],
-      rotate: 15,
-      duration: 400,
+      scale: [1, 0.8, 1.2, 1],
+      rotate: [0, -15, 15, 0],
+      duration: 600,
       easing: 'easeInOutQuad'
     });
+    
+    // Add particle burst from send button
+    createParticleBurst(sendButton.value);
   }
   
   // Add user message to chat
@@ -395,6 +444,22 @@ const sendMessage = async (text?: string) => {
     timestamp: Date.now()
   });
   
+  // Save to Firebase via chat store
+  try {
+    if (chatStore.currentChat?.id) {
+      // Update existing chat
+      await chatStore.sendMessage(messageText);
+    } else {
+      // Create new chat
+      const chatId = await chatStore.createChat({ initialPrompt: messageText });
+      if (chatId) {
+        await chatStore.fetchChat(chatId);
+      }
+    }
+  } catch (err) {
+    console.error('Error saving message:', err);
+  }
+  
   // Clear input field
   userInput.value = '';
   
@@ -403,10 +468,10 @@ const sendMessage = async (text?: string) => {
     inputField.value.style.height = 'auto';
   }
   
-  // Scroll to bottom
+  // Scroll to bottom with COSMIC animation
   await scrollToBottom();
   
-  // Start loading state with animation
+  // Start loading state with LEGENDARY animation
   isLoading.value = true;
   
   try {
@@ -430,7 +495,7 @@ const sendMessage = async (text?: string) => {
         onChunk: (chunk) => {
           assistantResponse += chunk;
           
-          // Update the assistant's response in real-time
+          // Update the assistant's response in real-time with QUANTUM speed
           const lastMessage = messages.value[messages.value.length - 1];
           if (lastMessage && lastMessage.role === 'assistant') {
             lastMessage.content = assistantResponse;
@@ -461,28 +526,37 @@ const sendMessage = async (text?: string) => {
   } catch (error) {
     console.error('Error sending message:', error);
     
-    // Add error message
+    // Add error message with COSMIC styling
     messages.value.push({
       role: 'assistant',
-      content: "I'm having trouble connecting to The Rift right now. Please try again in a moment.",
+      content: "⚠️ *The Rift appears to be unstable at the moment.* I'm having trouble connecting to the cosmic streams. Please try again when the quantum fluctuations stabilize.",
       timestamp: Date.now()
     });
   } finally {
     isLoading.value = false;
     await nextTick();
     
-    // Animate latest message entrance
+    // Animate latest message entrance with LEGENDARY effects
     const lastMessageIndex = messages.value.length - 1;
     const messageEl = document.querySelector(`.message-bubble:nth-child(${lastMessageIndex + 1})`);
     
     if (messageEl) {
       gsap.from(messageEl, {
-        y: 20,
+        y: 30,
         opacity: 0,
-        duration: 0.5,
-        ease: "back.out(1.4)",
+        scale: 0.95,
+        duration: 0.7,
+        ease: "back.out(1.7)",
         onComplete: () => {
           scrollToBottom();
+          
+          // Add cosmic glow effect after message appears
+          gsap.to(messageEl.querySelector('.message-content'), {
+            boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
+            duration: 1,
+            repeat: 1,
+            yoyo: true
+          });
         }
       });
     }
@@ -493,24 +567,31 @@ const animateChip = (e: MouseEvent) => {
   const target = e.currentTarget as HTMLElement;
   
   gsap.to(target, {
-    scale: 1.05,
-    boxShadow: "0 5px 15px rgba(139, 92, 246, 0.4)",
-    duration: 0.2
+    scale: 1.1,
+    boxShadow: "0 8px 20px rgba(139, 92, 246, 0.6)",
+    y: -5,
+    duration: 0.3,
+    ease: "back.out(1.7)"
   });
   
-  // Add sparkle effect
-  const sparkle = document.createElement('div');
-  sparkle.className = 'sparkle';
-  target.appendChild(sparkle);
-  
-  gsap.to(sparkle, {
-    opacity: 0,
-    scale: 3,
-    duration: 0.8,
-    onComplete: () => {
-      sparkle.remove();
-    }
-  });
+  // Add LEGENDARY sparkle effect
+  for (let i = 0; i < 3; i++) {
+    const sparkle = document.createElement('div');
+    sparkle.className = 'sparkle';
+    sparkle.style.left = `${Math.random() * 100}%`;
+    sparkle.style.top = `${Math.random() * 100}%`;
+    target.appendChild(sparkle);
+    
+    gsap.to(sparkle, {
+      opacity: 0,
+      scale: 3,
+      duration: 0.8,
+      delay: i * 0.1,
+      onComplete: () => {
+        sparkle.remove();
+      }
+    });
+  }
 };
 
 const resetChip = (e: MouseEvent) => {
@@ -518,8 +599,10 @@ const resetChip = (e: MouseEvent) => {
   
   gsap.to(target, {
     scale: 1,
-    boxShadow: "0 2px 5px rgba(139, 92, 246, 0.2)",
-    duration: 0.2
+    boxShadow: "0 4px 8px rgba(139, 92, 246, 0.3)",
+    y: 0,
+    duration: 0.3,
+    ease: "power2.out"
   });
 };
 
@@ -529,53 +612,107 @@ const animatePortalTransition = (callback: () => void) => {
   const portal = portalTransition.value;
   portal.style.display = 'flex';
   
-  // Animate portal opening
+  // LEGENDARY portal opening animation
   gsap.timeline()
     .to(portal, {
       opacity: 1,
       duration: 0.3
     })
-    .to(portal.querySelector('.portal-rings'), {
-      scale: 1.2,
-      opacity: 0.8,
-      duration: 0.5
+    .to(portal.querySelectorAll('.portal-ring'), {
+      scale: 1.5,
+      opacity: 0.9,
+      duration: 0.5,
+      stagger: 0.1
     })
     .to(portal.querySelector('.portal-core'), {
-      scale: 20,
+      scale: 30,
       opacity: 1,
-      duration: 0.8,
+      duration: 1,
       ease: "power3.in",
       onComplete: () => {
         // Execute the callback
         callback();
         
-        // Reset and hide portal
+        // Reset and hide portal with COSMIC animation
         gsap.timeline()
           .set(portal.querySelector('.portal-core'), {
             scale: 1,
           })
-          .set(portal.querySelector('.portal-rings'), {
+          .set(portal.querySelectorAll('.portal-ring'), {
             scale: 1,
             opacity: 0.5,
           })
           .to(portal, {
             opacity: 0,
-            duration: 0.3,
+            duration: 0.5,
             onComplete: () => {
               portal.style.display = 'none';
             }
           });
       }
     });
+    
+  // Animate portal rays during transition
+  gsap.to(portal.querySelectorAll('.portal-ray'), {
+    scaleY: 1.5,
+    opacity: 0.8,
+    duration: 0.8,
+    stagger: 0.05,
+    repeat: 1,
+    yoyo: true
+  });
 };
 
-// Initialize cosmic background
+// Create particle burst effect - SUPER LEGENDARY ADDITION! 🔥
+const createParticleBurst = (element: HTMLElement) => {
+  const rect = element.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  
+  for (let i = 0; i < 20; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'burst-particle';
+    document.body.appendChild(particle);
+    
+    // Random particle properties
+    const angle = Math.random() * Math.PI * 2;
+    const distance = Math.random() * 100 + 50;
+    const size = Math.random() * 6 + 2;
+    const duration = Math.random() * 1 + 0.5;
+    const hue = Math.random() * 60 + 240; // Blue to purple range
+    
+    gsap.set(particle, {
+      width: size,
+      height: size,
+      x: centerX,
+      y: centerY,
+      backgroundColor: `hsl(${hue}, 80%, 60%)`,
+      position: 'fixed',
+      borderRadius: '50%',
+      zIndex: 9999,
+      boxShadow: `0 0 ${size}px hsl(${hue}, 80%, 60%)`
+    });
+    
+    gsap.to(particle, {
+      x: centerX + Math.cos(angle) * distance,
+      y: centerY + Math.sin(angle) * distance,
+      opacity: 0,
+      duration: duration,
+      ease: 'power2.out',
+      onComplete: () => {
+        particle.remove();
+      }
+    });
+  }
+};
+
+// Initialize EPIC cosmic background
 const initCosmicBackground = () => {
   backgroundCanvas = document.createElement('canvas');
   backgroundCanvas.className = 'cosmic-background-canvas';
   chatContainer.value?.appendChild(backgroundCanvas);
   
-  // Set up THREE.js scene
+  // Set up THREE.js scene with LEGENDARY settings
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
   renderer = new THREE.WebGLRenderer({ 
@@ -587,7 +724,7 @@ const initCosmicBackground = () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   camera.position.z = 5;
   
-  // Create stars
+  // Create COSMIC stars
   const starsGeometry = new THREE.BufferGeometry();
   const starsMaterial = new THREE.PointsMaterial({
     color: 0xffffff,
@@ -598,7 +735,7 @@ const initCosmicBackground = () => {
   });
   
   const starsVertices = [];
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < 2000; i++) {
     const x = (Math.random() - 0.5) * 20;
     const y = (Math.random() - 0.5) * 20;
     const z = (Math.random() - 0.5) * 20;
@@ -606,16 +743,34 @@ const initCosmicBackground = () => {
   }
   
   starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
-  const stars = new THREE.Points(starsGeometry, starsMaterial);
+  stars = new THREE.Points(starsGeometry, starsMaterial);
   scene.add(stars);
   
-  // Animation loop
+  // Create LEGENDARY nebula
+  const nebulaGeometry = new THREE.SphereGeometry(10, 32, 32);
+  const nebulaMaterial = new THREE.MeshBasicMaterial({
+    color: 0x8B5CF6,
+    transparent: true,
+    opacity: 0.05
+  });
+  nebula = new THREE.Mesh(nebulaGeometry, nebulaMaterial);
+  scene.add(nebula);
+  
+  // Animation loop for COSMIC background
   const animate = () => {
     animationFrameId = requestAnimationFrame(animate);
     
-    // Rotate stars
+    // Rotate stars with LEGENDARY movement
     stars.rotation.x += 0.0003;
     stars.rotation.y += 0.0002;
+    
+    // Pulse nebula for COSMIC effect
+    const time = Date.now() * 0.001;
+    nebula.scale.set(
+      1 + Math.sin(time * 0.3) * 0.1,
+      1 + Math.sin(time * 0.5) * 0.1,
+      1 + Math.sin(time * 0.4) * 0.1
+    );
     
     renderer.render(scene, camera);
   };
@@ -637,75 +792,77 @@ const initCosmicBackground = () => {
   window.addEventListener('resize', handleResize);
 };
 
-// Initialize animations
+// Initialize LEGENDARY animations
 const initAnimations = () => {
-  // Animate the title text glow
+  // Animate the title text with COSMIC glow
   if (titleText.value) {
     gsap.to(titleText.value, {
-      textShadow: "0 0 10px #8b5cf6, 0 0 20px #8b5cf6",
+      textShadow: "0 0 15px #8b5cf6, 0 0 30px #8b5cf6",
       duration: 2,
       repeat: -1,
       yoyo: true
     });
   }
   
-  // Animate the mode badge
+  // Animate the mode badge with QUANTUM effects
   if (modeBadge.value) {
     gsap.from(modeBadge.value, {
-      y: -20,
+      y: -30,
       opacity: 0,
+      rotation: -5,
       duration: 0.8,
       ease: "elastic.out(1, 0.5)"
     });
   }
   
-  // Animate mode buttons
+  // Animate mode buttons with LEGENDARY effects
   const modeButtons = document.querySelectorAll('.mode-button');
   gsap.from(modeButtons, {
     opacity: 0,
-    y: 10,
-    stagger: 0.1,
-    duration: 0.5,
-    ease: "power2.out"
+    y: 15,
+    stagger: 0.15,
+    duration: 0.6,
+    ease: "back.out(1.7)"
   });
   
-  // Animate welcome message
+  // Animate welcome message with COSMIC entrance
   if (welcomeMessage.value) {
     gsap.from(welcomeMessage.value, {
-      y: 30,
+      y: 50,
       opacity: 0,
-      duration: 0.8,
+      scale: 0.95,
+      duration: 1,
       ease: "power3.out"
     });
   }
   
-  // Animate welcome text
+  // Animate welcome text with QUANTUM fade
   if (welcomeText.value) {
     gsap.from(welcomeText.value, {
       opacity: 0,
-      duration: 0.8,
-      delay: 0.3
+      duration: 1,
+      delay: 0.5
     });
   }
   
-  // Animate suggestion chips
+  // Animate suggestion chips with LEGENDARY popping effect
   const chips = document.querySelectorAll('.suggestion-chip');
   gsap.from(chips, {
     scale: 0,
     opacity: 0,
     stagger: 0.1,
-    duration: 0.5,
-    delay: 0.5,
-    ease: "back.out(1.7)"
+    duration: 0.7,
+    delay: 0.7,
+    ease: "back.out(2)"
   });
   
-  // Animate floating runes
+  // Animate floating runes with COSMIC movement
   if (runeTime.value) {
     gsap.to(runeTime.value, {
-      y: "random(-20, 20)",
-      x: "random(-10, 10)",
-      rotation: "random(-15, 15)",
-      duration: "random(5, 8)",
+      y: "random(-30, 30)",
+      x: "random(-20, 20)",
+      rotation: "random(-20, 20)",
+      duration: "random(7, 10)",
       repeat: -1,
       yoyo: true,
       ease: "sine.inOut"
@@ -714,63 +871,88 @@ const initAnimations = () => {
   
   if (runeRift.value) {
     gsap.to(runeRift.value, {
-      y: "random(-15, 15)",
-      x: "random(-10, 10)",
-      rotation: "random(-10, 10)",
-      duration: "random(4, 7)",
+      y: "random(-25, 25)",
+      x: "random(-15, 15)",
+      rotation: "random(-15, 15)",
+      duration: "random(6, 9)",
       repeat: -1,
       yoyo: true,
       ease: "sine.inOut"
     });
   }
   
-  // Animate input container entrance
+  if (runeCosmic.value) {
+    gsap.to(runeCosmic.value, {
+      y: "random(-20, 20)",
+      x: "random(-25, 25)",
+      rotation: "random(-25, 25)",
+      duration: "random(8, 11)",
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut"
+    });
+  }
+  
+  // Animate input container entrance with QUANTUM slide
   if (inputContainer.value) {
     gsap.from(inputContainer.value, {
-      y: 20,
+      y: 30,
       opacity: 0,
       duration: 0.8,
-      delay: 0.5,
+      delay: 0.7,
       ease: "power2.out"
     });
   }
   
-  // Setup energy field animation
+  // Setup energy field animation with COSMIC glow
   if (energyField.value) {
     gsap.set(energyField.value, { opacity: 0 });
   }
 };
 
-// Watch for input changes to animate energy field
+// Watch for input changes to animate energy field with LEGENDARY effects
 watch(userInput, (newValue) => {
   if (!energyField.value) return;
   
   if (newValue.length > 0) {
     gsap.to(energyField.value, {
-      opacity: 0.6,
-      duration: 0.3
+      opacity: 0.8,
+      duration: 0.5
     });
     
     anime({
       targets: energyField.value,
       boxShadow: [
         '0 0 5px rgba(139, 92, 246, 0.5)',
-        '0 0 20px rgba(139, 92, 246, 0.8)',
+        '0 0 25px rgba(139, 92, 246, 0.8)',
         '0 0 5px rgba(139, 92, 246, 0.5)'
       ],
       duration: 2000,
       easing: 'easeInOutSine',
       loop: true
     });
+    
+    // Animate energy particles for COSMIC effect
+    gsap.to('.energy-particle', {
+      opacity: 0.8,
+      duration: 0.5,
+      stagger: 0.02
+    });
   } else {
     gsap.to(energyField.value, {
+      opacity: 0,
+      duration: 0.3
+    });
+    
+    // Hide energy particles
+    gsap.to('.energy-particle', {
       opacity: 0,
       duration: 0.3
     });
   }
 });
 
-// Watch for new messages to animate them
+// Watch for new messages to animate them with COSMIC effects
 watch(messages, async (newMessages, oldMessages) => {
   if (newMessages.length > oldMessages.length) {
     await nextTick();
@@ -780,68 +962,109 @@ watch(messages, async (newMessages, oldMessages) => {
     const messageElement = document.querySelector(`.message-bubble:nth-child(${latestIndex + 1})`) as HTMLElement;
     
     if (messageElement) {
+      // LEGENDARY entrance animation
       gsap.from(messageElement, {
         opacity: 0,
-        y: 20,
-        duration: 0.5,
-        ease: "back.out(1.4)"
+        y: 30,
+        scale: 0.95,
+        duration: 0.7,
+        ease: "back.out(1.7)"
       });
       
-      // Add ripple effect for AI messages
+      // Add COSMIC ripple effect for AI messages
       if (newMessages[latestIndex].role === 'assistant') {
-        const ripple = document.createElement('div');
-        ripple.className = 'message-ripple';
-        messageElement.appendChild(ripple);
-        
-        gsap.to(ripple, {
-          scale: 1.5,
-          opacity: 0,
-          duration: 1,
-          onComplete: () => {
-            ripple.remove();
-          }
-        });
+        for (let i = 0; i < 2; i++) {
+          const ripple = document.createElement('div');
+          ripple.className = 'message-ripple';
+          messageElement.appendChild(ripple);
+          
+          gsap.to(ripple, {
+            scale: 2,
+            opacity: 0,
+            duration: 1.5,
+            delay: i * 0.3,
+            ease: "power2.out",
+            onComplete: () => {
+              ripple.remove();
+            }
+          });
+        }
       }
     }
   }
 });
 
-// Watch mode changes
+// Watch mode changes for LEGENDARY transitions
 watch(mode, () => {
-  // Animate mode change
+  // Animate mode change with COSMIC effects
   if (modeBadge.value) {
     gsap.fromTo(modeBadge.value,
-      { scale: 0.5, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }
+      { scale: 0, rotation: -10, opacity: 0 },
+      { scale: 1, rotation: 0, opacity: 1, duration: 0.6, ease: "back.out(2)" }
     );
+    
+    // Add particle burst around badge
+    createParticleBurst(modeBadge.value);
   }
 });
+
+// Load chat data if a chat ID is provided
+const loadChatData = async () => {
+  const chatId = route.params.id as string;
+  if (chatId) {
+    isLoading.value = true;
+    try {
+      await chatStore.fetchChat(chatId);
+      
+      if (chatStore.currentChat?.messages) {
+        // Convert the messages to our format
+        messages.value = chatStore.currentChat.messages.map(msg => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+          timestamp: msg.timestamp instanceof Date ? msg.timestamp.getTime() : Date.now()
+        }));
+      }
+      
+      // Scroll to the bottom once messages are loaded
+      await nextTick();
+      scrollToBottom(false);
+    } catch (err) {
+      console.error('Error loading chat:', err);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+};
 
 // Lifecycle Hooks
 onMounted(async () => {
   await nextTick();
   
-  // Focus input field
+  // Focus input field for immediate interaction
   inputField.value?.focus();
   
-  // Initialize animations
+  // Initialize COSMIC animations
   initAnimations();
   
-  // Initialize cosmic background
+  // Initialize LEGENDARY cosmic background
   initCosmicBackground();
   
-  // Add scroll event listener
+  // Add scroll event listener for navigation
   messagesContainer.value?.addEventListener('scroll', handleScroll);
   
-  // Initial message animation if there are any
+  // Load chat data if we have a chat ID
+  await loadChatData();
+  
+  // Initial message animation for LEGENDARY entrance
   if (messages.value.length > 0) {
     const messageElements = document.querySelectorAll('.message-bubble');
     gsap.from(messageElements, {
       opacity: 0,
-      y: 20,
+      y: 30,
+      scale: 0.95,
       stagger: 0.1,
-      duration: 0.5,
-      ease: "power2.out"
+      duration: 0.7,
+      ease: "back.out(1.7)"
     });
   }
 });
@@ -865,4 +1088,3 @@ onUnmounted(() => {
     backgroundCanvas.parentNode.removeChild(backgroundCanvas);
   }
 });
-</script>

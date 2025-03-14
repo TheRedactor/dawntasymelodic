@@ -4,10 +4,8 @@ import {
   getAuth, 
   connectAuthEmulator, 
   Auth,
-  initializeAuth,
-  browserLocalPersistence,
-  indexedDBLocalPersistence,
-  browserSessionPersistence
+  setPersistence,
+  browserLocalPersistence
 } from 'firebase/auth';
 import { 
   getFirestore, 
@@ -22,7 +20,7 @@ import {
 } from 'firebase/functions';
 import { getAnalytics, Analytics } from 'firebase/analytics';
 
-// Environment Validation
+// Environment Validation with debugging
 const requiredFirebaseVars = [
   "VITE_FIREBASE_API_KEY",
   "VITE_FIREBASE_AUTH_DOMAIN",
@@ -32,13 +30,23 @@ const requiredFirebaseVars = [
   "VITE_FIREBASE_APP_ID"
 ];
 
+// Actually log the environment variables for debugging
+const logEnvironmentVars = () => {
+  console.log("🔥 Firebase Environment Variables:");
+  requiredFirebaseVars.forEach(key => {
+    console.log(`${key}: ${import.meta.env[key] ? '✅ Set' : '❌ Missing'}`);
+  });
+};
+
 const validateEnvironment = () => {
+  logEnvironmentVars();
+  
   const missingVars = requiredFirebaseVars.filter(key => !import.meta.env[key]);
   if (missingVars.length > 0) {
     console.error(`🚨 Missing Firebase config: ${missingVars.join(', ')}`);
     // Continue anyway in production to avoid breaking the site completely
     if (import.meta.env.DEV) {
-      throw new Error(`Missing Firebase config: ${missingVars.join(', ')}`);
+      console.warn("Running in development mode with missing Firebase config - things may not work properly!");
     }
   }
 };
@@ -52,116 +60,168 @@ interface FirebaseServices {
   analytics: Analytics | null;
 }
 
-let firebaseServices: FirebaseServices | null = null;
+let firebaseApp: FirebaseApp | null = null;
+let firebaseAuth: Auth | null = null;
+let firebaseDb: Firestore | null = null;
+let firebaseFunctions: Functions | null = null;
+let firebaseAnalytics: Analytics | null = null;
 
 export function getFirebaseServices(): FirebaseServices {
-  if (!firebaseServices) {
+  if (!firebaseApp) {
     validateEnvironment();
+    
+    console.log("🔥 Initializing Firebase App");
     
     // Fallback values for production to avoid breaking if env vars are missing
     const firebaseConfig = {
-      apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "DEFAULT_FOR_PRODUCTION",
-      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "dawntasy.com",
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "fallback-api-key",
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "dawntasy.firebaseapp.com",
       projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "dawntasy-ai",
       storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "dawntasy-ai.appspot.com",
       messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "000000000000",
-      appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:000000000000:web:000000000000"
+      appId: import.meta.env.VITE_FIREBASE_APP_ID || "app-id-fallback"
     };
 
     // Create the Firebase app
-    const app = initializeApp(firebaseConfig);
+    firebaseApp = initializeApp(firebaseConfig);
+    console.log("✅ Firebase App initialized successfully");
     
-    // Initialize Auth with persistence and cookie options
-    // 🔥 CRITICAL FIX: Updated auth initialization for subdomain support
-    const auth = initializeAuth(app, {
-      persistence: [
-        indexedDBLocalPersistence,
-        browserLocalPersistence,
-        browserSessionPersistence
-      ]
-    });
+    // Initialize Auth
+    try {
+      console.log("🔑 Initializing Firebase Auth");
+      firebaseAuth = getAuth(firebaseApp);
+      
+      // Set persistence to local (persist between sessions/tabs)
+      setPersistence(firebaseAuth, browserLocalPersistence)
+        .then(() => console.log("✅ Firebase Auth persistence set to local"))
+        .catch(err => console.error("❌ Error setting auth persistence:", err));
+        
+      console.log("✅ Firebase Auth initialized successfully");
+    } catch (err) {
+      console.error("❌ Error initializing Firebase Auth:", err);
+      firebaseAuth = getAuth(firebaseApp); // Fallback to basic auth
+    }
 
     // Initialize Firestore
-    const db = getFirestore(app);
-    
-    // Enable persistence with error handling
     try {
-      enableIndexedDbPersistence(db).catch(error => {
-        if (error.code === 'failed-precondition') {
-          console.warn('📚 Multiple tabs open, persistence can only be enabled in one tab at a time');
-        } else if (error.code === 'unimplemented') {
-          console.warn('📚 Current browser does not support all required features');
-        }
-      });
+      console.log("📄 Initializing Firestore");
+      firebaseDb = getFirestore(firebaseApp);
+      
+      // Enable persistence with error handling
+      enableIndexedDbPersistence(firebaseDb)
+        .then(() => console.log("✅ Firestore persistence enabled"))
+        .catch(error => {
+          if (error.code === 'failed-precondition') {
+            console.warn('📚 Multiple tabs open, persistence can only be enabled in one tab at a time');
+          } else if (error.code === 'unimplemented') {
+            console.warn('📚 Current browser does not support all required features');
+          } else {
+            console.error('❌ Error enabling Firestore persistence:', error);
+          }
+        });
+        
+      console.log("✅ Firestore initialized successfully");
     } catch (err) {
-      console.error('Error enabling persistence:', err);
+      console.error('❌ Error initializing Firestore:', err);
+      firebaseDb = getFirestore(firebaseApp); // Fallback to basic Firestore
     }
 
     // Initialize Functions
-    const functions = getFunctions(app);
+    try {
+      console.log("⚡ Initializing Firebase Functions");
+      firebaseFunctions = getFunctions(firebaseApp);
+      console.log("✅ Firebase Functions initialized successfully");
+    } catch (err) {
+      console.error('❌ Error initializing Firebase Functions:', err);
+      firebaseFunctions = getFunctions(firebaseApp); // Fallback to basic Functions
+    }
     
     // Initialize Analytics in production only
-    let analytics: Analytics | null = null;
     if (typeof window !== 'undefined' && import.meta.env.PROD) {
       try {
-        analytics = getAnalytics(app);
+        console.log("📊 Initializing Firebase Analytics");
+        firebaseAnalytics = getAnalytics(firebaseApp);
+        console.log("✅ Firebase Analytics initialized successfully");
       } catch (err) {
-        console.warn('Analytics initialization failed:', err);
+        console.warn('⚠️ Analytics initialization failed:', err);
+        firebaseAnalytics = null;
       }
     }
 
     // Connect to emulators in development
     if (import.meta.env.DEV) {
       try {
-        connectAuthEmulator(auth, 'http://localhost:9099');
-        connectFirestoreEmulator(db, 'localhost', 8080);
-        connectFunctionsEmulator(functions, 'localhost', 5001);
+        if (firebaseAuth) connectAuthEmulator(firebaseAuth, 'http://localhost:9099');
+        if (firebaseDb) connectFirestoreEmulator(firebaseDb, 'localhost', 8080);
+        if (firebaseFunctions) connectFunctionsEmulator(firebaseFunctions, 'localhost', 5001);
         console.log('🔥 Firebase emulators connected');
       } catch (err) {
         console.error('Error connecting to emulators:', err);
       }
     }
-
-    // Store and return Firebase services
-    firebaseServices = { app, auth, db, functions, analytics };
   }
   
-  return firebaseServices;
+  if (!firebaseApp || !firebaseAuth || !firebaseDb || !firebaseFunctions) {
+    throw new Error("Firebase services failed to initialize properly");
+  }
+  
+  return { 
+    app: firebaseApp, 
+    auth: firebaseAuth, 
+    db: firebaseDb, 
+    functions: firebaseFunctions, 
+    analytics: firebaseAnalytics 
+  };
 }
 
-// Service accessors with error handling
+// Service accessors with improved error handling and logging
 export const auth = () => {
   try {
-    return getFirebaseServices().auth;
+    if (!firebaseAuth) {
+      console.log("🔄 Auth service not initialized, initializing Firebase...");
+      return getFirebaseServices().auth;
+    }
+    return firebaseAuth;
   } catch (err) {
-    console.error('Failed to get auth service:', err);
-    throw err;
+    console.error('❌ CRITICAL: Failed to get auth service:', err);
+    throw new Error('Firebase authentication service unavailable');
   }
 };
 
 export const db = () => {
   try {
-    return getFirebaseServices().db;
+    if (!firebaseDb) {
+      console.log("🔄 Firestore not initialized, initializing Firebase...");
+      return getFirebaseServices().db;
+    }
+    return firebaseDb;
   } catch (err) {
-    console.error('Failed to get db service:', err);
-    throw err;
+    console.error('❌ CRITICAL: Failed to get Firestore service:', err);
+    throw new Error('Firebase Firestore service unavailable');
   }
 };
 
 export const functions = () => {
   try {
-    return getFirebaseServices().functions;
+    if (!firebaseFunctions) {
+      console.log("🔄 Functions not initialized, initializing Firebase...");
+      return getFirebaseServices().functions;
+    }
+    return firebaseFunctions;
   } catch (err) {
-    console.error('Failed to get functions service:', err);
-    throw err;
+    console.error('❌ CRITICAL: Failed to get Functions service:', err);
+    throw new Error('Firebase Functions service unavailable');
   }
 };
 
 export const analytics = () => {
-  try {
-    return getFirebaseServices().analytics;
-  } catch (err) {
-    console.error('Failed to get analytics service:', err);
-    return null;
+  if (!firebaseAnalytics && import.meta.env.PROD) {
+    try {
+      return getFirebaseServices().analytics;
+    } catch (err) {
+      console.warn('⚠️ Unable to get analytics service:', err);
+      return null;
+    }
   }
+  return firebaseAnalytics;
 };

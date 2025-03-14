@@ -4,7 +4,7 @@ import { ref, computed, watch } from 'vue';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
-  signOut,
+  signOut as firebaseSignOut,
   updateProfile,
   sendPasswordResetEmail,
   onAuthStateChanged,
@@ -18,9 +18,13 @@ import {
   getDoc, 
   updateDoc, 
   serverTimestamp,
-  enableIndexedDbPersistence 
+  collection,
+  query,
+  where,
+  getDocs
 } from 'firebase/firestore';
 import { auth, db } from '@/firebase/init';
+import router from '@/router';
 
 // 🚀 USER ROLE ENUM
 export enum UserRole {
@@ -36,12 +40,15 @@ export interface UserProfile {
   displayName: string;
   email: string | null;
   role: UserRole;
+  plan: 'free' | 'premium' | 'rift';
   credits: number;
   lastLogin: Date | null;
+  chats: string[];
   preferences: {
-    theme: 'dark' | 'light';
+    theme: 'dark' | 'light' | 'cosmic' | 'ocean';
     notifications: boolean;
   };
+  createdAt: Date;
 }
 
 // 🔑 AUTH STORE
@@ -63,23 +70,38 @@ export const useAuthStore = defineStore('auth', () => {
 
   // 🌟 INIT AUTH
   const initAuth = () => {
-    onAuthStateChanged(auth(), async (currentUser) => {
-      loading.value = true;
-      try {
-        if (currentUser) {
-          user.value = currentUser;
-          await fetchUserProfile(currentUser.uid);
-        } else {
-          user.value = null;
-          userProfile.value = null;
+    loading.value = true;
+    return new Promise<void>((resolve) => {
+      const unsubscribe = onAuthStateChanged(auth(), async (currentUser) => {
+        try {
+          if (currentUser) {
+            user.value = currentUser;
+            await fetchUserProfile(currentUser.uid);
+            
+            // Check if we need to redirect from login/register pages
+            const currentRoute = router.currentRoute.value;
+            if (currentRoute.path === '/login' || currentRoute.path === '/register') {
+              router.push('/chat');
+            }
+          } else {
+            user.value = null;
+            userProfile.value = null;
+            
+            // Check if we need to redirect to login
+            const currentRoute = router.currentRoute.value;
+            if (currentRoute.meta.requiresAuth) {
+              router.push('/login');
+            }
+          }
+        } catch (e: any) {
+          console.error('Auth state change error:', e);
+          error.value = e.message;
+        } finally {
+          loading.value = false;
+          resolve();
+          // We keep the listener for future updates
         }
-      } catch (err) {
-        // 🔥 CRITICAL FIX: Properly reference the error variable
-        console.error('Auth initialization error:', err);
-        error.value = err instanceof Error ? err.message : 'Unknown error during authentication';
-      } finally {
-        loading.value = false;
-      }
+      });
     });
   };
 
@@ -88,98 +110,153 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const docRef = doc(db(), "users", uid);
       const docSnap = await getDoc(docRef);
+      
       if (docSnap.exists()) {
+        const data = docSnap.data();
         userProfile.value = {
           uid: uid,
-          displayName: docSnap.data().displayName || 'Dawntasy User',
-          email: docSnap.data().email || null,
-          role: docSnap.data().role || UserRole.USER,
-          credits: docSnap.data().credits || 0,
-          lastLogin: docSnap.data().lastLogin?.toDate() || null,
-          preferences: docSnap.data().preferences || { theme: 'dark', notifications: true }
+          displayName: data.displayName || 'Dawntasy User',
+          email: data.email || null,
+          role: data.role || UserRole.USER,
+          plan: data.plan || 'free',
+          credits: data.credits || 0,
+          lastLogin: data.lastLogin?.toDate() || null,
+          chats: data.chats || [],
+          preferences: data.preferences || { theme: 'cosmic', notifications: true },
+          createdAt: data.createdAt?.toDate() || new Date()
         };
+        
+        // Update last login timestamp
+        await updateDoc(docRef, {
+          lastLogin: serverTimestamp()
+        });
+        
+        console.log("User profile loaded:", userProfile.value);
+        return userProfile.value;
       } else {
-        console.log("No such document!");
+        console.warn("User document not found in Firestore!");
+        return null;
       }
-    } catch (err) {
-      // 🔥 CRITICAL FIX: Properly reference the error variable
-      console.error('Error fetching user profile:', err);
-      error.value = err instanceof Error ? err.message : 'Error fetching profile';
+    } catch (e: any) {
+      console.error('Error fetching user profile:', e);
+      error.value = e.message;
+      return null;
     }
   };
 
   // 🌟 CREATE USER PROFILE
   const createUserProfile = async (user: User, displayName: string) => {
     try {
+      // Check if username exists
+      const usernamesRef = collection(db(), "usernames");
+      const q = query(usernamesRef, where("name", "==", displayName.toLowerCase()));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        throw new Error("Username already taken!");
+      }
+      
+      // Create profile document
       const profile: UserProfile = {
         uid: user.uid,
         displayName: displayName,
         email: user.email,
         role: UserRole.USER,
+        plan: 'free',
         credits: 100,
         lastLogin: new Date(),
+        chats: [],
         preferences: {
-          theme: 'dark',
+          theme: 'cosmic',
           notifications: true
-        }
+        },
+        createdAt: new Date()
       };
-      await setDoc(doc(db(), "users", user.uid), profile);
+      
+      // Save to Firestore
+      await setDoc(doc(db(), "users", user.uid), {
+        ...profile,
+        lastLogin: serverTimestamp(),
+        createdAt: serverTimestamp()
+      });
+      
+      // Reserve username
+      await setDoc(doc(db(), "usernames", displayName.toLowerCase()), {
+        uid: user.uid,
+        name: displayName.toLowerCase(),
+        displayName: displayName,
+        createdAt: serverTimestamp()
+      });
+      
       userProfile.value = profile;
-    } catch (err) {
-      // 🔥 CRITICAL FIX: Properly reference the error variable
-      console.error('Error creating user profile:', err);
-      error.value = err instanceof Error ? err.message : 'Error creating profile';
+      console.log("User profile created:", profile);
+      return profile;
+    } catch (e: any) {
+      console.error("Error creating user profile:", e);
+      error.value = e.message;
+      throw e;
     }
   };
 
-  // 🌟 REGISTER - Enhanced with redirect handling
-  const register = async (email: string, password: string, displayName: string) => {
+  // 🌟 REGISTER USER
+  const registerUser = async (email: string, password: string, displayName: string) => {
     loading.value = true;
     error.value = null;
+    
     try {
-      const { user: firebaseUser } = await createUserWithEmailAndPassword(auth(), email, password);
-      await updateProfile(firebaseUser, { displayName });
-      await createUserProfile(firebaseUser, displayName);
+      console.log("Registering user:", { email, displayName });
       
-      // Ensure proper redirect on the subdomain
-      window.location.href = '/';
+      // 1. Create Firebase Auth account
+      const userCredential = await createUserWithEmailAndPassword(auth(), email, password);
+      console.log("Firebase auth account created");
+      
+      // 2. Update profile with display name
+      await updateProfile(userCredential.user, { displayName });
+      console.log("Firebase auth profile updated");
+      
+      // 3. Create Firestore profile
+      await createUserProfile(userCredential.user, displayName);
+      console.log("Firestore profile created");
+      
+      // 4. Set current user
+      user.value = userCredential.user;
       
       loading.value = false;
-      return { success: true };
-    } catch (err) {
-      // 🔥 CRITICAL FIX: Properly reference the error variable
-      console.error('Error during registration:', err);
-      error.value = err instanceof Error ? err.message : 'Registration failed';
+      return { success: true, user: userCredential.user };
+    } catch (e: any) {
+      console.error("Registration error:", e);
+      error.value = e.message;
       loading.value = false;
-      return { success: false, error: error.value };
+      return { success: false, error: e.message };
     }
   };
 
-  // 🌟 LOGIN - Enhanced with redirect handling
+  // 🌟 LOGIN
   const login = async (email: string, password: string) => {
     loading.value = true;
     error.value = null;
+    
     try {
-      const { user: firebaseUser } = await signInWithEmailAndPassword(auth(), email, password);
-      await fetchUserProfile(firebaseUser.uid);
+      console.log("Logging in user:", email);
       
-      // Update last login
-      const userRef = doc(db(), "users", firebaseUser.uid);
-      await updateDoc(userRef, {
-        lastLogin: serverTimestamp()
-      });
+      // 1. Firebase authentication
+      const userCredential = await signInWithEmailAndPassword(auth(), email, password);
+      console.log("Firebase auth successful");
       
-      // Ensure proper redirect on the subdomain
-      window.location.href = '/';
+      // 2. Load user profile
+      await fetchUserProfile(userCredential.user.uid);
+      console.log("Profile loaded");
+      
+      // 3. Set current user
+      user.value = userCredential.user;
       
       loading.value = false;
-      return { success: true };
-    } catch (err) {
-      // 🔥 CRITICAL FIX: Properly reference the error variable
-      console.error('Error during login:', err);
-      error.value = err instanceof Error ? err.message : 'Login failed';
+      return { success: true, user: userCredential.user };
+    } catch (e: any) {
+      console.error("Login error:", e);
+      error.value = e.message;
       loading.value = false;
-      return { success: false, error: error.value };
+      return { success: false, error: e.message };
     }
   };
 
@@ -187,18 +264,70 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = async () => {
     loading.value = true;
     error.value = null;
+    
     try {
-      await signOut(auth());
+      console.log("Logging out user");
+      await firebaseSignOut(auth());
+      
       user.value = null;
       userProfile.value = null;
+      
       loading.value = false;
       return { success: true };
-    } catch (err) {
-      // 🔥 CRITICAL FIX: Properly reference the error variable
-      console.error('Error during logout:', err);
-      error.value = err instanceof Error ? err.message : 'Logout failed';
+    } catch (e: any) {
+      console.error("Logout error:", e);
+      error.value = e.message;
       loading.value = false;
-      return { success: false, error: error.value };
+      return { success: false, error: e.message };
+    }
+  };
+
+  // 🌟 UPDATE USERNAME
+  const updateUsername = async (newUsername: string) => {
+    if (!user.value || !userProfile.value) {
+      return { success: false, error: "User not authenticated" };
+    }
+    
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      // Check if username exists
+      const usernamesRef = collection(db(), "usernames");
+      const q = query(usernamesRef, where("name", "==", newUsername.toLowerCase()));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        throw new Error("Username already taken!");
+      }
+      
+      // Update Auth profile
+      await updateProfile(user.value, { displayName: newUsername });
+      
+      // Update Firestore profile
+      const userRef = doc(db(), "users", user.value.uid);
+      await updateDoc(userRef, { displayName: newUsername });
+      
+      // Add to usernames collection
+      await setDoc(doc(db(), "usernames", newUsername.toLowerCase()), {
+        uid: user.value.uid,
+        name: newUsername.toLowerCase(),
+        displayName: newUsername,
+        createdAt: serverTimestamp()
+      });
+      
+      // Update local profile
+      if (userProfile.value) {
+        userProfile.value.displayName = newUsername;
+      }
+      
+      loading.value = false;
+      return { success: true };
+    } catch (e: any) {
+      console.error("Username update error:", e);
+      error.value = e.message;
+      loading.value = false;
+      return { success: false, error: e.message };
     }
   };
 
@@ -206,28 +335,27 @@ export const useAuthStore = defineStore('auth', () => {
   const resetPassword = async (email: string) => {
     loading.value = true;
     error.value = null;
+    
     try {
       await sendPasswordResetEmail(auth(), email);
       loading.value = false;
       return { success: true };
-    } catch (err) {
-      // 🔥 CRITICAL FIX: Properly reference the error variable
-      console.error('Error resetting password:', err);
-      error.value = err instanceof Error ? err.message : 'Password reset failed';
+    } catch (e: any) {
+      console.error("Password reset error:", e);
+      error.value = e.message;
       loading.value = false;
-      return { success: false, error: error.value };
+      return { success: false, error: e.message };
     }
   };
 
-  // 🌟 GOOGLE SIGN IN - With subdomain support
+  // 🌟 GOOGLE SIGN IN
   const signInWithGoogle = async () => {
     loading.value = true;
     error.value = null;
     
     try {
-      // Configure Google Auth Provider for subdomain
+      // Configure Google Auth Provider
       googleProvider.setCustomParameters({
-        'cookie_policy': 'none',
         'prompt': 'select_account'
       });
       
@@ -246,17 +374,13 @@ export const useAuthStore = defineStore('auth', () => {
         await fetchUserProfile(firebaseUser.uid);
       }
       
-      // Ensure proper redirect
-      window.location.href = '/';
-      
       loading.value = false;
       return { success: true };
-    } catch (err) {
-      // 🔥 CRITICAL FIX: Properly reference the error variable
-      console.error('Error signing in with Google:', err);
-      error.value = err instanceof Error ? err.message : 'Google sign-in failed';
+    } catch (e: any) {
+      console.error("Google sign in error:", e);
+      error.value = e.message;
       loading.value = false;
-      return { success: false, error: error.value };
+      return { success: false, error: e.message };
     }
   };
 
@@ -271,10 +395,11 @@ export const useAuthStore = defineStore('auth', () => {
     displayName,
     uid,
     initAuth,
-    register,
+    registerUser,
     login,
     logout,
     resetPassword,
-    signInWithGoogle
+    signInWithGoogle,
+    updateUsername
   };
 });
