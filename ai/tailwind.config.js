@@ -1,4 +1,3 @@
-// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -8,6 +7,9 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      borderWidth: {
+        3: '3px', // Add custom border width for `border-3`
+      },
       colors: {
         // The cosmic void - deep space colors
         void: {
@@ -101,4 +103,4 @@ export default {
     require('@tailwindcss/forms'),
     require('@tailwindcss/aspect-ratio'),
   ],
-}
+};
