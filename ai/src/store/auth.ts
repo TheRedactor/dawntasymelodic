@@ -73,8 +73,10 @@ export const useAuthStore = defineStore('auth', () => {
           user.value = null;
           userProfile.value = null;
         }
-      } catch (e: any) {
-        error.value = e.message;
+      } catch (err) {
+        // 🔥 CRITICAL FIX: Properly reference the error variable
+        console.error('Auth initialization error:', err);
+        error.value = err instanceof Error ? err.message : 'Unknown error during authentication';
       } finally {
         loading.value = false;
       }
@@ -99,8 +101,10 @@ export const useAuthStore = defineStore('auth', () => {
       } else {
         console.log("No such document!");
       }
-    } catch (e: any) {
-      error.value = e.message;
+    } catch (err) {
+      // 🔥 CRITICAL FIX: Properly reference the error variable
+      console.error('Error fetching user profile:', err);
+      error.value = err instanceof Error ? err.message : 'Error fetching profile';
     }
   };
 
@@ -121,8 +125,10 @@ export const useAuthStore = defineStore('auth', () => {
       };
       await setDoc(doc(db(), "users", user.uid), profile);
       userProfile.value = profile;
-    } catch (e: any) {
-      error.value = e.message;
+    } catch (err) {
+      // 🔥 CRITICAL FIX: Properly reference the error variable
+      console.error('Error creating user profile:', err);
+      error.value = err instanceof Error ? err.message : 'Error creating profile';
     }
   };
 
@@ -140,10 +146,12 @@ export const useAuthStore = defineStore('auth', () => {
       
       loading.value = false;
       return { success: true };
-    } catch (e: any) {
-      error.value = e.message;
+    } catch (err) {
+      // 🔥 CRITICAL FIX: Properly reference the error variable
+      console.error('Error during registration:', err);
+      error.value = err instanceof Error ? err.message : 'Registration failed';
       loading.value = false;
-      return { success: false, error: e.message };
+      return { success: false, error: error.value };
     }
   };
 
@@ -166,10 +174,12 @@ export const useAuthStore = defineStore('auth', () => {
       
       loading.value = false;
       return { success: true };
-    } catch (e: any) {
-      error.value = e.message;
+    } catch (err) {
+      // 🔥 CRITICAL FIX: Properly reference the error variable
+      console.error('Error during login:', err);
+      error.value = err instanceof Error ? err.message : 'Login failed';
       loading.value = false;
-      return { success: false, error: e.message };
+      return { success: false, error: error.value };
     }
   };
 
@@ -183,10 +193,12 @@ export const useAuthStore = defineStore('auth', () => {
       userProfile.value = null;
       loading.value = false;
       return { success: true };
-    } catch (e: any) {
-      error.value = e.message;
+    } catch (err) {
+      // 🔥 CRITICAL FIX: Properly reference the error variable
+      console.error('Error during logout:', err);
+      error.value = err instanceof Error ? err.message : 'Logout failed';
       loading.value = false;
-      return { success: false, error: e.message };
+      return { success: false, error: error.value };
     }
   };
 
@@ -198,10 +210,12 @@ export const useAuthStore = defineStore('auth', () => {
       await sendPasswordResetEmail(auth(), email);
       loading.value = false;
       return { success: true };
-    } catch (e: any) {
-      error.value = e.message;
+    } catch (err) {
+      // 🔥 CRITICAL FIX: Properly reference the error variable
+      console.error('Error resetting password:', err);
+      error.value = err instanceof Error ? err.message : 'Password reset failed';
       loading.value = false;
-      return { success: false, error: e.message };
+      return { success: false, error: error.value };
     }
   };
 
@@ -237,10 +251,12 @@ export const useAuthStore = defineStore('auth', () => {
       
       loading.value = false;
       return { success: true };
-    } catch (e: any) {
-      error.value = e.message;
+    } catch (err) {
+      // 🔥 CRITICAL FIX: Properly reference the error variable
+      console.error('Error signing in with Google:', err);
+      error.value = err instanceof Error ? err.message : 'Google sign-in failed';
       loading.value = false;
-      return { success: false, error: e.message };
+      return { success: false, error: error.value };
     }
   };
 
@@ -261,4 +277,4 @@ export const useAuthStore = defineStore('auth', () => {
     resetPassword,
     signInWithGoogle
   };
-});e
+});
