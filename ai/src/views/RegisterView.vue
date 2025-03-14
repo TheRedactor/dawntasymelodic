@@ -60,7 +60,7 @@
           </div>
         </transition>
 
-        <!-- NAME FIELD WITH COSMIC INTERACTION -->
+        <!-- NAME FIELD -->
         <div 
           class="cosmic-input-group" 
           :class="{ 'focused': focusedField === 'name', 'filled': name }"
@@ -94,7 +94,7 @@
           </div>
         </div>
 
-        <!-- EMAIL FIELD WITH COSMIC INTERACTION -->
+        <!-- EMAIL FIELD -->
         <div 
           class="cosmic-input-group" 
           :class="{ 'focused': focusedField === 'email', 'filled': email }"
@@ -128,7 +128,7 @@
           </div>
         </div>
 
-        <!-- PASSWORD FIELD WITH COSMIC INTERACTION -->
+        <!-- PASSWORD FIELD -->
         <div 
           class="cosmic-input-group" 
           :class="{ 'focused': focusedField === 'password', 'filled': password }"
@@ -189,8 +189,8 @@
             <div class="strength-text" :class="strengthClass">{{ passwordStrengthText }}</div>
           </div>
         </div>
-        
-        <!-- TERMS AND CONDITIONS WITH QUANTUM CHECKBOX -->
+
+        <!-- TERMS AND CONDITIONS -->
         <div class="terms-check" ref="termsCheck">
           <label class="quantum-checkbox">
             <input 
@@ -209,8 +209,8 @@
             </span>
           </label>
         </div>
-        
-        <!-- COSMIC REGISTRATION BUTTON -->
+
+        <!-- REGISTRATION BUTTON -->
         <button 
           type="submit" 
           class="cosmic-button"
@@ -228,8 +228,8 @@
           <span v-else class="button-text">Create Account</span>
         </button>
       </form>
-      
-      <!-- FOOTER LINK -->
+
+      <!-- FOOTER -->
       <div class="cosmic-footer" ref="footer">
         <p>Already have an account?</p>
         <router-link to="/login" class="cosmic-link login-link" ref="loginLink">
@@ -238,8 +238,8 @@
         </router-link>
       </div>
     </div>
-    
-    <!-- TERMS MODAL WITH COSMIC DESIGN -->
+
+    <!-- TERMS MODAL -->
     <div v-if="showTerms" class="cosmic-modal-backdrop" ref="modalBackdrop">
       <div class="cosmic-modal" ref="termsModal">
         <div class="modal-header">
@@ -252,13 +252,10 @@
           <div class="modal-content">
             <h3 class="section-header">Welcome to DawntasyAI</h3>
             <p>By using our AI companion service, you agree to the following terms:</p>
-            
             <h4 class="subsection-header">1. Privacy & Data</h4>
             <p>We respect your privacy and commit to protecting your personal data. Chat conversations may be stored to improve service quality and maintain context between sessions.</p>
-            
             <h4 class="subsection-header">2. Account Usage</h4>
             <p>You agree to use DawntasyAI in accordance with all applicable laws and regulations. Prohibited uses include generating harmful, unlawful, or unethical content.</p>
-            
             <h4 class="subsection-header">3. Service Limitations</h4>
             <p>DawntasyAI strives for accuracy but may occasionally provide incomplete or incorrect information. Use critical judgment when acting on information provided.</p>
           </div>
@@ -286,7 +283,6 @@ import anime from 'animejs';
 export default {
   name: 'CosmicRegisterView',
   setup() {
-    // Router & Auth Store
     const router = useRouter();
     const authStore = useAuthStore();
 
@@ -564,14 +560,16 @@ export default {
       const rotateY = (xPercent - 0.5) * 5;
       const rotateX = (0.5 - yPercent) * 5;
       gsap.to(registrationCard.value, {
-        rotateY, rotateX,
+        rotateY,
+        rotateX,
         transformPerspective: 1000,
         duration: 0.3,
         ease: "power2.out"
       });
       gsap.to(cardGlow.value, {
         opacity: 0.7,
-        x, y,
+        x,
+        y,
         duration: 0.3,
         ease: "power2.out"
       });
@@ -602,7 +600,7 @@ export default {
       });
     };
 
-    // ANIMATE REGISTRATION BUTTON HOVER
+    // BUTTON HOVER ANIMATION
     const animateButtonHover = () => {
       gsap.to(registerButton.value, { scale: 1.05, duration: 0.3, ease: "power2.out" });
       gsap.to(buttonGlow.value, { opacity: 0.8, duration: 0.3, ease: "power2.out" });
@@ -633,7 +631,7 @@ export default {
 
     // TERMS CHECKBOX HANDLER
     const handleTermsChange = () => {
-      // Optional: add an animation effect for checkbox changes.
+      // Optional: add animation for checkbox change.
     };
 
     // MODAL CONTROLS
@@ -737,7 +735,7 @@ export default {
   background-color: #000;
 }
 
-/* THREE.js Canvas */
+/* THREE.JS Canvas */
 .cosmic-canvas {
   position: fixed;
   top: 0;
@@ -840,11 +838,11 @@ export default {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 350px;
+  width: 380px;
   padding: 40px;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0,0,0,0.95);
   border-radius: 20px;
-  box-shadow: 0 0 30px rgba(0,200,255,0.5);
+  box-shadow: 0 0 40px rgba(0,200,255,0.7);
   transform: translate(-50%, -50%);
   z-index: 2;
   overflow: hidden;
@@ -855,7 +853,7 @@ export default {
   left: 0;
   width: 150%;
   height: 150%;
-  background: radial-gradient(circle, rgba(0,200,255,0.6), transparent);
+  background: radial-gradient(circle, rgba(0,200,255,0.8), transparent);
   transform: translate(-25%, -25%);
   pointer-events: none;
   opacity: 0;
@@ -864,7 +862,7 @@ export default {
   position: absolute;
   width: 15px;
   height: 15px;
-  background: rgba(0,200,255,0.8);
+  background: rgba(0,200,255,0.9);
   border-radius: 50%;
 }
 .corner.top-left { top: 10px; left: 10px; }
@@ -879,27 +877,30 @@ export default {
 }
 .cosmic-title {
   font-family: 'Orbitron', sans-serif;
-  font-size: 2rem;
+  font-size: 2.2rem;
   color: #00c8ff;
+  text-shadow: 0 0 10px #00c8ff;
 }
 .cosmic-title .accent {
   color: #ff00c8;
+  text-shadow: 0 0 10px #ff00c8;
 }
 
 /* Cosmic Form */
 .cosmic-form {
   display: flex;
   flex-direction: column;
+  gap: 20px;
 }
 .cosmic-input-group {
-  margin-bottom: 20px;
   position: relative;
 }
 .cosmic-label {
-  font-size: 0.9rem;
-  color: #aaa;
+  font-size: 1rem;
+  color: #ddd;
   margin-bottom: 5px;
   display: block;
+  text-shadow: 0 0 5px rgba(0,200,255,0.7);
 }
 .input-container {
   position: relative;
@@ -912,24 +913,27 @@ export default {
   z-index: 1;
 }
 .input-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   color: #00c8ff;
+  filter: drop-shadow(0 0 5px #00c8ff);
 }
 .cosmic-input {
   width: 100%;
-  padding: 10px 10px 10px 40px;
+  padding: 12px 10px 12px 45px;
   border: none;
-  border-bottom: 2px solid #444;
-  background: transparent;
+  border-bottom: 2px solid #666;
+  background: rgba(255,255,255,0.05);
   color: #fff;
   font-size: 1rem;
   outline: none;
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(0,200,255,0.3);
 }
 .input-underline {
   position: relative;
   height: 2px;
-  background: #444;
+  background: #666;
   margin-top: 2px;
   overflow: hidden;
 }
@@ -940,6 +944,7 @@ export default {
   height: 100%;
   width: 0%;
   background: #00c8ff;
+  transition: width 0.3s ease;
 }
 
 /* Password Strength Indicator */
@@ -949,7 +954,7 @@ export default {
 .strength-track {
   width: 100%;
   height: 4px;
-  background: #444;
+  background: #666;
   border-radius: 2px;
   overflow: hidden;
 }
@@ -958,11 +963,13 @@ export default {
   width: 0%;
   background: #00c8ff;
   border-radius: 2px;
+  transition: width 0.3s ease;
 }
 .strength-text {
   font-size: 0.8rem;
-  color: #aaa;
+  color: #ddd;
   margin-top: 2px;
+  text-shadow: 0 0 3px #00c8ff;
 }
 
 /* Terms Checkbox */
@@ -973,7 +980,7 @@ export default {
   display: flex;
   align-items: center;
   cursor: pointer;
-  color: #aaa;
+  color: #ddd;
 }
 .quantum-checkbox input[type="checkbox"] {
   display: none;
@@ -1015,6 +1022,7 @@ export default {
   cursor: pointer;
   outline: none;
   margin-top: 10px;
+  box-shadow: 0 0 10px rgba(0,200,255,0.7);
 }
 .button-background {
   position: absolute;
@@ -1061,7 +1069,8 @@ export default {
 .cosmic-footer {
   text-align: center;
   margin-top: 20px;
-  color: #aaa;
+  color: #ddd;
+  text-shadow: 0 0 5px #00c8ff;
 }
 .cosmic-footer .cosmic-link {
   color: #00c8ff;
