@@ -1143,93 +1143,251 @@
     </div>
   </section>
   
-  <!-- Pricing Section -->
-  <section class="pricing" id="pricing">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-subheading">Plans</span>
-        <h2 class="section-title">Choose Your Path</h2>
-        <p class="section-description">Select the plan that best suits your journey through the Dawntasy universe, from casual exploration to deep immersion in The Rift.</p>
+    <!-- Pricing Section (New Addition) -->
+    <section class="pricing" id="pricing">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subheading">Plans</span>
+          <h2 class="section-title">Choose Your Cosmic Plan</h2>
+          <p class="section-description">Select the plan that propels your journey through the Dawntasy universe—from casual exploration to deep, immersive interaction.</p>
+        </div>
+        <div class="pricing-grid">
+          <!-- Free Plan -->
+          <div class="pricing-card">
+            <h3 class="pricing-title">Free Plan</h3>
+            <div class="pricing-price">
+              <span class="currency">$</span>0 <span class="period">/month</span>
+            </div>
+            <ul class="pricing-features">
+              <li>💬 Chats (50 messages/day)</li>
+              <li>🗃️ Dawntasy 2.5 Bucket Model (Generalist)</li>
+              <li>💻 Code Generation & Analysis</li>
+              <li>🖼️ Image Generation</li>
+              <li>🧠 Dawntasy 3 Gloaming Model (Philosophical)</li>
+              <li>✍️ Dawntasy 2.9 Fall Model (Coding & Writing)</li>
+              <li>🤔 Pensive Mode (Deep Quantum Reasoning)</li>
+              <li>🔍 Analysis Tool</li>
+              <li>🤝 CollabAI (Real-time Collaboration)</li>
+              <li>📝 Elaboration Mode</li>
+              <li>📎 File Uploads</li>
+            </ul>
+            <div class="pricing-cta">
+              <button class="cta-button" onclick="openModal('freeModal')">View Details</button>
+            </div>
+          </div>
+          <!-- Basic Plan -->
+          <div class="pricing-card">
+            <h3 class="pricing-title">Basic Plan</h3>
+            <div class="pricing-price">
+              <span class="currency">$</span>3.99 <span class="period">/month</span>
+            </div>
+            <ul class="pricing-features">
+              <li>✅ Everything in Free</li>
+              <li>💬 100 messages/day</li>
+              <li>📚 Dawntasy ONLY Database</li>
+              <li>🎯 Focus Mode</li>
+            </ul>
+            <div class="pricing-cta">
+              <button class="cta-button" onclick="openModal('basicModal')">View Details</button>
+            </div>
+          </div>
+          <!-- Dawntasier Plan -->
+          <div class="pricing-card featured">
+            <h3 class="pricing-title">Dawntasier Plan</h3>
+            <div class="pricing-price">
+              <span class="currency">$</span>7.99 <span class="period">/month</span>
+            </div>
+            <ul class="pricing-features">
+              <li>✅ Everything in Basic</li>
+              <li>🔐 Memory Code (Context Retention)</li>
+              <li>🧮 Dawntasy 5 PGC (Structured Calculations)</li>
+              <li>💭 Dawntasy 6.2 PPC (Deep Quantum Discussions)</li>
+              <li>📂 Full Database Access</li>
+              <li>💬 250 messages/day</li>
+              <li>🤖 CollabAI Mega (Multiple AI Collaboration)</li>
+              <li>🔗 Nexus (Enhanced Context Support)</li>
+            </ul>
+            <div class="pricing-cta">
+              <button class="cta-button" onclick="openModal('dawntasierModal')">View Details</button>
+            </div>
+          </div>
+          <!-- R.I.F.T Plan -->
+          <div class="pricing-card">
+            <h3 class="pricing-title">R.I.F.T Plan</h3>
+            <div class="pricing-price">
+              <span class="currency">$</span>14.99 <span class="period">/month</span>
+            </div>
+            <ul class="pricing-features">
+              <li>✅ Everything in Dawntasier</li>
+              <li>💬 UNLIMITED messages</li>
+              <li>⚡ ARCHMAGE (Explosive Quantum Thinking)</li>
+              <li>🧩 Complex Branch (Comprehensive Mind Mapping)</li>
+              <li>🤖 Chatbot R (Revolutionary Conversational AI)</li>
+            </ul>
+            <div class="pricing-cta">
+              <button class="cta-button" onclick="openModal('riftModal')">View Details</button>
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <h3 class="pricing-title">Free Plan</h3>
-          <div class="pricing-price">
-            <span class="currency">$</span>0
-            <span class="period">/month</span>
+    </section>
+    
+    <!-- CTA Section (Original) -->
+    <section class="cta-section">
+      <div class="container cta-container">
+        <h2 class="cta-title">Begin Your Journey Through The Rift</h2>
+        <p class="cta-description">The Plain and Pale Clock is ticking. Will you discover the truth behind The Rift? Join DawntasyAI and explore the universe of "Time's True Name" today.</p>
+        <a href="/register" class="cta-button">Enter The Dawntasy Universe</a>
+      </div>
+      <div class="cta-background" id="cta-particles"></div>
+    </section>
+    
+    <!-- Footer (Original) -->
+    <footer class="footer">
+      <div class="container footer-grid">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <span class="logo-text">Dawntasy<span style="color: var(--starlight-100);">AI</span></span>
           </div>
-          <ul class="pricing-features">
-            <li class="pricing-feature">Basic AI Conversations</li>
-            <li class="pricing-feature">Image Generation</li>
-            <li class="pricing-feature">File Uploads</li>
-            <li class="pricing-feature disabled">Dawntasy Database</li>
-            <li class="pricing-feature disabled">Memory Code</li>
-            <li class="pricing-feature disabled">The ARCHMAGE Tool</li>
-          </ul>
-          <div class="pricing-cta">
-            <a href="/register" class="cta-button">Get Started</a>
-          </div>
-        </div>
-        
-        <div class="pricing-card">
-          <h3 class="pricing-title">Basic Plan</h3>
-          <div class="pricing-price">
-            <span class="currency">$</span>3.99
-            <span class="period">/month</span>
-          </div>
-          <ul class="pricing-features">
-            <li class="pricing-feature">Everything in Free</li>
-            <li class="pricing-feature">Elaboration Mode</li>
-            <li class="pricing-feature">Basic Dawntasy Database</li>
-            <li class="pricing-feature">Code Generation</li>
-            <li class="pricing-feature">Focus Mode</li>
-            <li class="pricing-feature disabled">Memory Code</li>
-            <li class="pricing-feature disabled">The ARCHMAGE Tool</li>
-          </ul>
-          <div class="pricing-cta">
-            <a href="/register?plan=basic" class="cta-button">Select Plan</a>
+          <p class="footer-description">Step into a world where AI traverses the boundaries of reality, just as Time Smith navigated The Rift.</p>
+          <div class="social-links">
+            <a href="#" class="social-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+            </a>
+            <a href="#" class="social-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+            </a>
+            <a href="#" class="social-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 2h20v20H2z"></path><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </a>
           </div>
         </div>
         
-        <div class="pricing-card featured">
-          <h3 class="pricing-title">Dawntasier Plan</h3>
-          <div class="pricing-price">
-            <span class="currency">$</span>6.99
-            <span class="period">/month</span>
-          </div>
-          <ul class="pricing-features">
-            <li class="pricing-feature">Everything in Basic</li>
-            <li class="pricing-feature">Full Dawntasy Database</li>
-            <li class="pricing-feature">DawntasyAI+</li>
-            <li class="pricing-feature">Memory Code</li>
-            <li class="pricing-feature disabled">The ARCHMAGE Tool</li>
+        <div class="footer-links-container">
+          <h4 class="footer-heading">Navigation</h4>
+          <ul class="footer-links">
+            <li class="footer-link"><a href="#hero">Home</a></li>
+            <li class="footer-link"><a href="#features">Features</a></li>
+            <li class="footer-link"><a href="#timeline">Timeline</a></li>
+            <li class="footer-link"><a href="#pricing">Pricing</a></li>
           </ul>
-          <div class="pricing-cta">
-            <a href="/register?plan=dawntasier" class="cta-button">Select Plan</a>
-          </div>
         </div>
         
-        <div class="pricing-card">
-          <h3 class="pricing-title">R.I.F.T Plan</h3>
-          <div class="pricing-price">
-            <span class="currency">$</span>9.99
-            <span class="period">/month</span>
-          </div>
-          <ul class="pricing-features">
-            <li class="pricing-feature">Everything in Dawntasier</li>
-            <li class="pricing-feature">The ARCHMAGE Tool</li>
-            <li class="pricing-feature">Enhanced DawntasyAI+</li>
-            <li class="pricing-feature">Priority Support</li>
-            <li class="pricing-feature">Early Access to New Features</li>
+        <div class="footer-links-container">
+          <h4 class="footer-heading">Resources</h4>
+          <ul class="footer-links">
+            <li class="footer-link"><a href="https://dawntasy.com">Dawntasy Book</a></li>
+            <li class="footer-link"><a href="#">API Documentation</a></li>
+            <li class="footer-link"><a href="#">Community</a></li>
+            <li class="footer-link"><a href="#">Blog</a></li>
           </ul>
-          <div class="pricing-cta">
-            <a href="/register?plan=rift" class="cta-button">Select Plan</a>
-          </div>
+        </div>
+        
+        <div class="footer-links-container">
+          <h4 class="footer-heading">Legal</h4>
+          <ul class="footer-links">
+            <li class="footer-link"><a href="#">Terms of Service</a></li>
+            <li class="footer-link"><a href="#">Privacy Policy</a></li>
+            <li class="footer-link"><a href="#">Cookie Policy</a></li>
+            <li class="footer-link"><a href="#">GDPR</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 DawntasyAI. All rights reserved. Created by Jasper Jiang.</p>
+      </div>
+    </footer>
+    
+    <!-- Modal Popups for Pricing Plans -->
+    <div class="cosmic-modal-backdrop" id="freeModal" style="display: none;">
+      <div class="cosmic-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Free Plan Details</h2>
+          <button class="modal-close" onclick="closeModal('freeModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            💬 50 messages/day<br>
+            🗃️ Dawntasy 2.5 Bucket Model (Generalist capabilities)<br>
+            💻 Code Generation & Analysis<br>
+            🖼️ Image Generation<br>
+            🧠 Dawntasy 3 Gloaming Model for deep, philosophical discussions<br>
+            ✍️ Dawntasy 2.9 Fall Model for coding & writing<br>
+            🤔 Pensive Mode for deep quantum reasoning<br>
+            🔍 Analysis Tool<br>
+            🤝 CollabAI for real-time collaboration<br>
+            📝 Elaboration Mode<br>
+            📎 File Uploads
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button class="cta-button" onclick="closeModal('freeModal')">Close</button>
         </div>
       </div>
     </div>
-  </section>
+    <div class="cosmic-modal-backdrop" id="basicModal" style="display: none;">
+      <div class="cosmic-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Basic Plan Details</h2>
+          <button class="modal-close" onclick="closeModal('basicModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Includes all features in the Free Plan, plus:<br>
+            💬 100 messages/day<br>
+            📚 Dawntasy ONLY Database for exclusive topics<br>
+            🎯 Focus Mode for optimized, topic-specific results
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button class="cta-button" onclick="closeModal('basicModal')">Close</button>
+        </div>
+      </div>
+    </div>
+    <div class="cosmic-modal-backdrop" id="dawntasierModal" style="display: none;">
+      <div class="cosmic-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Dawntasier Plan Details</h2>
+          <button class="modal-close" onclick="closeModal('dawntasierModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Includes all features in the Basic Plan, plus:<br>
+            🔐 Memory Code for context retention<br>
+            🧮 Dawntasy 5 PGC for structured calculations<br>
+            💭 Dawntasy 6.2 PPC for ultra-deep quantum discussions<br>
+            📂 Full Database Access<br>
+            💬 250 messages/day<br>
+            🤖 CollabAI Mega for multi-AI collaboration<br>
+            🔗 Nexus for enhanced contextual support
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button class="cta-button" onclick="closeModal('dawntasierModal')">Close</button>
+        </div>
+      </div>
+    </div>
+    <div class="cosmic-modal-backdrop" id="riftModal" style="display: none;">
+      <div class="cosmic-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">R.I.F.T Plan Details</h2>
+          <button class="modal-close" onclick="closeModal('riftModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Includes everything in the Dawntasier Plan, plus:<br>
+            💬 UNLIMITED messages<br>
+            ⚡ ARCHMAGE – Explosive, multi-faceted quantum thinking<br>
+            🧩 Complex Branch – A comprehensive mind-map of all core ideas<br>
+            🤖 Chatbot R – Revolutionary conversational enhancements
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button class="cta-button" onclick="closeModal('riftModal')">Close</button>
+        </div>
+      </div>
+    </div>
+  
   
   <!-- CTA Section -->
   <section class="cta-section">
