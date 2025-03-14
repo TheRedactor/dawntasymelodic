@@ -30,11 +30,22 @@ const requiredFirebaseVars = [
   "VITE_FIREBASE_APP_ID"
 ];
 
+// Default Firebase config - ONLY USE FOR DEVELOPMENT
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyA_VnV8AQnA1BSr4mjxAaSMbxOX-9XsCck", // Replace with your backup API key
+  authDomain: "dawntasy-test.firebaseapp.com",
+  projectId: "dawntasy-test",
+  storageBucket: "dawntasy-test.appspot.com",
+  messagingSenderId: "395042774092",
+  appId: "1:395042774092:web:2b1c2aa0aa48294ee9a0c6"
+};
+
 // Actually log the environment variables for debugging
 const logEnvironmentVars = () => {
   console.log("🔥 Firebase Environment Variables:");
   requiredFirebaseVars.forEach(key => {
-    console.log(`${key}: ${import.meta.env[key] ? '✅ Set' : '❌ Missing'}`);
+    const isSet = !!import.meta.env[key];
+    console.log(`${key}: ${isSet ? '✅ Set' : '❌ Missing'}`);
   });
 };
 
@@ -43,10 +54,12 @@ const validateEnvironment = () => {
   
   const missingVars = requiredFirebaseVars.filter(key => !import.meta.env[key]);
   if (missingVars.length > 0) {
-    console.error(`🚨 Missing Firebase config: ${missingVars.join(', ')}`);
-    // Continue anyway in production to avoid breaking the site completely
+    console.warn(`⚠️ Missing Firebase config variables: ${missingVars.join(', ')}`);
+    console.warn("Using default configuration - this should only be used for development!");
+    
+    // Continue anyway but let developer know
     if (import.meta.env.DEV) {
-      console.warn("Running in development mode with missing Firebase config - things may not work properly!");
+      console.warn("Running in development mode with default Firebase config");
     }
   }
 };
@@ -72,15 +85,23 @@ export function getFirebaseServices(): FirebaseServices {
     
     console.log("🔥 Initializing Firebase App");
     
-    // Fallback values for production to avoid breaking if env vars are missing
-    const firebaseConfig = {
-      apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "fallback-api-key",
-      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "dawntasy.firebaseapp.com",
-      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "dawntasy-ai",
-      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "dawntasy-ai.appspot.com",
-      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "000000000000",
-      appId: import.meta.env.VITE_FIREBASE_APP_ID || "app-id-fallback"
-    };
+    // Check if we have all the required environment variables
+    const hasAllEnvVars = requiredFirebaseVars.every(key => !!import.meta.env[key]);
+    
+    // Create firebase config - use env vars if available, otherwise use default
+    const firebaseConfig = hasAllEnvVars ? {
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_FIREBASE_APP_ID
+    } : DEFAULT_FIREBASE_CONFIG;
+
+    console.log("Using Firebase config:", {
+      projectId: firebaseConfig.projectId,
+      authDomain: firebaseConfig.authDomain
+    });
 
     // Create the Firebase app
     firebaseApp = initializeApp(firebaseConfig);

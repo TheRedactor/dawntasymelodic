@@ -122,9 +122,9 @@ const routes: Array<RouteRecordRaw & { meta: EnhancedRouteMetadata }> = [
     name: 'Onboarding',
     component: () => import('@/views/Onboarding.vue'),
     meta: { 
-      requiresAuth: false, 
+      requiresAuth: true,  // Changed to require auth but with special handling
       transition: 'fade',
-      title: 'DawntasyAI - Your Cosmic AI Companion' 
+      title: 'Complete Your Profile - DawntasyAI' 
     }
   },
 ];
@@ -165,6 +165,9 @@ const getCurrentUser = (): Promise<User | null> => {
   });
 };
 
+// 🔥 SPECIAL HANDLING for newly registered users
+let justRegistered = false;
+
 // Route guard with improved error handling
 router.beforeEach(async (to, from, next) => {
   // Start progress bar
@@ -175,7 +178,20 @@ router.beforeEach(async (to, from, next) => {
     // Update document title
     document.title = to.meta.title || 'DawntasyAI';
     
-    // Check authentication
+    // **SPECIAL CASE**: If coming from Register and going to Onboarding, allow it
+    if (from.name === 'Register' && to.name === 'Onboarding') {
+      console.log("Just registered, allowing access to onboarding");
+      justRegistered = true;
+      return next();
+    }
+
+    // **SPECIAL CASE**: If user just registered and accessing Onboarding, allow it
+    if (justRegistered && to.name === 'Onboarding') {
+      console.log("Allowing access to onboarding for just registered user");
+      return next();
+    }
+    
+    // Check if route requires authentication
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     
     if (!requiresAuth) {
@@ -188,6 +204,7 @@ router.beforeEach(async (to, from, next) => {
     
     if (!user) {
       // User not logged in, redirect to login
+      console.log("User not authenticated, redirecting to login");
       return next({ 
         name: 'Login', 
         query: { redirect: to.fullPath } 

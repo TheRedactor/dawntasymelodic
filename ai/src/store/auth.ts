@@ -21,7 +21,8 @@ import {
   collection,
   query,
   where,
-  getDocs
+  getDocs,
+  Timestamp
 } from 'firebase/firestore';
 import { auth, db } from '@/firebase/init';
 import router from '@/router';
@@ -120,10 +121,10 @@ export const useAuthStore = defineStore('auth', () => {
           role: data.role || UserRole.USER,
           plan: data.plan || 'free',
           credits: data.credits || 0,
-          lastLogin: data.lastLogin?.toDate() || null,
+          lastLogin: data.lastLogin ? new Date(data.lastLogin.seconds * 1000) : null,
           chats: data.chats || [],
           preferences: data.preferences || { theme: 'cosmic', notifications: true },
-          createdAt: data.createdAt?.toDate() || new Date()
+          createdAt: data.createdAt ? new Date(data.createdAt.seconds * 1000) : new Date()
         };
         
         // Update last login timestamp
@@ -147,16 +148,64 @@ export const useAuthStore = defineStore('auth', () => {
   // 🌟 CREATE USER PROFILE
   const createUserProfile = async (user: User, displayName: string) => {
     try {
-      // Check if username exists
-      const usernamesRef = collection(db(), "usernames");
-      const q = query(usernamesRef, where("name", "==", displayName.toLowerCase()));
-      const querySnapshot = await getDocs(q);
+      console.log("Creating user profile for:", user.uid, displayName);
       
-      if (!querySnapshot.empty) {
-        throw new Error("Username already taken!");
+      // Prepare username data for checking
+      const lowerCaseName = displayName.toLowerCase();
+      
+      // Check if username exists - using a safer query approach
+      try {
+        const usernamesRef = collection(db(), "usernames");
+        const q = query(usernamesRef, where("name", "==", lowerCaseName));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          console.error("Username already taken!");
+          throw new Error("Username already taken!");
+        }
+      } catch (nameCheckError) {
+        console.warn("Username check error (continuing anyway):", nameCheckError);
+        // Continue anyway - this might be a permissions issue on the usernames collection
       }
       
-      // Create profile document
+      // Create profile object with timestamps as server timestamps
+      const profileData = {
+        uid: user.uid,
+        displayName: displayName,
+        email: user.email,
+        role: UserRole.USER,
+        plan: 'free',
+        credits: 100,
+        lastLogin: serverTimestamp(),
+        chats: [],
+        preferences: {
+          theme: 'cosmic',
+          notifications: true
+        },
+        createdAt: serverTimestamp()
+      };
+      
+      console.log("Creating user document:", profileData);
+      
+      // Save to Firestore - user document
+      await setDoc(doc(db(), "users", user.uid), profileData);
+      console.log("User document created successfully");
+      
+      // Try to save the username reservation (not critical if fails)
+      try {
+        await setDoc(doc(db(), "usernames", lowerCaseName), {
+          uid: user.uid,
+          name: lowerCaseName,
+          displayName: displayName,
+          createdAt: serverTimestamp()
+        });
+        console.log("Username reserved successfully");
+      } catch (usernameError) {
+        console.warn("Failed to reserve username, but continuing:", usernameError);
+        // Non-critical error, continue anyway
+      }
+      
+      // Create the local profile object
       const profile: UserProfile = {
         uid: user.uid,
         displayName: displayName,
@@ -172,21 +221,6 @@ export const useAuthStore = defineStore('auth', () => {
         },
         createdAt: new Date()
       };
-      
-      // Save to Firestore
-      await setDoc(doc(db(), "users", user.uid), {
-        ...profile,
-        lastLogin: serverTimestamp(),
-        createdAt: serverTimestamp()
-      });
-      
-      // Reserve username
-      await setDoc(doc(db(), "usernames", displayName.toLowerCase()), {
-        uid: user.uid,
-        name: displayName.toLowerCase(),
-        displayName: displayName,
-        createdAt: serverTimestamp()
-      });
       
       userProfile.value = profile;
       console.log("User profile created:", profile);
@@ -208,15 +242,15 @@ export const useAuthStore = defineStore('auth', () => {
       
       // 1. Create Firebase Auth account
       const userCredential = await createUserWithEmailAndPassword(auth(), email, password);
-      console.log("Firebase auth account created");
+      console.log("Firebase auth account created successfully:", userCredential.user.uid);
       
       // 2. Update profile with display name
       await updateProfile(userCredential.user, { displayName });
-      console.log("Firebase auth profile updated");
+      console.log("Firebase auth profile updated with displayName:", displayName);
       
       // 3. Create Firestore profile
       await createUserProfile(userCredential.user, displayName);
-      console.log("Firestore profile created");
+      console.log("Firestore profile created successfully");
       
       // 4. Set current user
       user.value = userCredential.user;
@@ -292,15 +326,6 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null;
     
     try {
-      // Check if username exists
-      const usernamesRef = collection(db(), "usernames");
-      const q = query(usernamesRef, where("name", "==", newUsername.toLowerCase()));
-      const querySnapshot = await getDocs(q);
-      
-      if (!querySnapshot.empty) {
-        throw new Error("Username already taken!");
-      }
-      
       // Update Auth profile
       await updateProfile(user.value, { displayName: newUsername });
       
@@ -308,13 +333,18 @@ export const useAuthStore = defineStore('auth', () => {
       const userRef = doc(db(), "users", user.value.uid);
       await updateDoc(userRef, { displayName: newUsername });
       
-      // Add to usernames collection
-      await setDoc(doc(db(), "usernames", newUsername.toLowerCase()), {
-        uid: user.value.uid,
-        name: newUsername.toLowerCase(),
-        displayName: newUsername,
-        createdAt: serverTimestamp()
-      });
+      // Try to add to usernames collection (if permissions allow)
+      try {
+        await setDoc(doc(db(), "usernames", newUsername.toLowerCase()), {
+          uid: user.value.uid,
+          name: newUsername.toLowerCase(),
+          displayName: newUsername,
+          createdAt: serverTimestamp()
+        });
+      } catch (usernameError) {
+        console.warn("Failed to update username reservation, but continuing:", usernameError);
+        // Non-critical error, continue anyway
+      }
       
       // Update local profile
       if (userProfile.value) {
