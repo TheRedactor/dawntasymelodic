@@ -6,7 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import viteCompression from 'vite-plugin-compression';
 
 export default defineConfig({
-  // 🔥 CRITICAL FIX: Root base path for subdomain deployment
+  // Base path for subdomain deployment
   base: '/',
   plugins: [
     vue(),
@@ -21,12 +21,12 @@ export default defineConfig({
         background_color: '#0f172a',
         icons: [
           {
-            src: '/android-chrome-192x192.png',
+            src: '/icon-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/android-chrome-512x512.png',
+            src: '/icon-512x512.png',
             sizes: '512x512',
             type: 'image/png'
           }
@@ -72,6 +72,13 @@ export default defineConfig({
     emptyOutDir: true,
     chunkSizeWarningLimit: 3000,
     sourcemap: process.env.NODE_ENV === 'development',
+    
+    // 🔥🔥🔥 CRITICAL FIX: Prevent aggressive tree-shaking 🔥🔥🔥
+    commonjsOptions: {
+      transformMixedEsModules: true,
+      include: [/node_modules/]
+    },
+    
     rollupOptions: {
       onwarn(warning, warn) {
         if (warning.code === 'SOURCEMAP_ERROR' || warning.code === 'CIRCULAR_DEPENDENCY') return
@@ -81,25 +88,29 @@ export default defineConfig({
         main: path.resolve(__dirname, 'index.html'),
       },
       output: {
-        // 🔥 CRITICAL FIX: Ensure assets go to /assets/ folder
         entryFileNames: 'assets/[name].[hash].js',
         chunkFileNames: 'assets/[name].[hash].js',
         assetFileNames: 'assets/[name].[hash].[ext]'
       },
+      
+      // 🔥🔥🔥 CRITICAL FIX: Disable aggressive tree-shaking for Vue and Firebase 🔥🔥🔥
       treeshake: {
-        moduleSideEffects: (id) => {
-          if (id.includes('Dawntasy_System_Prompt') || id.includes('firebase')) return true
-          return false
-        }
+        moduleSideEffects: true, // IMPORTANT: Preserve all side effects!
+        preset: 'recommended',
+        propertyReadSideEffects: true
       }
     },
-    cssCodeSplit: true,
     minify: 'terser',
     terserOptions: {
       compress: {
         keep_fnames: true,
         drop_console: false,
         drop_debugger: true
+      },
+      // 🔥🔥🔥 CRITICAL FIX: Keep classes and functions needed by Vue 🔥🔥🔥
+      mangle: {
+        keep_classnames: true,
+        keep_fnames: true
       }
     }
   },
