@@ -1,391 +1,205 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DoodleJump Whale – Cosmic Bounce</title>
-  <!-- External Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-  <style>
-    /* Base resets */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html { width: 100%; height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; }
-    /* Canvas full screen */
-    #gameCanvas { 
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: radial-gradient(ellipse at center, #06061f, #0d0d3d);
-    }
-    /* HUD (score display) */
-    #hud {
-      position: absolute;
-      top: 1rem;
-      left: 1rem;
-      z-index: 10;
-      color: #fff;
-      font-size: 1.25rem;
-      text-shadow: 0 0 8px #06a6ee;
-    }
-    /* Mobile control overlay (left/right zones) */
-    .control-zone {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 50%;
-      z-index: 20;
-    }
-    .control-left { left: 0; }
-    .control-right { right: 0; }
-    /* Cosmic starfield overlay using Three.js will be drawn on canvas */
-  </style>
+    <title>Whale Jump</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body { margin: 0; overflow: hidden; touch-action: none; }
+        #gameCanvas { background: linear-gradient(to bottom, #1a237e, #4fc3f7); }
+        #score { position: fixed; top: 10px; left: 10px; color: white; font: 20px Arial; }
+        #controls { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: space-between; }
+        .control-btn { width: 60px; height: 60px; margin: 0 20px; opacity: 0.7; }
+    </style>
 </head>
 <body>
-  <!-- HUD for score/highscore -->
-  <div id="hud">Score: 0 | High Score: 0</div>
-  <!-- Game canvas -->
-  <canvas id="gameCanvas"></canvas>
-  <!-- Mobile control zones -->
-  <div class="control-zone control-left"></div>
-  <div class="control-zone control-right"></div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="score">Score: 0 | High: 0</div>
+    <div id="controls">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABmJLR0QA/wD/AP+gvaeTAAABKElEQVRoge2ZQQ6DMAwE+/9/6UkJgkNtV6ZCD3KSjZ0FJ7ZLEkVRlN9kA3C1A8DdE7y6B3gCeHQCfAN4VgJ8A3hUAnwDeFQCfAN4VAJ8A3hUAnwDeFQCfAN4VAJ8A3j+NoF9n1vXda4xxtw5kP0YfN8AACAASURBVOXrBABgjDHXWmvucRxzzbnuHOj2bQJjDLjWWnOttT4m8VQC+3D7nkgCv04gkoAmcBzHXGutj0nwE3gLvCWBt8BvJ8BP4C3wmgT4CbwFXpMAP4G3wGsS4CfwFnhNAvwE3gKvSYCfwFvgNQnwE3gLvCYBfgJvgdckwE/gLfCaBPgJvAVekwA/gbfAaxLgJ/AWeE0C/ATeAq9JgJ/AW+A1CfATeAu8JgF+Am+B1yTAT+At8JoE+Am8BV6TAD+Bt8D/3wO8H/6bH3QAAAAASUVORK5CYII=" class="control-btn" id="leftBtn">
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABmJLR0QA/wD/AP+gvaeTAAABKElEQVRoge2ZQQ6DMAwE+/9/6UkJgkNtV6ZCD3KSjZ0FJ7ZLEkVRlN9kA3C1A8DdE7y6B3gCeHQCfAN4VgJ8A3hUAnwDeFQCfAN4VAJ8A3hUAnwDeFQCfAN4VAJ8A3j+NoF9n1vXda4xxtw5kP0YfN8AACAASURBVHheXr5OAADGGHOtteYexzHXXOuuA92+TQAAxhhzrbXmHscx15zrroFu3yawD7ffiSTw6wQiCWgCx3HMtdb6mAQ/gbfAWxJ4C/x2AvwE3gKvSYCfwFvgNQnwE3gLvCYBfgJvgdckwE/gLfCaBPgJvAVekwA/gbfAaxLgJ/AWeE0C/ATeAq9JgJ/AW+A1CfATeAu8JgF+Am+B1yTAT+At8JoE+Am8BV6TAD+Bt8BrEuAn8BZ4TQL8BN4C/38P8H74b37QAAAAAElFTkSuQmCC" class="control-btn" id="rightBtn">
+    </div>
 
-  <script>
-    // ===== GLOBAL VARIABLES =====
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let score = 0, highScore = 0, isGameOver = false;
+let platforms = [], powerups = [];
+let whale = {
+    x: 200, y: 400,
+    width: 40, height: 30,
+    vy: 0, vx: 0,
+    isJumping: false,
+    powerup: null,
+    powerupTime: 0
+};
 
-    // Score & high score (from localStorage)
-    let score = 0, highScore = +localStorage.getItem('highScore') || 0;
-    const hud = document.getElementById('hud');
-    function updateHUD() {
-      hud.innerText = `Score: ${Math.floor(score)} | High Score: ${highScore}`;
-    }
+// Physics constants
+const GRAVITY = 0.4;
+const JUMP_FORCE = -12;
+const PLATFORM_SPACING = 120;
+const POWERUP_CHANCE = 0.15;
 
-    // ===== THREE.JS STARFIELD BACKGROUND =====
-    let threeScene, threeCamera, threeRenderer, starField;
-    function initThreeJS() {
-      threeScene = new THREE.Scene();
-      threeCamera = new THREE.PerspectiveCamera(75, width / height, 1, 2000);
-      threeCamera.position.z = 400;
-      threeRenderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-      threeRenderer.setSize(width, height);
-      // Create a starfield using Points
-      const starGeo = new THREE.BufferGeometry();
-      const starVertices = [];
-      for (let i = 0; i < 5000; i++) {
-        starVertices.push(
-          THREE.MathUtils.randFloatSpread(2000),
-          THREE.MathUtils.randFloatSpread(2000),
-          THREE.MathUtils.randFloatSpread(2000)
-        );
-      }
-      starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-      const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1, transparent: true, opacity: 0.6 });
-      starField = new THREE.Points(starGeo, starMat);
-      threeScene.add(starField);
-    }
-    function animateThreeJS() {
-      requestAnimationFrame(animateThreeJS);
-      starField.rotation.y += 0.0005;
-      threeRenderer.render(threeScene, threeCamera);
-    }
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
-    // ===== GAME OBJECTS =====
-    // Whale character
-    const whale = {
-      x: width / 2,
-      y: height - 150,
-      radius: 30,
-      vx: 0,
-      vy: -10,
-      color: '#06a6ee',
-      boost: 0, // extra boost from powerups
-      magnet: false // activated by rip current powerup
+// Mobile controls
+let touchLeft = false, touchRight = false;
+document.getElementById('leftBtn').addEventListener('touchstart', () => touchLeft = true);
+document.getElementById('leftBtn').addEventListener('touchend', () => touchLeft = false);
+document.getElementById('rightBtn').addEventListener('touchstart', () => touchRight = true);
+document.getElementById('rightBtn').addEventListener('touchend', () => touchRight = false);
+
+// Keyboard controls
+document.addEventListener('keydown', (e) => {
+    if(e.key === 'ArrowLeft') touchLeft = true;
+    if(e.key === 'ArrowRight') touchRight = true;
+});
+document.addEventListener('keyup', (e) => {
+    if(e.key === 'ArrowLeft') touchLeft = false;
+    if(e.key === 'ArrowRight') touchRight = false;
+});
+
+function createPlatform() {
+    return {
+        x: Math.random() * (canvas.width - 70),
+        y: platforms.length ? platforms[platforms.length-1].y - PLATFORM_SPACING : canvas.height - 50,
+        width: 70,
+        height: 20,
+        type: Math.random() < POWERUP_CHANCE ? ['wave','bombora','rip','whirlpool'][Math.floor(Math.random()*4)] : null
     };
+}
 
-    // Platforms array – each platform is { x, y, width, height }
-    let platforms = [];
-    const platformWidth = 80;
-    const platformHeight = 12;
-    function createInitialPlatforms() {
-      // Create platforms from bottom to top at regular intervals
-      const gap = 120;
-      for (let y = height - 50; y > -height; y -= gap) {
-        const x = Math.random() * (width - platformWidth);
-        platforms.push({ x, y, width: platformWidth, height: platformHeight });
-      }
-    }
+function drawWhale() {
+    ctx.save();
+    ctx.translate(whale.x, whale.y);
+    
+    // Body
+    ctx.fillStyle = '#90A4AE';
+    ctx.beginPath();
+    ctx.arc(20, 15, 20, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Tail
+    ctx.beginPath();
+    ctx.moveTo(0, 15);
+    ctx.lineTo(-20, 5);
+    ctx.lineTo(-20, 25);
+    ctx.fill();
+    
+    // Eye
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.arc(30, 10, 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+}
 
-    // Power-ups array – each powerup is { x, y, type, collected }
-    let powerups = [];
-    const powerupTypes = ['Wave', 'Bombora', 'RipCurrent', 'Whirlpool'];
-    function spawnPowerup() {
-      // Spawn a powerup at a random platform or random x, y above current view
-      const x = Math.random() * (width - 40) + 20;
-      const y = whale.y - Math.random() * 400 - 200; // above the whale
-      const type = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
-      powerups.push({ x, y, type, collected: false });
-    }
+function gameLoop() {
+    if(isGameOver) return;
 
-    // ===== GAME PHYSICS =====
-    const gravity = 0.4;
-    const friction = 0.99;
-
-    // ===== CONTROLS =====
-    let keys = {};
-    window.addEventListener('keydown', (e) => { keys[e.code] = true; });
-    window.addEventListener('keyup', (e) => { keys[e.code] = false; });
-
-    // Mobile touch controls: split screen left/right
-    document.querySelector('.control-left').addEventListener('touchstart', (e) => {
-      keys['ArrowLeft'] = true;
-      e.preventDefault();
-    });
-    document.querySelector('.control-left').addEventListener('touchend', (e) => {
-      keys['ArrowLeft'] = false;
-      e.preventDefault();
-    });
-    document.querySelector('.control-right').addEventListener('touchstart', (e) => {
-      keys['ArrowRight'] = true;
-      e.preventDefault();
-    });
-    document.querySelector('.control-right').addEventListener('touchend', (e) => {
-      keys['ArrowRight'] = false;
-      e.preventDefault();
-    });
-
-    // ===== GAME LOOP =====
-    function gameLoop() {
-      requestAnimationFrame(gameLoop);
-      update();
-      draw();
-    }
-
-    function update() {
-      // Horizontal controls
-      if (keys['ArrowLeft']) whale.vx = -5;
-      else if (keys['ArrowRight']) whale.vx = 5;
-      else whale.vx *= friction;
-
-      whale.x += whale.vx;
-      whale.y += whale.vy;
-      
-      // Gravity and powerup boosts
-      whale.vy += gravity - whale.boost;
-      if (whale.magnet) {
-        // Pull upward slowly
-        whale.vy = -2;
-      }
-
-      // Wrap whale horizontally
-      if (whale.x < -whale.radius) whale.x = width + whale.radius;
-      if (whale.x > width + whale.radius) whale.x = -whale.radius;
-      
-      // Collision with platforms (only when falling)
-      if (whale.vy > 0) {
-        for (let plat of platforms) {
-          if (whale.x > plat.x && whale.x < plat.x + plat.width &&
-              whale.y + whale.radius > plat.y && whale.y + whale.radius < plat.y + plat.height) {
-            // Bounce with a boost if a powerup effect is active
-            whale.vy = -10 - (whale.boost * 5);
-            score += 10;
-          }
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Move whale
+    if(touchLeft) whale.vx = -5;
+    else if(touchRight) whale.vx = 5;
+    else whale.vx *= 0.9;
+    
+    whale.vy += GRAVITY;
+    whale.y += whale.vy;
+    whale.x += whale.vx;
+    
+    // Screen wrap
+    if(whale.x < -whale.width) whale.x = canvas.width;
+    if(whale.x > canvas.width) whale.x = -whale.width;
+    
+    // Platform collision
+    platforms.forEach(p => {
+        if(whale.vy > 0 && 
+           whale.x < p.x + p.width &&
+           whale.x + whale.width > p.x &&
+           whale.y + whale.height > p.y &&
+           whale.y + whale.height < p.y + 20) {
+            whale.vy = JUMP_FORCE;
+            if(p.type) activatePowerup(p.type);
+            p.type = null; // Collect powerup
         }
-      }
-      
-      // Move platforms downward as whale ascends
-      if (whale.y < height / 2) {
-        let dy = height / 2 - whale.y;
-        whale.y = height / 2;
-        platforms.forEach(plat => { plat.y += dy; });
-        powerups.forEach(p => { p.y += dy; });
-        score += dy * 0.1;
-      }
-      
-      // Remove platforms and spawn new ones at top
-      platforms = platforms.filter(plat => plat.y < height + 50);
-      while (platforms.length < 10) {
-        const lastY = platforms.length ? Math.min(...platforms.map(p => p.y)) : height;
-        const newY = lastY - 120;
-        const newX = Math.random() * (width - platformWidth);
-        platforms.push({ x: newX, y: newY, width: platformWidth, height: platformHeight });
-        // Randomly spawn a powerup on new platforms
-        if (Math.random() < 0.3) spawnPowerup();
-      }
-      
-      // Check for collecting powerups
-      for (let p of powerups) {
-        if (!p.collected && Math.hypot(whale.x - p.x, whale.y - p.y) < whale.radius + 15) {
-          p.collected = true;
-          applyPowerup(p.type);
+        
+        // Draw platform
+        ctx.fillStyle = p.type ? 
+            {'wave':'#00BCD4','bombora':'#F44336','rip':'#4CAF50','whirlpool':'#9C27B0'}[p.type] : 
+            '#795548';
+        ctx.fillRect(p.x, p.y, p.width, p.height);
+    });
+    
+    // Generate new platforms
+    while(platforms[0].y > canvas.height) {
+        platforms.shift();
+        platforms.push(createPlatform());
+        score += 10;
+        if(score > highScore) highScore = score;
+    }
+    
+    // Update score display
+    document.getElementById('score').textContent = `Score: ${score} | High: ${highScore}`;
+    
+    // Handle powerups
+    if(whale.powerupTime > 0) {
+        whale.powerupTime--;
+        switch(whale.powerup) {
+            case 'wave': whale.vy -= 0.3; break;
+            case 'bombora': whale.vy -= 0.5; break;
+            case 'rip': whale.y -= 5; break;
+            case 'whirlpool': 
+                whale.x += Math.sin(Date.now()/100) * 3;
+                whale.y += Math.cos(Date.now()/100) * 3;
+                break;
         }
-      }
-      
-      // Remove collected or off-screen powerups
-      powerups = powerups.filter(p => !p.collected && p.y < height + 100);
-      
-      // Update high score
-      if (score > highScore) {
-        highScore = Math.floor(score);
-        localStorage.setItem('highScore', highScore);
-      }
-      
-      updateHUD();
-      
-      // Game over if whale falls off screen
-      if (whale.y - whale.radius > height) {
-        alert("Game Over! Your score: " + Math.floor(score));
-        resetGame();
-      }
+    } else {
+        whale.powerup = null;
     }
-
-    function applyPowerup(type) {
-      switch (type) {
-        case 'Wave':
-          whale.boost = 0.4;
-          setTimeout(() => whale.boost = 0, 2000);
-          break;
-        case 'Bombora':
-          whale.boost = 1.2; // Triple boost effect
-          setTimeout(() => whale.boost = 0, 2000);
-          break;
-        case 'RipCurrent':
-          whale.magnet = true;
-          setTimeout(() => whale.magnet = false, 3000);
-          break;
-        case 'Whirlpool':
-          // Slow down gravity temporarily
-          const oldGravity = gravity;
-          gravity = 0.1;
-          setTimeout(() => gravity = 0.4, 3000);
-          break;
-      }
+    
+    // Draw whale
+    drawWhale();
+    
+    // Game over check
+    if(whale.y > canvas.height) {
+        isGameOver = true;
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = 'white';
+        ctx.font = '40px Arial';
+        ctx.fillText('Game Over!', canvas.width/2-100, canvas.height/2);
+        ctx.font = '20px Arial';
+        ctx.fillText('Tap to restart', canvas.width/2-60, canvas.height/2+40);
     }
+    
+    requestAnimationFrame(gameLoop);
+}
 
-    function resetGame() {
-      score = 0;
-      whale.x = width / 2;
-      whale.y = height - 150;
-      whale.vx = 0;
-      whale.vy = -10;
-      platforms = [];
-      powerups = [];
-      createInitialPlatforms();
-    }
+function activatePowerup(type) {
+    whale.powerup = type;
+    whale.powerupTime = type === 'bombora' ? 180 : 120;
+}
 
-    function draw() {
-      ctx.clearRect(0, 0, width, height);
-      
-      // Draw platforms
-      ctx.fillStyle = "#4d4fdb";
-      platforms.forEach(plat => {
-        ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
-      });
-      
-      // Draw powerups
-      powerups.forEach(p => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 15, 0, Math.PI * 2);
-        switch (p.type) {
-          case 'Wave': ctx.fillStyle = "#06a6ee"; break;
-          case 'Bombora': ctx.fillStyle = "#ff3a70"; break;
-          case 'RipCurrent': ctx.fillStyle = "#10b981"; break;
-          case 'Whirlpool': ctx.fillStyle = "#a78bfa"; break;
-        }
-        ctx.fill();
-        ctx.closePath();
-        // Draw powerup label
-        ctx.fillStyle = "#fff";
-        ctx.font = "10px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText(p.type, p.x, p.y + 3);
-      });
-      
-      // Draw whale (as a doodle whale shape)
-      ctx.save();
-      ctx.translate(whale.x, whale.y);
-      ctx.fillStyle = whale.color;
-      ctx.beginPath();
-      // Whale body: ellipse
-      ctx.ellipse(0, 0, whale.radius, whale.radius * 0.6, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // Whale tail: simple triangle
-      ctx.beginPath();
-      ctx.moveTo(-whale.radius, 0);
-      ctx.lineTo(-whale.radius - 15, -10);
-      ctx.lineTo(-whale.radius - 15, 10);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    }
-
-    // ===== INPUT & MOBILE CONTROLS =====
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'ArrowLeft') whale.vx = -5;
-      if (e.code === 'ArrowRight') whale.vx = 5;
-    });
-    window.addEventListener('keyup', (e) => {
-      if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') whale.vx = 0;
-    });
-
-    // Touch controls: left/right half screens
-    document.querySelector('.control-left').addEventListener('touchstart', (e) => {
-      whale.vx = -5;
-      e.preventDefault();
-    });
-    document.querySelector('.control-left').addEventListener('touchend', (e) => {
-      whale.vx = 0;
-      e.preventDefault();
-    });
-    document.querySelector('.control-right').addEventListener('touchstart', (e) => {
-      whale.vx = 5;
-      e.preventDefault();
-    });
-    document.querySelector('.control-right').addEventListener('touchend', (e) => {
-      whale.vx = 0;
-      e.preventDefault();
-    });
-
-    // ===== RESIZE HANDLER =====
-    window.addEventListener('resize', () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-      threeCamera.aspect = width / height;
-      threeCamera.updateProjectionMatrix();
-      threeRenderer.setSize(width, height);
-    });
-
-    // ===== INITIALIZATION =====
-    initThreeJS();
-    animateThreeJS();
-    createInitialPlatforms();
-    updateHUD();
+function resetGame() {
+    whale = {x: 200, y: 400, width: 40, height: 30, vy: 0, vx: 0};
+    platforms = [];
+    for(let i = 0; i < 8; i++) platforms.push(createPlatform());
+    score = 0;
+    isGameOver = false;
     gameLoop();
+}
 
-    // Expose animateParticles for button hover animation (optional)
-    function animateParticles() {
-      const particles = document.querySelectorAll('.particle');
-      particles.forEach(particle => {
-        gsap.to(particle, {
-          x: `random(-150, 150)`,
-          y: `random(-150, 150)`,
-          opacity: 0,
-          scale: `random(1, 3)`,
-          duration: `random(1, 2)`,
-          ease: 'power3.out',
-          onComplete: () => {
-            gsap.set(particle, {
-              x: 0,
-              y: 0,
-              opacity: `random(0.3, 0.7)`,
-              scale: `random(0.2, 0.5)`
-            });
-          }
-        });
-      });
-    }
-  </script>
+// Initial setup
+document.addEventListener('click', () => isGameOver && resetGame());
+document.addEventListener('touchstart', () => isGameOver && resetGame());
+resetGame();
+</script>
 </body>
 </html>
