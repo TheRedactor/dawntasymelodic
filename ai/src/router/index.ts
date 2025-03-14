@@ -116,7 +116,17 @@ const routes: Array<RouteRecordRaw & { meta: EnhancedRouteMetadata }> = [
       transition: 'fade',
       title: '404 - Page Not Found'
     }
-  }
+  },
+  {
+    path: '/onboarding',
+    name: 'Onboarding',
+    component: () => import('@/views/Onboarding.vue'),
+    meta: { 
+      requiresAuth: false, 
+      transition: 'fade',
+      title: 'DawntasyAI - Your Cosmic AI Companion' 
+    }
+  },
 ];
 
 // 🔥 FIXED: Simple root history with NO path prefix
