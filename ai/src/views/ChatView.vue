@@ -226,7 +226,6 @@
       </button>
     </div>
   </div>
-</template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
@@ -1088,3 +1087,5 @@ onUnmounted(() => {
     backgroundCanvas.parentNode.removeChild(backgroundCanvas);
   }
 });
+</script>
+</template>
