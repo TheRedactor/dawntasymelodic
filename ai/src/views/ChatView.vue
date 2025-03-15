@@ -1,382 +1,351 @@
 <template>
-  <div class="cosmic-chat" :class="{'dark-mode': darkMode}">
-    <!-- Chat Sidebar -->
-    <div class="chat-sidebar">
-      <div class="user-profile">
-        <img :src="user.photoURL" class="profile-image" v-if="user"/>
-        <button @click="toggleDarkMode" class="theme-toggle">
-          {{ darkMode ? '🌞' : '🌙' }}
-        </button>
+  <div class="chat-container">
+    <!-- Cosmic Particles Background -->
+    <div class="cosmic-particles-container">
+      <div v-for="n in 50" :key="`particle-${n}`" 
+           class="cosmic-particle"
+           :style="{
+             '--size': `${Math.random() * 4 + 1}px`,
+             '--x': `${Math.random() * 100}%`,
+             '--y': `${Math.random() * 100}%`,
+             '--duration': `${Math.random() * 50 + 30}s`,
+             '--delay': `${Math.random() * -30}s`,
+             '--opacity': Math.random() * 0.5 + 0.2
+           }"
+      ></div>
+    </div>
+
+    <!-- Header - Similar to Claude's minimalist header -->
+    <div class="chat-header">
+      <div class="chat-title">
+        <h1 class="title-text">{{ currentChat?.title || 'New Conversation' }}</h1>
+        <span class="badge" :class="mode">{{ modes[mode] }}</span>
       </div>
-      <button class="new-chat-btn" @click="createNewChat">
-        🚀 New Chat
-      </button>
-      <div class="chat-history">
-        <div v-for="chat in userChats" 
-             :key="chat.id"
-             class="chat-item"
-             @click="loadChat(chat.id)">
-          {{ chat.title || 'New Chat' }}
-        </div>
+      
+      <div class="mode-selector">
+        <button 
+          v-for="(label, modeKey) in modes" 
+          :key="modeKey"
+          class="mode-button"
+          :class="{ active: mode === modeKey }"
+          @click="setMode(modeKey)"
+        >
+          {{ label }}
+        </button>
       </div>
     </div>
 
-    <!-- Main Chat Area -->
-    <div class="chat-main">
-      <div class="messages-container" ref="messagesContainer">
-        <transition-group name="message-fade">
-          <div v-for="message in currentMessages" 
-               :key="message.id"
-               class="message-card"
-               :class="{'user-message': message.role === 'user'}">
-            <div class="message-header">
-              <img v-if="message.role === 'user'" 
-                   :src="user.photoURL" 
-                   class="message-avatar"/>
-              <div class="ai-avatar" v-else>🌌</div>
-              <span class="username">{{ message.role === 'user' ? user.displayName : 'Dawntasy AI' }}</span>
-            </div>
-            <div class="message-content">
-              <MarkdownRenderer :content="message.content"/>
-            </div>
-          </div>
-        </transition-group>
+    <!-- Messages Container - Claude-like message styling -->
+    <div 
+      ref="messagesContainer" 
+      class="messages-container" 
+      @scroll="handleScroll"
+    >
+      <!-- Welcome message for new chats -->
+      <div v-if="!messages.length" class="welcome-message">
+        <div class="welcome-icon">✨</div>
+        <h2 class="welcome-title">Welcome to DawntasyAI</h2>
+        <p class="welcome-text">
+          I'm your personal AI assistant from the Dawntasy universe. How can I help you today?
+        </p>
         
-        <div v-if="isLoading" class="loading-indicator">
-          <div class="quantum-loader"></div>
-          <div class="typing-indicator">
-            <div class="pulse-dot"></div>
-            <div class="pulse-dot"></div>
-            <div class="pulse-dot"></div>
-          </div>
+        <!-- Suggestion chips (similar to Claude) -->
+        <div class="suggestion-chips">
+          <button 
+            v-for="suggestion in suggestions" 
+            :key="suggestion"
+            class="suggestion-chip"
+            @click="sendMessage(suggestion)"
+          >
+            {{ suggestion }}
+          </button>
         </div>
       </div>
+      
+      <!-- Message bubbles -->
+      <transition-group name="message-transition" tag="div" class="message-list">
+        <div 
+          v-for="(message, index) in messages"
+          :key="`msg-${index}`"
+          class="message-bubble"
+          :class="{ 'user': message.role === 'user', 'assistant': message.role === 'assistant' }"
+        >
+          <!-- User avatar (similar to Claude's minimal circle) -->
+          <div v-if="message.role === 'user'" class="avatar user-avatar">
+            <span class="avatar-letter">{{ userInitials }}</span>
+            <div class="avatar-glow"></div>
+          </div>
+          
+          <!-- AI avatar with cosmic styling -->
+          <div v-else class="avatar assistant-avatar">
+            <div class="assistant-avatar-inner">
+              <span class="cosmic-symbol">⟁</span>
+              <div class="avatar-glow"></div>
+              <div class="avatar-rings">
+                <div class="avatar-ring"></div>
+                <div class="avatar-ring"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Message content (Claude-like styling) -->
+          <div class="message-content">
+            <div class="message-sender">
+              {{ message.role === 'user' ? 'You' : 'DawntasyAI' }}
+              <div class="sender-underline"></div>
+            </div>
+            <div class="message-text" v-html="formatMessage(message.content)"></div>
+            <div class="message-time">{{ formatTime(message.timestamp) }}</div>
+          </div>
+        </div>
+      </transition-group>
+      
+      <!-- Thinking indicator (similar to Claude's typing animation) -->
+      <div v-if="isLoading" class="thinking-indicator">
+        <div class="cosmic-thinking">
+          <div class="dot dot-1"></div>
+          <div class="dot dot-2"></div>
+          <div class="dot dot-3"></div>
+        </div>
+        <div class="thinking-text">Thinking...</div>
+      </div>
+    </div>
 
-      <!-- Message Input Area -->
-      <div class="message-input-area">
-        <div class="tools-row">
-          <button class="tool-btn" @click="toggleTools">
-            <span class="tool-icon">🛠️</span>
-          </button>
-          <input type="file" 
-                 @change="handleFileUpload" 
-                 class="file-input"
-                 ref="fileInput"/>
-        </div>
-        
-        <div class="input-wrapper">
-          <textarea v-model="userMessage"
-                    @keydown.enter.exact.prevent="sendMessage"
-                    placeholder="Ask me anything..."
-                    class="message-textarea"
-                    ref="textarea"
-                    rows="1"></textarea>
-          <button @click="sendMessage" 
-                  class="send-btn"
-                  :disabled="isLoading">
-            ➤
-          </button>
+    <!-- Scroll to bottom button (similar to Claude's) -->
+    <div 
+      v-if="showScrollIndicator" 
+      class="scroll-indicator"
+      @click="scrollToBottom"
+    >
+      <i class="ri-arrow-down-line"></i>
+      <div class="scroll-pulse"></div>
+    </div>
+
+    <!-- Input container (similar to Claude's clean textarea) -->
+    <div class="input-container">
+      <textarea 
+        ref="inputField"
+        v-model="userInput"
+        @keydown.enter.exact.prevent="sendMessage"
+        @input="resizeTextarea"
+        placeholder="Send a message..."
+        class="message-input"
+        :disabled="isLoading"
+      ></textarea>
+      
+      <!-- Input energy field effect -->
+      <div class="input-energy-field" :class="{ 'active': userInput.length > 0 }">
+        <div class="energy-particles">
+          <div v-for="n in 20" :key="`energy-particle-${n}`" 
+               class="energy-particle"
+               :style="{
+                 '--size': `${Math.random() * 3 + 1}px`,
+                 '--x': `${Math.random() * 100}%`,
+                 '--y': `${Math.random() * 100}%`,
+                 '--duration': `${Math.random() * 3 + 2}s`,
+                 '--delay': `${Math.random() * -2}s`
+               }"
+          ></div>
         </div>
       </div>
+      
+      <!-- Send button (similar to Claude's) -->
+      <button 
+        class="send-button" 
+        @click="sendMessage()"
+        :disabled="!canSend || isLoading"
+      >
+        <span class="send-icon">→</span>
+        <div class="button-pulse"></div>
+      </button>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, computed, watch, nextTick, onMounted } from 'vue'
-import { db, auth } from '@/firebase/init'
-import { collection, query, where, getDocs, addDoc, doc, getDoc } from 'firebase/firestore'
-import { useUserStore } from '@/store/user'
-import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
+<script setup lang="ts">
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/store/auth';
+import { useChatStore } from '@/store/chat';
+import { format } from 'date-fns';
+import markdownit from 'markdown-it';
+import markdownitHighlight from 'markdown-it-highlightjs';
 
-const userStore = useUserStore()
-const user = computed(() => userStore.user)
+// Import stores
+const authStore = useAuthStore();
+const chatStore = useChatStore();
+const route = useRoute();
+const router = useRouter();
 
-// Firebase Data
-const userChats = ref([])
-const currentChat = ref(null)
-const currentMessages = ref([])
+// State
+const userInput = ref('');
+const isLoading = ref(false);
+const showScrollIndicator = ref(false);
+const messagesContainer = ref<HTMLElement | null>(null);
+const inputField = ref<HTMLTextAreaElement | null>(null);
+const mode = ref('default');
 
-// OpenAI Configuration
-const isLoading = ref(false)
-const userMessage = ref('')
-const darkMode = ref(false)
+// Modes available (similar to Claude's models)
+const modes = {
+  default: 'Balanced',
+  creative: 'Creative',
+  archmage: 'ARCHMAGE'
+};
 
-// DOM Refs
-const messagesContainer = ref(null)
-const textarea = ref(null)
+// Sample suggestions (similar to Claude's conversation starters)
+const suggestions = [
+  "Tell me about the Dawntasy universe",
+  "How does The Rift work in Dawntasy?",
+  "Write a short story set in Bear Village",
+  "Explain the Plain and Pale Clock concept", 
+  "What can you help me with today?"
+];
 
-// Theme Handling
-const toggleDarkMode = () => {
-  darkMode.value = !darkMode.value
-  localStorage.setItem('darkMode', darkMode.value)
-}
+// Computed properties
+const messages = computed(() => chatStore.currentChat?.messages || []);
+const currentChat = computed(() => chatStore.currentChat);
+const canSend = computed(() => userInput.value.trim().length > 0);
+const userInitials = computed(() => {
+  const name = authStore.displayName || '';
+  if (!name) return '?';
+  
+  const parts = name.split(' ');
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+});
 
-// Chat Management
-const createNewChat = async () => {
-  try {
-    const chatRef = await addDoc(collection(db, 'chats'), {
-      userId: user.value.uid,
-      createdAt: new Date(),
-      title: 'New Chat'
-    })
-    currentChat.value = chatRef.id
-    currentMessages.value = []
-  } catch (error) {
-    console.error('Error creating chat:', error)
+// Markdown parser
+const md = markdownit({
+  html: false,
+  linkify: true,
+  typographer: true
+}).use(markdownitHighlight);
+
+// Helper functions
+const formatMessage = (content: string) => {
+  // Handle markdown
+  let html = md.render(content);
+  
+  // Add cosmic styling to Dawntasy references
+  const keywords = [
+    'Time Smith', 'The Rift', 'Ursa Minor', 'Yaee', 
+    'Dawntasy', "Time's True Name", 'Bear Village',
+    'Plain and Pale Clock', 'Circular Dawn'
+  ];
+  
+  keywords.forEach(keyword => {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'g');
+    html = html.replace(regex, `<span class="cosmic-keyword">${keyword}</span>`);
+  });
+  
+  return html;
+};
+
+const formatTime = (timestamp: Date | number) => {
+  if (!timestamp) return '';
+  return format(new Date(timestamp), 'h:mm a');
+};
+
+// UI interaction methods
+const resizeTextarea = () => {
+  if (inputField.value) {
+    inputField.value.style.height = 'auto';
+    inputField.value.style.height = `${Math.min(inputField.value.scrollHeight, 150)}px`;
   }
-}
+};
 
-const loadChat = async (chatId) => {
-  try {
-    const chatDoc = await getDoc(doc(db, 'chats', chatId))
-    const messagesQuery = query(collection(db, 'messages'), 
-      where('chatId', '==', chatId))
-    const messagesSnapshot = await getDocs(messagesQuery)
-    
-    currentChat.value = chatId
-    currentMessages.value = messagesSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }))
-    
-    scrollToBottom()
-  } catch (error) {
-    console.error('Error loading chat:', error)
-  }
-}
-
-// OpenAI API Integration
-const sendMessage = async () => {
-  if (!userMessage.value.trim() || isLoading.value) return
-
-  try {
-    isLoading.value = true
-    const userMessageData = {
-      content: userMessage.value,
-      role: 'user',
-      timestamp: new Date(),
-      chatId: currentChat.value
-    }
-    
-    // Save user message to Firebase
-    const userMsgRef = await addDoc(collection(db, 'messages'), userMessageData)
-    currentMessages.value.push({ id: userMsgRef.id, ...userMessageData })
-    
-    // Generate AI response
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [
-          ...currentMessages.value
-            .filter(m => m.role !== 'system')
-            .map(m => ({ role: m.role, content: m.content })),
-          { role: "user", content: userMessage.value }
-        ],
-        stream: true
-      })
-    })
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-    
-    const reader = response.body.getReader()
-    const decoder = new TextDecoder()
-    let aiMessage = { content: '', role: 'assistant' }
-    
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      
-      const chunk = decoder.decode(value)
-      chunk.split('\n').forEach(line => {
-        const message = line.replace(/^data: /, '')
-        if (message === '[DONE]') return
-        if (message) {
-          try {
-            const parsed = JSON.parse(message)
-            aiMessage.content += parsed.choices[0].delta?.content || ''
-          } catch (e) {
-            console.error('Error parsing chunk:', e)
-          }
-        }
-      })
-      
-      // Update message in real-time
-      if (!currentMessages.value.find(m => m.role === 'assistant' && !m.id)) {
-        currentMessages.value.push(aiMessage)
-      }
-      scrollToBottom()
-    }
-
-    // Save final AI response to Firebase
-    const aiMsgRef = await addDoc(collection(db, 'messages'), {
-      ...aiMessage,
-      timestamp: new Date(),
-      chatId: currentChat.value
-    })
-    aiMessage.id = aiMsgRef.id
-  } catch (error) {
-    console.error('API Error:', error)
-    // Auto-retry logic here
-  } finally {
-    isLoading.value = false
-    userMessage.value = ''
-    scrollToBottom()
-  }
-}
-
-// Scroll Handling
-const scrollToBottom = () => {
+const scrollToBottom = (animate = true) => {
   nextTick(() => {
     if (messagesContainer.value) {
-      messagesContainer.value.scrollTo({
-        top: messagesContainer.value.scrollHeight,
-        behavior: 'smooth'
-      })
+      const container = messagesContainer.value;
+      
+      if (animate) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        });
+      } else {
+        container.scrollTop = container.scrollHeight;
+      }
+      
+      showScrollIndicator.value = false;
     }
-  })
-}
+  });
+};
 
-// Initial Setup
-onMounted(async () => {
-  darkMode.value = localStorage.getItem('darkMode') === 'true'
-  if (user.value) {
-    const chatsQuery = query(collection(db, 'chats'), 
-      where('userId', '==', user.value.uid))
-    const querySnapshot = await getDocs(chatsQuery)
-    userChats.value = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }))
+const handleScroll = () => {
+  if (!messagesContainer.value) return;
+  
+  const { scrollTop, scrollHeight, clientHeight } = messagesContainer.value;
+  const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+  
+  showScrollIndicator.value = !isNearBottom && messages.value.length > 0;
+};
+
+// Chat functionality
+const setMode = (newMode: string) => {
+  mode.value = newMode;
+};
+
+const sendMessage = async (text?: string) => {
+  const messageText = text || userInput.value.trim();
+  if (!messageText || isLoading.value) return;
+  
+  // Clear input and reset height
+  userInput.value = '';
+  if (inputField.value) {
+    inputField.value.style.height = 'auto';
   }
-})
+  
+  // Send the message
+  await chatStore.sendMessage(messageText);
+  
+  // Scroll to bottom
+  scrollToBottom();
+};
+
+// Lifecycle hooks
+onMounted(async () => {
+  // Focus input field
+  if (inputField.value) {
+    inputField.value.focus();
+  }
+  
+  // If chat ID provided, load that chat
+  const chatId = route.params.id as string;
+  if (chatId && chatId !== 'new') {
+    await chatStore.fetchChat(chatId);
+  } 
+  // If no chat exists or explicitly new chat, create one
+  else if (chatId === 'new' || !chatStore.currentChat) {
+    const newChatId = await chatStore.createChat();
+    if (newChatId && chatId !== 'new') {
+      router.replace(`/chat/${newChatId}`);
+    }
+  }
+  
+  // Scroll to bottom of messages
+  scrollToBottom(false);
+});
+
+// Watch for changes in messages to scroll to bottom
+watch(messages, () => {
+  scrollToBottom();
+}, { deep: true });
+
+// Watch for changes in route to load different chats
+watch(() => route.params.id, async (newId) => {
+  if (newId && newId !== 'new') {
+    await chatStore.fetchChat(newId as string);
+  } else if (newId === 'new') {
+    const newChatId = await chatStore.createChat();
+    if (newChatId) {
+      router.replace(`/chat/${newChatId}`);
+    }
+  }
+});
 </script>
 
 <style scoped>
-/* Cosmic Theme Variables */
-:root {
-  --cosmic-primary: #2A2356;
-  --star-dust: #E0DAF8;
-  --nebula-purple: #7B61FF;
-  --dark-matter: #0A0815;
-  --supernova: #FFD700;
-}
-
-.dark-mode {
-  --cosmic-primary: #0A0815;
-  --star-dust: #C0B3F0;
-  --nebula-purple: #9D8AFF;
-  --dark-matter: #1A1730;
-  --supernova: #FFE55C;
-}
-
-.cosmic-chat {
-  display: flex;
-  height: 100vh;
-  background: var(--dark-matter);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Chat Sidebar Styles */
-.chat-sidebar {
-  width: 260px;
-  background: var(--cosmic-primary);
-  padding: 1.5rem;
-  border-right: 1px solid rgba(255,255,255,0.1);
-}
-
-.new-chat-btn {
-  width: 100%;
-  padding: 12px;
-  background: var(--nebula-purple);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-/* Message Card Animations */
-.message-fade-enter-active,
-.message-fade-leave-active {
-  transition: all 0.4s ease;
-}
-.message-fade-enter-from,
-.message-fade-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-/* Quantum Loader Animation */
-@keyframes quantum-pulse {
-  0% { transform: scale(0.95); opacity: 0.7; }
-  50% { transform: scale(1.05); opacity: 1; }
-  100% { transform: scale(0.95); opacity: 0.7; }
-}
-
-.quantum-loader {
-  width: 40px;
-  height: 40px;
-  background: var(--nebula-purple);
-  border-radius: 50%;
-  animation: quantum-pulse 1.5s infinite;
-}
-
-/* Typing Indicator */
-.typing-indicator {
-  display: flex;
-  gap: 6px;
-}
-
-.pulse-dot {
-  width: 8px;
-  height: 8px;
-  background: var(--supernova);
-  border-radius: 50%;
-  animation: pulse 1.4s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-}
-
-/* Message Input Area */
-.message-input-area {
-  position: relative;
-  padding: 1.5rem;
-  background: var(--cosmic-primary);
-  border-top: 1px solid rgba(255,255,255,0.1);
-}
-
-.message-textarea {
-  width: 100%;
-  background: var(--dark-matter);
-  color: var(--star-dust);
-  border: 1px solid var(--nebula-purple);
-  border-radius: 12px;
-  padding: 1rem;
-  resize: none;
-  transition: all 0.3s;
-}
-
-.send-btn {
-  position: absolute;
-  right: 30px;
-  bottom: 30px;
-  background: var(--nebula-purple);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-/* Add remaining styles for full cosmic effect... */
+@import '../ChatView.scss';
 </style>

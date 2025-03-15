@@ -24,6 +24,7 @@
     "firebase": "^10.14.1",
     "gsap": "^3.12.7",
     "highlight.js": "^11.11.1",
+    "markdown-it-highlightjs": "^4.2.0",
     "marked": "^15.0.7",
     "motion": "^12.4.10",
     "nprogress": "^0.2.0",
