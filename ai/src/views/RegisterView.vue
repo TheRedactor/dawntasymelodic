@@ -689,7 +689,7 @@ export default {
   max-width: 450px;
   width: 100%;
   transform: scale(0.9);
-  opacity: 10;
+  opacity: 1;
   transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
