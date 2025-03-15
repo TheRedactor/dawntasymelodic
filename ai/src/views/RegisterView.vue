@@ -234,7 +234,7 @@ const passwordStrengthText = computed(() => {
 });
 
 // ⚡ Form field methods
-const focusField = (field: string) => {
+const focusField = (field) => {
   focusedField.value = field;
   
   // Get the input wrapper element
