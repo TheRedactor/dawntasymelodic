@@ -332,7 +332,7 @@ const handleRegister = async () => {
       );
     }
     
-  } catch (err: any) {
+  } catch (err) {
     console.error('⚠️ Registration error:', err);
     
     // Format user-friendly error message
