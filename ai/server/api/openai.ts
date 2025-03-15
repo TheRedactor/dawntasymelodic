@@ -2,7 +2,6 @@
 import axios from 'axios';
 import { ref } from 'vue';
 import { serverTimestamp, doc, setDoc } from 'firebase/firestore';
-import { useAuthStore } from '@/store/auth';
 import { db } from '@/firebase/init';
 
 // API Configuration updated for subdomain
@@ -14,7 +13,7 @@ const FALLBACK_MODEL = 'gpt-3.5-turbo';
 
 export async function callOpenAI(messages: any[], model: string = DEFAULT_MODEL): Promise<string> {
   try {
-    const response = await openaiService.generateCompletion(messages[messages.length - 1].content, messages.slice(0, -1));
+    const response = await generateCompletion(messages[messages.length - 1].content, messages.slice(0, -1));
     return response.content || '';
   } catch (error) {
     console.error('Error in callOpenAI:', error);
@@ -25,7 +24,7 @@ export async function callOpenAI(messages: any[], model: string = DEFAULT_MODEL)
 // For external import compatibility
 export function sendChatMessage(chatId: string, messages: any[]) {
   // Implementation for chat service
-  return openaiService.generateCompletion(
+  return generateCompletion(
     messages[messages.length - 1].content,
     messages.slice(0, -1)
   );
@@ -903,287 +902,283 @@ class OpenAIError extends Error {
   }
 }
 
-// Main OpenAI service
-export const useOpenAI = () => {
-  const authStore = useAuthStore();
-  const isLoading = ref(false);
-  const error = ref<string | null>(null);
-  
-  // Get the appropriate system prompt based on user's plan
-  const getSystemPrompt = (mode: 'default' | 'archmage' | 'creative' = 'default') => {
-    // Premium modes only available for paid plans
-    if (mode !== 'default') {
-      const plan = authStore.userProfile?.plan;
-      if (plan === 'free') {
-        return DAWNTASY_SYSTEM_PROMPTS.default;
-      }
+// Variables to store state (not dependent on Pinia store)
+const isLoading = ref(false);
+const error = ref<string | null>(null);
+
+// Get the appropriate system prompt based on user's plan
+const getSystemPrompt = (mode: 'default' | 'archmage' | 'creative' = 'default') => {
+  // Simple implementation that doesn't rely on auth store
+  return DAWNTASY_SYSTEM_PROMPTS[mode] || DAWNTASY_SYSTEM_PROMPTS.default;
+};
+
+// Basic completion request
+const generateCompletion = async (
+  userMessage: string, 
+  chatHistory: ChatMessage[] = [],
+  options = { 
+    mode: 'default' as 'default' | 'archmage' | 'creative',
+    temperature: 0.7, 
+    maxTokens: 1000,
+    userPlan: 'free' as 'free' | 'rift' | 'premium'
+  }
+) => {
+  try {
+    isLoading.value = true;
+    error.value = null;
+    
+    // Get system prompt based on mode
+    const systemPrompt = getSystemPrompt(options.mode);
+    
+    // Prepare messages array with system prompt, history, and user message
+    const messages: ChatMessage[] = [
+      { role: 'system', content: systemPrompt },
+      ...chatHistory,
+      { role: 'user', content: userMessage }
+    ];
+    
+    // Determine model based on user's plan
+    let model = FALLBACK_MODEL;
+    if (options.userPlan === 'rift') {
+      model = DEFAULT_MODEL;
     }
-    return DAWNTASY_SYSTEM_PROMPTS[mode] || DAWNTASY_SYSTEM_PROMPTS.default;
-  };
-  
-  // Basic completion request
-  const generateCompletion = async (
-    userMessage: string, 
-    chatHistory: ChatMessage[] = [],
-    options = { 
-      mode: 'default' as 'default' | 'archmage' | 'creative',
-      temperature: 0.7, 
-      maxTokens: 1000 
+    
+    // Prepare request
+    const request: ChatRequest = {
+      model,
+      messages,
+      temperature: options.temperature,
+      max_tokens: options.maxTokens
+    };
+    
+    // Get API key - FIXED CRITICAL ISSUE
+    if (!API_KEY) {
+      throw new Error('OpenAI API key is missing');
     }
-  ) => {
+    
+    // Choose between direct OpenAI call or proxied endpoint
+    const isProduction = import.meta.env.MODE === 'production';
+    const apiEndpoint = isProduction 
+      ? `/api/openai`  // UPDATED for subdomain
+      : API_URL;          // Use direct API in development
+    
+    // Make API call with error handling and timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
+    
     try {
-      isLoading.value = true;
-      error.value = null;
-      
-      // Get system prompt based on mode
-      const systemPrompt = getSystemPrompt(options.mode);
-      
-      // Prepare messages array with system prompt, history, and user message
-      const messages: ChatMessage[] = [
-        { role: 'system', content: systemPrompt },
-        ...chatHistory,
-        { role: 'user', content: userMessage }
-      ];
-      
-      // Determine model based on user's plan
-      let model = FALLBACK_MODEL;
-      if (authStore.userProfile?.plan === 'rift') {
-        model = DEFAULT_MODEL;
-      }
-      
-      // Prepare request
-      const request: ChatRequest = {
-        model,
-        messages,
-        temperature: options.temperature,
-        max_tokens: options.maxTokens
-      };
-      
-      // Get API key - FIXED CRITICAL ISSUE
-      if (!API_KEY) {
-        throw new Error('OpenAI API key is missing');
-      }
-      
-      // Choose between direct OpenAI call or proxied endpoint
-      const isProduction = import.meta.env.MODE === 'production';
-      const apiEndpoint = isProduction 
-        ? `/api/openai`  // UPDATED for subdomain
-        : API_URL;          // Use direct API in development
-      
-      // Make API call with error handling and timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
-      
-      try {
-        const response = await axios.post<ChatResponse>(
-          apiEndpoint,
-          request,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${API_KEY}`
-            },
-            signal: controller.signal
-          }
-        );
-        
-        clearTimeout(timeoutId);
-        
-        // Extract and return the assistant's response
-        return response.data.choices[0].message;
-      } catch (err) {
-        clearTimeout(timeoutId);
-        throw err;
-      }
-    } catch (err: any) {
-      console.error('OpenAI API error:', err);
-      
-      // Format user-friendly error messages
-      if (err.name === 'AbortError' || err.code === 'ECONNABORTED') {
-        error.value = 'Request timed out. Please try again.';
-      } else if (err.response) {
-        error.value = `API Error (${err.response.status}): ${err.response.data.error?.message || 'Unknown error'}`;
-        throw new OpenAIError(
-          err.response.data.error?.message || 'Unknown error',
-          err.response.status,
-          err.response.data
-        );
-      } else {
-        error.value = err.message || 'Network error';
-      }
-      throw err;
-    } finally {
-      isLoading.value = false;
-    }
-  };
-  
-  // Stream completions for real-time responses
-  const streamCompletion = async (
-    userMessage: string,
-    chatHistory: ChatMessage[] = [],
-    options = {
-      mode: 'default' as 'default' | 'archmage' | 'creative',
-      temperature: 0.7,
-      maxTokens: 1000,
-      onChunk: (chunk: string) => {}
-    }
-  ) => {
-    try {
-      isLoading.value = true;
-      error.value = null;
-      
-      // Get system prompt based on mode
-      const systemPrompt = getSystemPrompt(options.mode);
-      
-      // Prepare messages
-      const messages: ChatMessage[] = [
-        { role: 'system', content: systemPrompt },
-        ...chatHistory,
-        { role: 'user', content: userMessage }
-      ];
-      
-      // Determine model based on user's plan
-      let model = FALLBACK_MODEL;
-      if (authStore.userProfile?.plan === 'rift') {
-        model = DEFAULT_MODEL;
-      }
-      
-      // Prepare streaming request
-      const request: ChatRequest = {
-        model,
-        messages,
-        temperature: options.temperature,
-        max_tokens: options.maxTokens,
-        stream: true
-      };
-      
-      // Get API key - FIXED CRITICAL ISSUE
-      if (!API_KEY) {
-        throw new Error('OpenAI API key is missing');
-      }
-      
-      // Choose between direct OpenAI call or proxied endpoint
-      const isProduction = import.meta.env.MODE === 'production';
-      const apiEndpoint = isProduction 
-        ? `/api/openai`  // UPDATED for subdomain
-        : API_URL;          // Use direct API in development
-      
-      // Configure timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60-second timeout for streaming
-      
-      try {
-        // Make streaming API call
-        const response = await fetch(apiEndpoint, {
-          method: 'POST',
+      const response = await axios.post<ChatResponse>(
+        apiEndpoint,
+        request,
+        {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${API_KEY}`
           },
-          body: JSON.stringify(request),
           signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new OpenAIError(
-            errorData.error?.message || 'Stream request failed',
-            response.status,
-            errorData
-          );
         }
+      );
+      
+      clearTimeout(timeoutId);
+      
+      // Extract and return the assistant's response
+      return response.data.choices[0].message;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      throw err;
+    }
+  } catch (err: any) {
+    console.error('OpenAI API error:', err);
+    
+    // Format user-friendly error messages
+    if (err.name === 'AbortError' || err.code === 'ECONNABORTED') {
+      error.value = 'Request timed out. Please try again.';
+    } else if (err.response) {
+      error.value = `API Error (${err.response.status}): ${err.response.data.error?.message || 'Unknown error'}`;
+      throw new OpenAIError(
+        err.response.data.error?.message || 'Unknown error',
+        err.response.status,
+        err.response.data
+      );
+    } else {
+      error.value = err.message || 'Network error';
+    }
+    throw err;
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// Stream completions for real-time responses
+const streamCompletion = async (
+  userMessage: string,
+  chatHistory: ChatMessage[] = [],
+  options = {
+    mode: 'default' as 'default' | 'archmage' | 'creative',
+    temperature: 0.7,
+    maxTokens: 1000,
+    userPlan: 'free' as 'free' | 'rift' | 'premium',
+    onChunk: (chunk: string) => {}
+  }
+) => {
+  try {
+    isLoading.value = true;
+    error.value = null;
+    
+    // Get system prompt based on mode
+    const systemPrompt = getSystemPrompt(options.mode);
+    
+    // Prepare messages
+    const messages: ChatMessage[] = [
+      { role: 'system', content: systemPrompt },
+      ...chatHistory,
+      { role: 'user', content: userMessage }
+    ];
+    
+    // Determine model based on user's plan
+    let model = FALLBACK_MODEL;
+    if (options.userPlan === 'rift') {
+      model = DEFAULT_MODEL;
+    }
+    
+    // Prepare streaming request
+    const request: ChatRequest = {
+      model,
+      messages,
+      temperature: options.temperature,
+      max_tokens: options.maxTokens,
+      stream: true
+    };
+    
+    // Get API key - FIXED CRITICAL ISSUE
+    if (!API_KEY) {
+      throw new Error('OpenAI API key is missing');
+    }
+    
+    // Choose between direct OpenAI call or proxied endpoint
+    const isProduction = import.meta.env.MODE === 'production';
+    const apiEndpoint = isProduction 
+      ? `/api/openai`  // UPDATED for subdomain
+      : API_URL;          // Use direct API in development
+    
+    // Configure timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60-second timeout for streaming
+    
+    try {
+      // Make streaming API call
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_KEY}`
+        },
+        body: JSON.stringify(request),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new OpenAIError(
+          errorData.error?.message || 'Stream request failed',
+          response.status,
+          errorData
+        );
+      }
+      
+      // Process the stream
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('Stream reader not available');
+      
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+      let fullContent = '';
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
         
-        // Process the stream
-        const reader = response.body?.getReader();
-        if (!reader) throw new Error('Stream reader not available');
+        // Decode chunk and add to buffer
+        buffer += decoder.decode(value, { stream: true });
         
-        const decoder = new TextDecoder('utf-8');
-        let buffer = '';
-        let fullContent = '';
-        
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+        // Process lines in buffer
+        while (buffer.includes('\n')) {
+          const lineEnd = buffer.indexOf('\n');
+          const line = buffer.slice(0, lineEnd).trim();
+          buffer = buffer.slice(lineEnd + 1);
           
-          // Decode chunk and add to buffer
-          buffer += decoder.decode(value, { stream: true });
-          
-          // Process lines in buffer
-          while (buffer.includes('\n')) {
-            const lineEnd = buffer.indexOf('\n');
-            const line = buffer.slice(0, lineEnd).trim();
-            buffer = buffer.slice(lineEnd + 1);
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
             
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              
-              // Handle stream end
-              if (data === '[DONE]') break;
-              
-              try {
-                const parsed = JSON.parse(data);
-                const content = parsed.choices[0]?.delta?.content || '';
-                if (content) {
-                  fullContent += content;
-                  options.onChunk(content);
-                }
-              } catch (e) {
-                console.error('Error parsing stream data:', e);
+            // Handle stream end
+            if (data === '[DONE]') break;
+            
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices[0]?.delta?.content || '';
+              if (content) {
+                fullContent += content;
+                options.onChunk(content);
               }
+            } catch (e) {
+              console.error('Error parsing stream data:', e);
             }
           }
         }
-        
-        // Return the complete response
-        return { role: 'assistant', content: fullContent };
-      } catch (err) {
-        clearTimeout(timeoutId);
-        throw err;
       }
-    } catch (err: any) {
-      console.error('OpenAI streaming error:', err);
       
-      // Format user-friendly error messages
-      if (err.name === 'AbortError') {
-        error.value = 'Request timed out. Please try again.';
-      } else if (err instanceof OpenAIError) {
-        error.value = `API Error (${err.status}): ${err.message}`;
-      } else {
-        error.value = err.message || 'Stream error';
-      }
-      throw err;
-    } finally {
-      isLoading.value = false;
-    }
-  };
-  
-  // Record chat in user history
-  const recordChatInteraction = async (messages: ChatMessage[]) => {
-    try {
-      if (!authStore.isAuthenticated || !authStore.uid) return;
-      
-      // Add chat to Firestore
-      const userChatsRef = doc(db(), 'users', authStore.uid, 'chats', new Date().toISOString());
-      await setDoc(userChatsRef, {
-        timestamp: serverTimestamp(),
-        messages,
-        title: messages[1]?.content.slice(0, 50) + '...' || 'New Chat'
-      });
+      // Return the complete response
+      return { role: 'assistant', content: fullContent };
     } catch (err) {
-      console.error('Error recording chat:', err);
+      clearTimeout(timeoutId);
+      throw err;
     }
-  };
-  
-  return {
-    isLoading,
-    error,
-    generateCompletion,
-    streamCompletion,
-    recordChatInteraction
-  };
+  } catch (err: any) {
+    console.error('OpenAI streaming error:', err);
+    
+    // Format user-friendly error messages
+    if (err.name === 'AbortError') {
+      error.value = 'Request timed out. Please try again.';
+    } else if (err instanceof OpenAIError) {
+      error.value = `API Error (${err.status}): ${err.message}`;
+    } else {
+      error.value = err.message || 'Stream error';
+    }
+    throw err;
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-// Export single instance for consistent state
-export const openaiService = useOpenAI();
+// Record chat in user history - simplified version without auth dependency
+const recordChatInteraction = async (userId: string, messages: ChatMessage[]) => {
+  try {
+    if (!userId) return;
+    
+    // Add chat to Firestore
+    const userChatsRef = doc(db(), 'users', userId, 'chats', new Date().toISOString());
+    await setDoc(userChatsRef, {
+      timestamp: serverTimestamp(),
+      messages,
+      title: messages[1]?.content.slice(0, 50) + '...' || 'New Chat'
+    });
+  } catch (err) {
+    console.error('Error recording chat:', err);
+  }
+};
+
+// OpenAI service object without Pinia store dependency
+export const openaiService = {
+  isLoading,
+  error,
+  generateCompletion,
+  streamCompletion,
+  recordChatInteraction
+};
+
+// For backward compatibility
+export const useOpenAI = () => {
+  return openaiService;
+};

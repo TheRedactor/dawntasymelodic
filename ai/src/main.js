@@ -3,9 +3,10 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from './router';
+import { defineAsyncComponent } from 'vue';
 
-// IMPORTANT: Use this format to ensure imports aren't tree-shaken out
-import * as firebaseInit from './firebase/init';
+// Import Firebase initialization
+import { getFirebaseServices } from './firebase/init';
 
 // Import styles - make sure CSS is always included
 import './assets/css/main.css';
@@ -22,26 +23,6 @@ app.use(pinia);
 
 // Initialize router
 app.use(router);
-
-// Enhanced error handling
-app.config.errorHandler = (err, vm, info) => {
-  console.error('🚨 Application Error:', err);
-  console.error('Component:', vm?.$options?.name || 'Unknown component');
-  console.error('Error Info:', info);
-
-  // Always show errors visibly in production too
-  const errorDiv = document.createElement('div');
-  errorDiv.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:20px;z-index:9999;';
-  errorDiv.innerHTML = `<h3>Error:</h3><pre>${err.stack || err.message || err}</pre>`;
-  document.body.appendChild(errorDiv);
-};
-
-// Force-show all warnings too
-app.config.warnHandler = (msg, vm, trace) => {
-  console.warn('⚠️ Vue Warning:', msg);
-  console.warn('Component:', vm);
-  console.warn('Trace:', trace);
-};
 
 // Register global directives
 function registerGlobalDirectives(app) {
@@ -72,49 +53,98 @@ function registerGlobalDirectives(app) {
 // Register directives
 registerGlobalDirectives(app);
 
-// MOUNT THE APP
-try {
-  // Initialize Firebase explicitly to ensure it's included
-  const firebaseServices = firebaseInit.getFirebaseServices();
-  console.log('✅ Firebase initialized');
+// Comprehensive error handling
+app.config.errorHandler = (err, vm, info) => {
+  console.error('🚨 Application Error:', err);
+  console.error('Component:', vm?.$options?.name || 'Unknown component');
+  console.error('Error Info:', info);
+  console.error('Stack trace:', err.stack);
+
+  // Display error visibly for easier debugging
+  const errorDiv = document.createElement('div');
+  errorDiv.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(220, 38, 38, 0.95);
+    color: white;
+    padding: 20px;
+    z-index: 10000;
+    font-family: monospace;
+    white-space: pre-wrap;
+    max-height: 80vh;
+    overflow: auto;
+  `;
   
-  // Mount app with explicit error handling
-  app.mount('#app');
-  console.log('✅ App mounted successfully');
+  errorDiv.innerHTML = `
+    <h2 style="margin-top: 0">Application Error</h2>
+    <p><strong>Message:</strong> ${err.message}</p>
+    <p><strong>Component:</strong> ${vm?.$options?.name || 'Unknown'}</p>
+    <p><strong>Info:</strong> ${info}</p>
+    <pre style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 4px;">${err.stack}</pre>
+    <button onclick="location.reload()" style="background: white; color: rgb(220, 38, 38); border: none; padding: 8px 16px; border-radius: 4px; margin-top: 10px; cursor: pointer; font-weight: bold;">Reload Application</button>
+  `;
   
-  // Fade out loader with smooth transition
-  const appLoader = document.getElementById('app-loader');
-  if (appLoader) {
-    setTimeout(() => {
-      appLoader.style.opacity = '0';
-      appLoader.style.transition = 'opacity 0.5s ease-out';
+  document.body.appendChild(errorDiv);
+};
+
+// Initialize application
+async function initApp() {
+  try {
+    console.log('🚀 Initializing application...');
+    
+    // Initialize Firebase first
+    console.log('🔥 Initializing Firebase...');
+    const firebaseServices = getFirebaseServices();
+    console.log('✅ Firebase initialized successfully');
+    
+    // Mount the app
+    console.log('🔌 Mounting Vue application...');
+    app.mount('#app');
+    console.log('✅ Application mounted successfully');
+    
+    // Remove loader with smooth transition
+    const appLoader = document.getElementById('app-loader');
+    if (appLoader) {
       setTimeout(() => {
-        appLoader.style.display = 'none';
-      }, 500);
-    }, 500);
-  }
-} catch (error) {
-  console.error('🔥 CRITICAL: App initialization failed!', error);
-  
-  // Show error message to user
-  const appDiv = document.getElementById('app');
-  if (appDiv) {
-    appDiv.innerHTML = `
-      <div style="padding: 20px; text-align: center; color: white;">
-        <h2>Application failed to load</h2>
-        <p>Error: ${error.message || 'Unknown error'}</p>
-        <pre style="text-align:left;background:#111;padding:10px;overflow:auto;max-height:200px">${error.stack || ''}</pre>
-        <button onclick="window.location.reload()" 
-                style="background: #8B5CF6; border: none; color: white; padding: 10px 20px; margin-top: 20px; border-radius: 4px; cursor: pointer;">
-          Refresh Page
-        </button>
-      </div>
-    `;
-  }
-  
-  // Hide loader
-  const appLoader = document.getElementById('app-loader');
-  if (appLoader) {
-    appLoader.style.display = 'none';
+        appLoader.style.opacity = '0';
+        appLoader.style.transition = 'opacity 0.6s ease-out';
+        setTimeout(() => {
+          appLoader.style.display = 'none';
+        }, 600);
+      }, 400);
+    }
+  } catch (error) {
+    console.error('⚠️ Application initialization failed:', error);
+    
+    // Show error in DOM
+    const appDiv = document.getElementById('app');
+    const appLoader = document.getElementById('app-loader');
+    
+    if (appLoader) {
+      appLoader.style.display = 'none';
+    }
+    
+    if (appDiv) {
+      appDiv.innerHTML = `
+        <div style="padding: 2rem; text-align: center; color: white; max-width: 800px; margin: 0 auto; font-family: system-ui, -apple-system, sans-serif;">
+          <h1 style="color: #ff3a70;">Initialization Error</h1>
+          <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">The application couldn't start properly. This might be due to network issues or configuration problems.</p>
+          <div style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; text-align: left; margin-bottom: 1.5rem;">
+            <h3 style="margin-top: 0; color: #8b5cf6;">Error Details:</h3>
+            <p>${error.message || 'Unknown error'}</p>
+            <pre style="overflow: auto; background: rgba(0,0,0,0.6); padding: 1rem; border-radius: 4px; color: #f1f5f9; font-size: 0.85rem;">${error.stack || ''}</pre>
+          </div>
+          <button onclick="window.location.reload()" 
+            style="background: #8b5cf6; border: none; color: white; padding: 0.75rem 1.5rem; font-size: 1rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;">
+            Reload Application
+          </button>
+        </div>
+      `;
+    }
   }
 }
+
+// Start the application
+initApp();

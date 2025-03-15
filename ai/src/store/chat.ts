@@ -1,6 +1,6 @@
+// src/store/chat.ts
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { useAuthStore } from './auth';
 import { db } from '../firebase/init';  // FIXED: Using proper Firebase import
 import { 
   collection, 
@@ -17,9 +17,7 @@ import {
   Timestamp,
   arrayUnion
 } from 'firebase/firestore';
-import { useOpenAI } from '../../server/api/openai';
-
-const openaiService = useOpenAI();
+import { openaiService } from '../../server/api/openai';
 
 export interface Message {
   id?: string;
@@ -38,12 +36,11 @@ export interface Chat {
 }
 
 export const useChatStore = defineStore('chat', () => {
-  const authStore = useAuthStore();
-  
   const chats = ref<Chat[]>([]);
   const currentChat = ref<Chat | null>(null);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
+  const currentUserId = ref<string | null>(null);
   
   // 📌 **Sorted Chats by Most Recent**
   const sortedChats = computed(() => {
@@ -53,10 +50,15 @@ export const useChatStore = defineStore('chat', () => {
       return dateB.getTime() - dateA.getTime();
     });
   });
+
+  // Set current user ID (call this after auth is initialized)
+  function setUserId(userId: string | null) {
+    currentUserId.value = userId;
+  }
   
   // 🚀 **Fetch User's Chats from Firestore**
   async function fetchChats() {
-    if (!authStore.user?.uid) return;
+    if (!currentUserId.value) return;
     
     isLoading.value = true;
     error.value = null;
@@ -64,7 +66,7 @@ export const useChatStore = defineStore('chat', () => {
     try {
       const q = query(
         collection(db(), 'chats'),  // FIXED: Using db() function
-        where('userId', '==', authStore.user.uid),
+        where('userId', '==', currentUserId.value),
         orderBy('updatedAt', 'desc')
       );
       
@@ -84,7 +86,7 @@ export const useChatStore = defineStore('chat', () => {
   
   // 🔄 **Fetch & Subscribe to Chat (Real-Time Updates)**
   async function fetchChat(chatId: string) {
-    if (!authStore.user?.uid) return;
+    if (!currentUserId.value) return;
     
     isLoading.value = true;
     error.value = null;
@@ -93,7 +95,7 @@ export const useChatStore = defineStore('chat', () => {
       const docRef = doc(db(), 'chats', chatId);  // FIXED: Using db() function
       const docSnap = await getDoc(docRef);
       
-      if (docSnap.exists() && docSnap.data().userId === authStore.user.uid) {
+      if (docSnap.exists() && docSnap.data().userId === currentUserId.value) {
         currentChat.value = {
           id: docSnap.id,
           ...docSnap.data()
@@ -134,7 +136,7 @@ export const useChatStore = defineStore('chat', () => {
   
   // 🆕 **Create a New Chat**
   async function createChat(options?: { initialPrompt?: string }) {
-    if (!authStore.user?.uid) return null;
+    if (!currentUserId.value) return null;
     
     isLoading.value = true;
     error.value = null;
@@ -144,7 +146,7 @@ export const useChatStore = defineStore('chat', () => {
         title: options?.initialPrompt?.slice(0, 30) + '...' || 'New Conversation',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        userId: authStore.user.uid,
+        userId: currentUserId.value,
         messages: []
       };
       
@@ -172,7 +174,7 @@ export const useChatStore = defineStore('chat', () => {
   
   // 💬 **Send Message with AI Response Streaming**
   async function sendMessage(content: string) {
-    if (!authStore.user?.uid || !currentChat.value) return;
+    if (!currentUserId.value || !currentChat.value) return;
 
     isLoading.value = true;
     error.value = null;
@@ -212,6 +214,7 @@ export const useChatStore = defineStore('chat', () => {
           mode: 'default',
           temperature: 0.7,
           maxTokens: 1000,
+          userPlan: 'free', // Default to free plan
           onChunk: (chunk) => {
             aiResponse += chunk;
             
@@ -275,6 +278,7 @@ export const useChatStore = defineStore('chat', () => {
     isLoading,
     error,
     sortedChats,
+    setUserId,
     fetchChats,
     fetchChat,
     createChat,
