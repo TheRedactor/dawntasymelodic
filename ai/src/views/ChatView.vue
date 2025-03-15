@@ -2,29 +2,30 @@
   <div class="chat-container">
     <!-- Cosmic Particles Background -->
     <div class="cosmic-particles-container">
-      <div v-for="n in 50" :key="`particle-${n}`" 
-           class="cosmic-particle"
-           :style="{
-             '--size': `${Math.random() * 4 + 1}px`,
-             '--x': `${Math.random() * 100}%`,
-             '--y': `${Math.random() * 100}%`,
-             '--duration': `${Math.random() * 50 + 30}s`,
-             '--delay': `${Math.random() * -30}s`,
-             '--opacity': Math.random() * 0.5 + 0.2
-           }"
+      <div
+        v-for="n in 50"
+        :key="`particle-${n}`"
+        class="cosmic-particle"
+        :style="{
+          '--size': `${Math.random() * 4 + 1}px`,
+          '--x': `${Math.random() * 100}%`,
+          '--y': `${Math.random() * 100}%`,
+          '--duration': `${Math.random() * 50 + 30}s`,
+          '--delay': `${Math.random() * -30}s`,
+          '--opacity': Math.random() * 0.5 + 0.2
+        }"
       ></div>
     </div>
 
-    <!-- Header - Similar to Claude's minimalist header -->
+    <!-- Header -->
     <div class="chat-header">
       <div class="chat-title">
         <h1 class="title-text">{{ currentChat?.title || 'New Conversation' }}</h1>
         <span class="badge" :class="mode">{{ modes[mode] }}</span>
       </div>
-      
       <div class="mode-selector">
-        <button 
-          v-for="(label, modeKey) in modes" 
+        <button
+          v-for="(label, modeKey) in modes"
           :key="modeKey"
           class="mode-button"
           :class="{ active: mode === modeKey }"
@@ -35,24 +36,21 @@
       </div>
     </div>
 
-    <!-- Messages Container - Claude-like message styling -->
-    <div 
-      ref="messagesContainer" 
-      class="messages-container" 
+    <!-- Messages Container -->
+    <div
+      ref="messagesContainer"
+      class="messages-container"
       @scroll="handleScroll"
     >
-      <!-- Welcome message for new chats -->
       <div v-if="!messages.length" class="welcome-message">
         <div class="welcome-icon">✨</div>
         <h2 class="welcome-title">Welcome to DawntasyAI</h2>
         <p class="welcome-text">
           I'm your personal AI assistant from the Dawntasy universe. How can I help you today?
         </p>
-        
-        <!-- Suggestion chips (similar to Claude) -->
         <div class="suggestion-chips">
-          <button 
-            v-for="suggestion in suggestions" 
+          <button
+            v-for="suggestion in suggestions"
             :key="suggestion"
             class="suggestion-chip"
             @click="sendMessage(suggestion)"
@@ -61,22 +59,18 @@
           </button>
         </div>
       </div>
-      
-      <!-- Message bubbles -->
+
       <transition-group name="message-transition" tag="div" class="message-list">
-        <div 
+        <div
           v-for="(message, index) in messages"
           :key="`msg-${index}`"
           class="message-bubble"
           :class="{ 'user': message.role === 'user', 'assistant': message.role === 'assistant' }"
         >
-          <!-- User avatar (similar to Claude's minimal circle) -->
           <div v-if="message.role === 'user'" class="avatar user-avatar">
             <span class="avatar-letter">{{ userInitials }}</span>
             <div class="avatar-glow"></div>
           </div>
-          
-          <!-- AI avatar with cosmic styling -->
           <div v-else class="avatar assistant-avatar">
             <div class="assistant-avatar-inner">
               <span class="cosmic-symbol">⟁</span>
@@ -87,8 +81,6 @@
               </div>
             </div>
           </div>
-          
-          <!-- Message content (Claude-like styling) -->
           <div class="message-content">
             <div class="message-sender">
               {{ message.role === 'user' ? 'You' : 'DawntasyAI' }}
@@ -99,8 +91,8 @@
           </div>
         </div>
       </transition-group>
-      
-      <!-- Thinking indicator (similar to Claude's typing animation) -->
+
+      <!-- Thinking Indicator -->
       <div v-if="isLoading" class="thinking-indicator">
         <div class="cosmic-thinking">
           <div class="dot dot-1"></div>
@@ -111,19 +103,15 @@
       </div>
     </div>
 
-    <!-- Scroll to bottom button (similar to Claude's) -->
-    <div 
-      v-if="showScrollIndicator" 
-      class="scroll-indicator"
-      @click="scrollToBottom"
-    >
+    <!-- Scroll to Bottom Button -->
+    <div v-if="showScrollIndicator" class="scroll-indicator" @click="scrollToBottom">
       <i class="ri-arrow-down-line"></i>
       <div class="scroll-pulse"></div>
     </div>
 
-    <!-- Input container (similar to Claude's clean textarea) -->
+    <!-- Input Container -->
     <div class="input-container">
-      <textarea 
+      <textarea
         ref="inputField"
         v-model="userInput"
         @keydown.enter.exact.prevent="sendMessage"
@@ -132,29 +120,23 @@
         class="message-input"
         :disabled="isLoading"
       ></textarea>
-      
-      <!-- Input energy field effect -->
-      <div class="input-energy-field" :class="{ 'active': userInput.length > 0 }">
+      <div class="input-energy-field" :class="{ active: userInput.length > 0 }">
         <div class="energy-particles">
-          <div v-for="n in 20" :key="`energy-particle-${n}`" 
-               class="energy-particle"
-               :style="{
-                 '--size': `${Math.random() * 3 + 1}px`,
-                 '--x': `${Math.random() * 100}%`,
-                 '--y': `${Math.random() * 100}%`,
-                 '--duration': `${Math.random() * 3 + 2}s`,
-                 '--delay': `${Math.random() * -2}s`
-               }"
+          <div
+            v-for="n in 20"
+            :key="`energy-particle-${n}`"
+            class="energy-particle"
+            :style="{
+              '--size': `${Math.random() * 3 + 1}px`,
+              '--x': `${Math.random() * 100}%`,
+              '--y': `${Math.random() * 100}%`,
+              '--duration': `${Math.random() * 3 + 2}s`,
+              '--delay': `${Math.random() * -2}s`
+            }"
           ></div>
         </div>
       </div>
-      
-      <!-- Send button (similar to Claude's) -->
-      <button 
-        class="send-button" 
-        @click="sendMessage()"
-        :disabled="!canSend || isLoading"
-      >
+      <button class="send-button" @click="sendMessage" :disabled="!canSend || isLoading">
         <span class="send-icon">→</span>
         <div class="button-pulse"></div>
       </button>
@@ -171,7 +153,7 @@ import { format } from 'date-fns';
 import markdownit from 'markdown-it';
 import markdownitHighlight from 'markdown-it-highlightjs';
 
-// Import stores
+// Ensure stores are available (make sure Pinia is installed in main.js)
 const authStore = useAuthStore();
 const chatStore = useChatStore();
 const route = useRoute();
@@ -185,19 +167,19 @@ const messagesContainer = ref<HTMLElement | null>(null);
 const inputField = ref<HTMLTextAreaElement | null>(null);
 const mode = ref('default');
 
-// Modes available (similar to Claude's models)
+// Modes
 const modes = {
   default: 'Balanced',
   creative: 'Creative',
   archmage: 'ARCHMAGE'
 };
 
-// Sample suggestions (similar to Claude's conversation starters)
+// Sample suggestions
 const suggestions = [
   "Tell me about the Dawntasy universe",
   "How does The Rift work in Dawntasy?",
   "Write a short story set in Bear Village",
-  "Explain the Plain and Pale Clock concept", 
+  "Explain the Plain and Pale Clock concept",
   "What can you help me with today?"
 ];
 
@@ -208,10 +190,8 @@ const canSend = computed(() => userInput.value.trim().length > 0);
 const userInitials = computed(() => {
   const name = authStore.displayName || '';
   if (!name) return '?';
-  
   const parts = name.split(' ');
-  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  return parts.length === 1 ? parts[0].charAt(0).toUpperCase() : (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 });
 
 // Markdown parser
@@ -221,32 +201,24 @@ const md = markdownit({
   typographer: true
 }).use(markdownitHighlight);
 
-// Helper functions
 const formatMessage = (content: string) => {
-  // Handle markdown
   let html = md.render(content);
-  
-  // Add cosmic styling to Dawntasy references
   const keywords = [
     'Time Smith', 'The Rift', 'Ursa Minor', 'Yaee', 
     'Dawntasy', "Time's True Name", 'Bear Village',
     'Plain and Pale Clock', 'Circular Dawn'
   ];
-  
   keywords.forEach(keyword => {
     const regex = new RegExp(`\\b${keyword}\\b`, 'g');
     html = html.replace(regex, `<span class="cosmic-keyword">${keyword}</span>`);
   });
-  
   return html;
 };
 
 const formatTime = (timestamp: Date | number) => {
-  if (!timestamp) return '';
   return format(new Date(timestamp), 'h:mm a');
 };
 
-// UI interaction methods
 const resizeTextarea = () => {
   if (inputField.value) {
     inputField.value.style.height = 'auto';
@@ -258,16 +230,11 @@ const scrollToBottom = (animate = true) => {
   nextTick(() => {
     if (messagesContainer.value) {
       const container = messagesContainer.value;
-      
       if (animate) {
-        container.scrollTo({
-          top: container.scrollHeight,
-          behavior: 'smooth'
-        });
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
       } else {
         container.scrollTop = container.scrollHeight;
       }
-      
       showScrollIndicator.value = false;
     }
   });
@@ -275,14 +242,11 @@ const scrollToBottom = (animate = true) => {
 
 const handleScroll = () => {
   if (!messagesContainer.value) return;
-  
   const { scrollTop, scrollHeight, clientHeight } = messagesContainer.value;
   const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-  
   showScrollIndicator.value = !isNearBottom && messages.value.length > 0;
 };
 
-// Chat functionality
 const setMode = (newMode: string) => {
   mode.value = newMode;
 };
@@ -290,58 +254,45 @@ const setMode = (newMode: string) => {
 const sendMessage = async (text?: string) => {
   const messageText = text || userInput.value.trim();
   if (!messageText || isLoading.value) return;
-  
-  // Clear input and reset height
+
   userInput.value = '';
-  if (inputField.value) {
-    inputField.value.style.height = 'auto';
+  if (inputField.value) inputField.value.style.height = 'auto';
+
+  try {
+    isLoading.value = true;
+    await chatStore.sendMessage(messageText);
+  } catch (error) {
+    console.error('Error sending message:', error);
+  } finally {
+    isLoading.value = false;
+    scrollToBottom();
   }
-  
-  // Send the message
-  await chatStore.sendMessage(messageText);
-  
-  // Scroll to bottom
-  scrollToBottom();
 };
 
-// Lifecycle hooks
 onMounted(async () => {
-  // Focus input field
-  if (inputField.value) {
-    inputField.value.focus();
-  }
-  
-  // If chat ID provided, load that chat
+  if (inputField.value) inputField.value.focus();
   const chatId = route.params.id as string;
   if (chatId && chatId !== 'new') {
     await chatStore.fetchChat(chatId);
-  } 
-  // If no chat exists or explicitly new chat, create one
-  else if (chatId === 'new' || !chatStore.currentChat) {
+  } else if (chatId === 'new' || !chatStore.currentChat) {
     const newChatId = await chatStore.createChat();
     if (newChatId && chatId !== 'new') {
       router.replace(`/chat/${newChatId}`);
     }
   }
-  
-  // Scroll to bottom of messages
   scrollToBottom(false);
 });
 
-// Watch for changes in messages to scroll to bottom
 watch(messages, () => {
   scrollToBottom();
 }, { deep: true });
 
-// Watch for changes in route to load different chats
 watch(() => route.params.id, async (newId) => {
   if (newId && newId !== 'new') {
     await chatStore.fetchChat(newId as string);
   } else if (newId === 'new') {
     const newChatId = await chatStore.createChat();
-    if (newChatId) {
-      router.replace(`/chat/${newChatId}`);
-    }
+    if (newChatId) router.replace(`/chat/${newChatId}`);
   }
 });
 </script>
