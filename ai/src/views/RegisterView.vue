@@ -1,4 +1,3 @@
-// RegisterView.vue - LEGENDARY COSMIC AUTHENTICATION 🚀
 <template>
   <div class="cosmic-register">
     <!-- ANIMATED BACKGROUND PARTICLES -->
@@ -8,7 +7,7 @@
              '--size': `${Math.random() * 6 + 1}px`,
              '--left': `${Math.random() * 100}%`,
              '--top': `${Math.random() * 100}%`,
-             '--animation-delay': `${Math.random() * 5}s`,
+             '--animation-delay': `${Math.random() * 5}s`
            }">
       </div>
     </div>
@@ -546,14 +545,15 @@ export default {
 /* COSMIC STYLING FOR LEGENDARY REGISTER */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;700&display=swap');
 
+/* FIXED: Allow scrolling and position UI in-frame */
 .cosmic-register {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start; /* Changed from center to flex-start */
   background: radial-gradient(circle at center, #1a1a2e 0%, #16213e 50%, #0f0f29 100%);
   position: relative;
-  overflow: hidden;
+  overflow-y: auto; /* Allow vertical scrolling */
   padding: 2rem;
   perspective: 1000px;
 }
@@ -923,7 +923,6 @@ export default {
   height: 100%;
   transition: all 0.3s ease;
 }
-/* CONTINUING FROM WHERE IT CUT OFF */
 
 .strength-text {
   font-size: 0.8rem;
