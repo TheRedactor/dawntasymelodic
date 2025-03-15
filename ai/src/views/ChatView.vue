@@ -1087,5 +1087,13 @@ onUnmounted(() => {
     backgroundCanvas.parentNode.removeChild(backgroundCanvas);
   }
 });
+// Find this section in ChatView.vue
+const messages = ref([]);  // Ensure this is initialized as an empty array
+
+// Or add a computed property with a safety check
+const messagesCount = computed(() => messages.value?.length || 0);
+
+// And in your template, add safety checks like:
+v-if="messages && messages.length > 0"
 </script>
 </template>

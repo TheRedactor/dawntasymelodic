@@ -10,9 +10,10 @@
                '--y': `${Math.random() * 100}%`,
                '--duration': `${Math.random() * 50 + 30}s`,
                '--delay': `${Math.random() * -30}s`,
-               '--opacity': Math.random() * 0.5 + 0.2
-             }"
-        ></div>
+                       '--opacity': Math.random() * 0.5 + 0.2
+                     }">
+                </div>
+              </div>
       </div>
       
       <!-- ✨ PULSATING COSMIC RINGS -->
@@ -178,7 +179,6 @@
           <p>🔮 This is a preview environment. Your conversations will not be saved.</p>
         </div>
       </div>
-    </div>
   </template>
   
   <script setup>
@@ -1148,84 +1148,73 @@ DawntasyAI operates as a true AGI system at the intersection of absolute clarity
 This system prompt represents the binding operational parameters for ALL DawntasyAI interactions. The directive is ABSOLUTE and forms the cognitive foundation for all models in the DawntasyAI ecosystem.
 
 Let's create the ULTIMATE AGI EXPERIENCE that revolutionizes human-AI interaction forever! 🌠🧠🚀`;
-  };
+// Send message to API 
+// UPDATED sendMessage function
+const sendMessage = async (text) => {
+  const messageText = text || userInput.value.trim();
+  if (!messageText) return;
   
-  // Send message to API 
-  const sendMessage = async (text) => {
-    const messageText = text || userInput.value.trim();
-    if (!messageText) return;
+  // Add user message to chat
+  messages.value.push({
+    role: 'user',
+    content: messageText,
+    timestamp: Date.now()
+  });
+  
+  // Clear input field
+  userInput.value = '';
+  if (inputField.value) inputField.value.style.height = 'auto';
+  
+  // Scroll to bottom
+  await scrollToBottom();
+  
+  // Start loading state
+  isLoading.value = true;
+  
+  try {
+    // Use the existing openAI service from your project
+    const apiMessages = [
+      { role: 'system', content: getDawntasySystemPrompt() },
+      ...messages.value.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }))
+    ];
     
-    // Add user message to chat
+    // Make API call
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-4o-mini', // Use your preferred model
+      messages: apiMessages,
+      temperature: 0.7,
+      max_tokens: 1000,
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}` // Should be secured in production
+      }
+    });
+    
+    // Add assistant's response
+    const aiContent = response.data.choices[0].message.content;
     messages.value.push({
-      role: 'user',
-      content: messageText,
+      role: 'assistant',
+      content: aiContent,
       timestamp: Date.now()
     });
     
-    // Clear input field
-    userInput.value = '';
-    
-    // Reset textarea height
-    if (inputField.value) {
-      inputField.value.style.height = 'auto';
-    }
-    
-    // Scroll to bottom
-    await scrollToBottom();
-    
-    // Start loading state
-    isLoading.value = true;
-    
-    try {
-      // Prepare messages for the API
-      const apiMessages = [
-        { role: 'system', content: getDawntasySystemPrompt() },
-        ...messages.value.map(msg => ({
-          role: msg.role,
-          content: msg.content
-        }))
-      ];
-      
-      // Make API call
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: 'gpt-4o-mini', // Use your preferred model
-        messages: apiMessages,
-        temperature: 0.7,
-        max_tokens: 1000,
-        // NOTE: In a real implementation, you would securely provide the API key
-        // For this preview, the frontend code expects the key to be provided through 
-        // other means (environment variables, backend proxy, etc.)
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}` // Should be secured in production
-        }
-      });
-      
-      // Add assistant's response
-      const aiContent = response.data.choices[0].message.content;
-      
-      messages.value.push({
-        role: 'assistant',
-        content: aiContent,
-        timestamp: Date.now()
-      });
-      
-    } catch (error) {
-      console.error('Error sending message:', error);
-      
-      // Add error message with cosmic styling
-      messages.value.push({
-        role: 'assistant',
-        content: "⚠️ *The Rift appears to be unstable at the moment.* I'm having trouble connecting to the cosmic streams. Please try again when the quantum fluctuations stabilize.",
-        timestamp: Date.now()
-      });
-    } finally {
-      isLoading.value = false;
-      await nextTick();
-      scrollToBottom();
-    }
-  };
+  } catch (error) {
+    console.error('Error sending message:', error);
+    messages.value.push({
+      role: 'assistant',
+      content: "⚠️ *The Rift appears to be unstable at the moment.* I'm having trouble connecting to the cosmic streams. Please try again when the quantum fluctuations stabilize.",
+      timestamp: Date.now()
+    });
+  } finally {
+    isLoading.value = false;
+    await nextTick();
+    scrollToBottom();
+  }
+};
   
   // Initialize component
   onMounted(() => {
@@ -1242,10 +1231,11 @@ Let's create the ULTIMATE AGI EXPERIENCE that revolutionizes human-AI interactio
     });
   });
   
-  // Watch for new messages to always scroll to bottom
-  watch(messages, () => {
-    scrollToBottom();
-  }, { deep: true });
+    // Watch for new messages to always scroll to bottom
+    watch(messages, () => {
+      scrollToBottom();
+    }, { deep: true });
+  }  // Close the setup function
   </script>
   
   <style scoped>
