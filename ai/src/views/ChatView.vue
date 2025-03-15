@@ -86,7 +86,7 @@
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { db, auth } from '@/firebase'
 import { collection, query, where, getDocs, addDoc, doc, getDoc } from 'firebase/firestore'
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/store/user'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 
 const userStore = useUserStore()
