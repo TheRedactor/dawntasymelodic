@@ -82,3 +82,4 @@ temp/
 /dist-ai/
 node_modules/
 /dist-book/
+.vercel
