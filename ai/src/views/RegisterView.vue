@@ -1,175 +1,597 @@
-// CosmicApp.vue
+// RegisterViewstrength-text {
+  font-size: 0.8rem;
+  color: #e2e2e2;
+}
+
+/* Terms checkbox */
+.terms-group {
+  margin-top: 0.5rem;
+}
+
+.cosmic-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cosmic-checkbox input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cosmic-checkbox input[type="checkbox"]:checked {
+  background: #4cc9f0;
+  border-color: #4cc9f0;
+}
+
+.cosmic-checkbox input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.cosmic-checkbox label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.terms-link {
+  color: #4cc9f0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.terms-link:hover {
+  color: #9d4edd;
+}
+
+/* Auth error */
+.auth-error {
+  background: rgba(231, 76, 60, 0.1);
+  border-left: 3px solid #e74c3c;
+  padding: 1rem;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.error-icon {
+  font-size: 1.5rem;
+}
+
+.auth-error p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Button */
+.cosmic-btn {
+  background: linear-gradient(135deg, #9d4edd, #4cc9f0);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 1rem 2rem;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 0 0 5px rgba(76, 201, 240, 0.2);
+}
+
+.cosmic-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.2), 
+    transparent
+  );
+  transition: all 0.5s ease;
+}
+
+.cosmic-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3), 0 0 0 5px rgba(76, 201, 240, 0.3);
+}
+
+.cosmic-btn:hover::before {
+  left: 100%;
+}
+
+.cosmic-btn:active {
+  transform: translateY(1px);
+}
+
+.btn-loading {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.loader {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.register-btn {
+  width: 100%;
+  margin-top: 1rem;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Auth toggle */
+.auth-toggle {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.auth-toggle p {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.toggle-link {
+  color: #4cc9f0;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 0.3rem;
+  transition: all 0.3s ease;
+}
+
+.toggle-link:hover {
+  color: #9d4edd;
+  text-decoration: underline;
+}
+
+/* Terms Modal */
+.terms-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 2rem;
+  animation: modalFadeIn 0.3s ease-in-out;
+}
+
+.terms-content {
+  background: rgba(10, 10, 40, 0.9);
+  border: 1px solid rgba(157, 78, 221, 0.3);
+  border-radius: 15px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(76, 201, 240, 0.3);
+}
+
+.terms-content h3 {
+  font-family: 'Orbitron', sans-serif;
+  color: #4cc9f0;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.terms-body {
+  margin-bottom: 2rem;
+}
+
+.terms-body p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.terms-body ul {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.terms-body li {
+  margin-bottom: 0.5rem;
+}
+
+.close-terms-btn {
+  display: block;
+  margin: 0 auto;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Success Animation */
+.success-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 40, 0.9);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: successFadeIn 0.5s ease-in-out;
+}
+
+.success-animation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.checkmark-circle {
+  width: 150px;
+  height: 150px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: circleScale 0.5s ease-in-out forwards;
+}
+
+.checkmark {
+  width: 60px;
+  height: 120px;
+  border-right: 8px solid #4cc9f0;
+  border-bottom: 8px solid #4cc9f0;
+  transform: rotate(45deg) scale(0);
+  transform-origin: center;
+  animation: checkmarkDraw 0.8s ease-in-out 0.5s forwards;
+}
+
+@keyframes circleScale {
+  from {
+    transform: scale(0);
+    box-shadow: none;
+  }
+  to {
+    transform: scale(1);
+    box-shadow: 0 0 50px rgba(76, 201, 240, 0.5);
+  }
+}
+
+@keyframes checkmarkDraw {
+  from {
+    transform: rotate(45deg) scale(0);
+  }
+  to {
+    transform: rotate(45deg) scale(1);
+  }
+}
+
+.success-animation h2 {
+  font-family: 'Orbitron', sans-serif;
+  color: #4cc9f0;
+  margin: 0;
+  animation: textFadeIn 0.5s ease-in-out 1s forwards;
+  opacity: 0;
+}
+
+.success-animation p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  animation: textFadeIn 0.5s ease-in-out 1.5s forwards;
+  opacity: 0;
+}
+
+@keyframes textFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes successFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .register-container {
+    padding: 1rem;
+  }
+  
+  .register-card {
+    padding: 1.5rem;
+  }
+  
+  .logo-text {
+    font-size: 1.5rem;
+  }
+  
+  .register-title {
+    font-size: 1.2rem;
+  }
+}
+vue - LEGENDARY COSMIC AUTHENTICATION 🚀
 <template>
-  <div class="cosmic-container">
-    <!-- THREE.JS CANVAS -->
-    <div id="cosmic-canvas" ref="cosmicCanvas"></div>
+  <div class="cosmic-register">
+    <!-- ANIMATED BACKGROUND PARTICLES -->
+    <div class="particle-container">
+      <div v-for="n in 50" :key="n" class="particle" 
+           :style="{ 
+             '--size': `${Math.random() * 6 + 1}px`,
+             '--left': `${Math.random() * 100}%`,
+             '--top': `${Math.random() * 100}%`,
+             '--animation-delay': `${Math.random() * 5}s`,
+           }">
+      </div>
+    </div>
     
-    <!-- NAVIGATION -->
-    <nav class="cosmic-nav" :class="{ 'nav-authenticated': isAuthenticated }">
-      <div class="brand">
-        <span class="cosmic-title">COSMIC VOYAGER</span>
-      </div>
-      <div class="nav-links">
-        <button @click="currentView = 'home'" class="nav-btn" :class="{ active: currentView === 'home' }">
-          <i class="fas fa-galaxy"></i> Home
-        </button>
-        <button @click="currentView = 'explore'" class="nav-btn" :class="{ active: currentView === 'explore' }">
-          <i class="fas fa-telescope"></i> Explore
-        </button>
-        <button v-if="!isAuthenticated" @click="currentView = 'auth'" class="nav-btn auth-btn">
-          <i class="fas fa-user-astronaut"></i> Login
-        </button>
-        <button v-else @click="handleLogout" class="nav-btn logout-btn">
-          <i class="fas fa-door-open"></i> Logout
-        </button>
-      </div>
-    </nav>
+    <!-- ANIMATED NEBULA EFFECT -->
+    <div class="nebula-effect"></div>
+    
+    <!-- PULSATING RINGS -->
+    <div class="cosmic-rings">
+      <div class="ring ring1"></div>
+      <div class="ring ring2"></div>
+      <div class="ring ring3"></div>
+    </div>
 
-    <!-- MAIN CONTENT -->
-    <main class="cosmic-content">
-      <!-- HOME VIEW -->
-      <div v-if="currentView === 'home'" class="home-view">
-        <div class="cosmic-hero">
-          <h1 class="hero-title">COSMIC VOYAGER</h1>
-          <h2 class="hero-subtitle">EXPLORE THE QUANTUM UNIVERSE</h2>
-          <button @click="currentView = 'explore'" class="cosmic-btn pulse-btn">
-            BEGIN JOURNEY
-          </button>
+    <!-- MAIN CONTAINER -->
+    <div class="register-container" :class="{ 'container-activated': formActive }">
+      <!-- COSMIC LOGO -->
+      <div class="logo-section">
+        <div class="cosmic-logo">
+          <div class="logo-star"></div>
+          <div class="logo-orbit"></div>
         </div>
+        <h1 class="logo-text">COSMIC VOYAGER</h1>
       </div>
-
-      <!-- EXPLORE VIEW -->
-      <div v-else-if="currentView === 'explore'" class="explore-view">
-        <div class="dimension-cards">
-          <div v-for="(dimension, index) in dimensions" :key="index" 
-               class="dimension-card" 
-               @click="selectDimension(dimension)"
-               :class="{ 'selected': selectedDimension === dimension }">
-            <h3>{{ dimension.name }}</h3>
-            <p>{{ dimension.description }}</p>
-            <div class="dimension-energy-meter">
-              <div class="energy-fill" :style="{ width: dimension.energyLevel + '%' }"></div>
+      
+      <!-- AUTH FORM -->
+      <div class="register-card">
+        <h2 class="register-title">{{ isLogin ? 'ACCESS THE COSMOS' : 'CREATE DIMENSIONAL ACCOUNT' }}</h2>
+        
+        <form @submit.prevent="handleRegister" class="register-form">
+          <!-- Email Field -->
+          <div class="form-group" :class="{ 'field-error': errors.email }">
+            <label for="email">QUANTUM EMAIL</label>
+            <div class="input-wrapper">
+              <input 
+                id="email"
+                v-model="email" 
+                type="email" 
+                required
+                autocomplete="email"
+                @focus="focusField('email')"
+                @blur="validateEmail"
+                class="cosmic-input"
+                :class="{ 'input-active': activeField === 'email', 'input-filled': email }"
+              />
+              <div class="input-glow"></div>
+              <span class="input-icon">📡</span>
             </div>
+            <p v-if="errors.email" class="error-message">{{ errors.email }}</p>
           </div>
-        </div>
-
-        <div v-if="selectedDimension" class="dimension-detail">
-          <h2>{{ selectedDimension.name }}</h2>
-          <p>{{ selectedDimension.fullDescription }}</p>
-          <button @click="saveFavorite(selectedDimension)" 
-                  :disabled="!isAuthenticated" 
-                  class="cosmic-btn">
-            {{ isAuthenticated ? 'SAVE TO FAVORITES' : 'LOGIN TO SAVE' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- AUTH VIEW -->
-      <div v-else-if="currentView === 'auth'" class="auth-view">
-        <div class="auth-container">
-          <h2>{{ isLogin ? 'LOGIN TO CONTINUE' : 'CREATE NEW ACCOUNT' }}</h2>
           
-          <form @submit.prevent="handleAuth" class="auth-form">
-            <div class="form-group">
-              <label>EMAIL</label>
-              <input v-model="authForm.email" type="email" required class="cosmic-input" />
+          <!-- Password Field -->
+          <div class="form-group" :class="{ 'field-error': errors.password }">
+            <label for="password">STELLAR PASSWORD</label>
+            <div class="input-wrapper">
+              <input 
+                id="password"
+                v-model="password" 
+                :type="showPassword ? 'text' : 'password'" 
+                required
+                autocomplete="new-password"
+                @focus="focusField('password')"
+                @blur="validatePassword"
+                class="cosmic-input"
+                :class="{ 'input-active': activeField === 'password', 'input-filled': password }"
+              />
+              <div class="input-glow"></div>
+              <span class="toggle-password" @click="showPassword = !showPassword">
+                {{ showPassword ? '👁️' : '🔒' }}
+              </span>
             </div>
             
-            <div class="form-group">
-              <label>PASSWORD</label>
-              <input v-model="authForm.password" type="password" required class="cosmic-input" />
+            <!-- Password Strength Meter -->
+            <div v-if="!isLogin && password" class="password-strength">
+              <div class="strength-meter">
+                <div class="strength-fill" :style="{ width: `${passwordStrength.score * 25}%`, 
+                                                   backgroundColor: strengthColor }"></div>
+              </div>
+              <span class="strength-text">{{ passwordStrength.message }}</span>
             </div>
-
-            <div v-if="!isLogin" class="form-group">
-              <label>CONFIRM PASSWORD</label>
-              <input v-model="authForm.confirmPassword" type="password" class="cosmic-input" />
+            
+            <p v-if="errors.password" class="error-message">{{ errors.password }}</p>
+          </div>
+          
+          <!-- Confirm Password Field (Sign up only) -->
+          <div v-if="!isLogin" class="form-group" :class="{ 'field-error': errors.confirmPassword }">
+            <label for="confirmPassword">CONFIRM PASSWORD</label>
+            <div class="input-wrapper">
+              <input 
+                id="confirmPassword"
+                v-model="confirmPassword" 
+                :type="showPassword ? 'text' : 'password'" 
+                required
+                autocomplete="new-password"
+                @focus="focusField('confirmPassword')"
+                @blur="validateConfirmPassword"
+                class="cosmic-input"
+                :class="{ 'input-active': activeField === 'confirmPassword', 'input-filled': confirmPassword }"
+              />
+              <div class="input-glow"></div>
             </div>
-
-            <div v-if="authError" class="auth-error">
-              {{ authError }}
+            <p v-if="errors.confirmPassword" class="error-message">{{ errors.confirmPassword }}</p>
+          </div>
+          
+          <!-- Terms Checkbox (Sign up only) -->
+          <div v-if="!isLogin" class="form-group terms-group" :class="{ 'field-error': errors.terms }">
+            <div class="cosmic-checkbox">
+              <input 
+                id="terms" 
+                v-model="agreeToTerms" 
+                type="checkbox" 
+                required
+                @change="validateTerms"
+              />
+              <label for="terms">
+                I agree to the <span class="terms-link" @click.prevent="showTerms = true">Cosmic Terms</span>
+              </label>
             </div>
-
-            <button type="submit" class="cosmic-btn auth-submit-btn">
-              {{ isLogin ? 'LOGIN' : 'CREATE ACCOUNT' }}
-            </button>
-          </form>
-
-          <p class="auth-toggle">
-            {{ isLogin ? "Don't have an account?" : "Already have an account?" }}
-            <span @click="isLogin = !isLogin" class="toggle-link">
-              {{ isLogin ? 'CREATE ONE' : 'LOGIN' }}
+            <p v-if="errors.terms" class="error-message">{{ errors.terms }}</p>
+          </div>
+          
+          <!-- Auth Error Message -->
+          <div v-if="authError" class="auth-error">
+            <div class="error-icon">⚠️</div>
+            <p>{{ authError }}</p>
+          </div>
+          
+          <!-- Submit Button -->
+          <button 
+            type="submit" 
+            class="cosmic-btn register-btn"
+            :class="{ 'btn-loading': isLoading }"
+            :disabled="isLoading"
+          >
+            <span v-if="!isLoading">{{ isLogin ? 'ENTER THE COSMOS' : 'INITIATE JOURNEY' }}</span>
+            <span v-else class="loader"></span>
+          </button>
+        </form>
+        
+        <!-- Toggle Login/Register -->
+        <div class="auth-toggle">
+          <p>
+            {{ isLogin ? "Don't have a cosmic account?" : "Already have dimensional access?" }}
+            <span @click="toggleAuthMode" class="toggle-link">
+              {{ isLogin ? 'CREATE ONE' : 'ACCESS NOW' }}
             </span>
           </p>
         </div>
       </div>
-    </main>
-
-    <!-- USER PROFILE -->
-    <div v-if="isAuthenticated" class="user-profile">
-      <div class="profile-badge">
-        <div class="user-avatar">
-          <img :src="userProfile.photoURL || 'https://via.placeholder.com/40'" alt="User" />
+    </div>
+    
+    <!-- Terms Modal -->
+    <div v-if="showTerms" class="terms-modal">
+      <div class="terms-content">
+        <h3>COSMIC VOYAGER TERMS</h3>
+        <div class="terms-body">
+          <p>Welcome to the Cosmic Voyager experience! By creating an account, you agree to:</p>
+          <ul>
+            <li>Respect the universal laws of cosmic exploration</li>
+            <li>Maintain the confidentiality of your dimensional access credentials</li>
+            <li>Share your discoveries with the cosmic community</li>
+            <li>Never attempt to disrupt the quantum fabric of our platform</li>
+            <li>Accept that interdimensional travel carries inherent risks</li>
+          </ul>
+          <p>All account data is stored securely in our quantum-encrypted database. Your privacy across all dimensions is our priority.</p>
         </div>
-        <div class="user-info">
-          <span class="user-name">{{ userProfile.displayName || 'Cosmic Explorer' }}</span>
-          <span class="user-level">Level: {{ userProfile.level || 1 }}</span>
-        </div>
-      </div>
-
-      <div v-if="currentView === 'explore' && userFavorites.length > 0" class="favorites-panel">
-        <h3>YOUR COSMIC FAVORITES</h3>
-        <div class="favorites-list">
-          <div v-for="(fav, index) in userFavorites" :key="index" 
-               class="favorite-item"
-               @click="selectDimension(fav)">
-            {{ fav.name }}
-          </div>
-        </div>
+        <button @click="showTerms = false" class="cosmic-btn close-terms-btn">ACKNOWLEDGE</button>
       </div>
     </div>
-
-    <!-- NOTIFICATIONS -->
-    <div class="notification-container">
-      <div v-for="(notification, index) in notifications" 
-           :key="index" 
-           class="notification" 
-           :class="notification.type">
-        {{ notification.message }}
+    
+    <!-- Success Animation Container -->
+    <div v-if="showSuccess" class="success-container">
+      <div class="success-animation">
+        <div class="checkmark-circle">
+          <div class="checkmark"></div>
+        </div>
+        <h2>ACCOUNT CREATED!</h2>
+        <p>Preparing your cosmic journey...</p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, reactive, onMounted, watch } from 'vue';
-import * as THREE from 'three';
-import { initializeApp } from 'firebase/app';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { getApp, getApps, initializeApp } from 'firebase/app';
 import { 
   getAuth, 
   createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged 
+  signInWithEmailAndPassword,
+  sendEmailVerification
 } from 'firebase/auth';
 import { 
   getFirestore, 
   doc, 
   setDoc, 
-  getDoc, 
-  updateDoc, 
-  collection, 
-  addDoc, 
-  query, 
-  where, 
-  getDocs 
+  serverTimestamp 
 } from 'firebase/firestore';
 import gsap from 'gsap';
-import anime from 'animejs';
 
 export default {
-  name: 'CosmicApp',
+  name: 'RegisterView',
   setup() {
-    // Firebase configuration
+    // Initialize Firebase - WITH ERROR PREVENTION
+    let app;
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -179,898 +601,589 @@ export default {
       appId: "YOUR_APP_ID"
     };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
+    // FIX FOR FIREBASE ERROR - Check if app already exists
+    try {
+      if (getApps().length === 0) {
+        app = initializeApp(firebaseConfig);
+      } else {
+        app = getApp(); // Use existing app if it's already initialized
+      }
+    } catch (error) {
+      console.error("Firebase initialization error:", error);
+    }
+
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const router = useRouter();
 
-    // State variables
-    const currentView = ref('home');
-    const isAuthenticated = ref(false);
-    const isLogin = ref(true);
-    const cosmicCanvas = ref(null);
-    const authForm = reactive({
+    // Form state
+    const email = ref('');
+    const password = ref('');
+    const confirmPassword = ref('');
+    const agreeToTerms = ref(false);
+    const isLogin = ref(false);
+    const showPassword = ref(false);
+    const isLoading = ref(false);
+    const authError = ref('');
+    const activeField = ref(null);
+    const formActive = ref(false);
+    const showTerms = ref(false);
+    const showSuccess = ref(false);
+
+    // Validation state
+    const errors = reactive({
       email: '',
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      terms: ''
     });
-    const authError = ref('');
-    const userProfile = reactive({
-      uid: '',
-      displayName: '',
-      photoURL: '',
-      level: 1,
-      experience: 0
-    });
-    const userFavorites = ref([]);
-    const notifications = ref([]);
-    const stars = ref([]);
-    const scene = ref(null);
-    const camera = ref(null);
-    const renderer = ref(null);
-    const dimensions = ref([
-      {
-        id: 1,
-        name: "QUANTUM NEBULA",
-        description: "A cosmic cloud of extraordinary particles.",
-        fullDescription: "The Quantum Nebula represents the most extraordinary collection of subatomic particles in our known universe. Its vibrant colors and energy signatures reveal patterns of quantum entanglement that defy conventional physics. Scientists believe this nebula could be the birthplace of entirely new elements and perhaps even new forms of matter.",
-        energyLevel: 85
-      },
-      {
-        id: 2,
-        name: "DIMENSIONAL RIFT",
-        description: "A tear in the fabric of spacetime.",
-        fullDescription: "The Dimensional Rift is a mysterious phenomenon where our dimension intersects with others. Strange energy signatures and time dilation effects have been observed in its vicinity. Theoretical physicists suggest that through this rift, we might glimpse parallel universes or even establish contact with other dimensional beings. Approach with extreme caution.",
-        energyLevel: 92
-      },
-      {
-        id: 3,
-        name: "CELESTIAL HARMONIC",
-        description: "Where cosmic forces create universal music.",
-        fullDescription: "The Celestial Harmonic is where the fundamental forces of the universe - gravity, electromagnetism, and the strong and weak nuclear forces - align in perfect harmony. This creates cosmic vibrations that, when translated to our audible spectrum, produce the most hauntingly beautiful music ever recorded. It's believed that these harmonics contain mathematical patterns that could unlock deeper understanding of the universe's structure.",
-        energyLevel: 78
-      },
-      {
-        id: 4,
-        name: "HYPERSPACE GATEWAY",
-        description: "The threshold to instantaneous cosmic travel.",
-        fullDescription: "The Hyperspace Gateway represents a theoretical point where spacetime can be folded, allowing for instantaneous travel between distant points in the universe. Advanced civilizations may have already mastered this technology, creating a network of these gateways. Current research focuses on detecting the unique gravitational wave signatures these gateways would produce across the cosmos.",
-        energyLevel: 88
-      }
-    ]);
-    const selectedDimension = ref(null);
 
-    // Animation controllers
-    let animationFrame = null;
-    const starfieldParams = {
-      count: 5000,
-      size: 0.015,
-      speed: 0.02,
-      distance: 100
+    // Password strength computation
+    const passwordStrength = computed(() => {
+      if (!password.value) return { score: 0, message: '' };
+      
+      let score = 0;
+      let message = 'Weak';
+      
+      // Length check
+      if (password.value.length >= 8) score++;
+      if (password.value.length >= 12) score++;
+      
+      // Complexity checks
+      if (/[A-Z]/.test(password.value)) score++;
+      if (/[0-9]/.test(password.value)) score++;
+      if (/[^A-Za-z0-9]/.test(password.value)) score++;
+      
+      // Determine message
+      if (score === 5) message = 'Extraordinary';
+      else if (score === 4) message = 'Strong';
+      else if (score === 3) message = 'Good';
+      else if (score === 2) message = 'Moderate';
+      
+      return { score, message };
+    });
+
+    // Color for strength meter
+    const strengthColor = computed(() => {
+      const colors = [
+        '#e74c3c', // Weak - Red
+        '#e67e22', // Moderate - Orange
+        '#f1c40f', // Good - Yellow
+        '#2ecc71', // Strong - Green
+        '#9b59b6'  // Extraordinary - Purple
+      ];
+      return colors[passwordStrength.value.score - 1] || colors[0];
+    });
+
+    // Field focus handler
+    const focusField = (field) => {
+      activeField.value = field;
     };
 
-    // THREE.js setup
-    const initThreeJs = () => {
-      // Create scene
-      scene.value = new THREE.Scene();
+    // Validation methods
+    const validateEmail = () => {
+      activeField.value = null;
+      errors.email = '';
       
-      // Create camera
-      camera.value = new THREE.PerspectiveCamera(
-        75, 
-        window.innerWidth / window.innerHeight, 
-        0.1, 
-        1000
+      if (!email.value) {
+        errors.email = 'Email is required';
+        return false;
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.value)) {
+        errors.email = 'Please enter a valid email address';
+        return false;
+      }
+      
+      return true;
+    };
+
+    const validatePassword = () => {
+      activeField.value = null;
+      errors.password = '';
+      
+      if (!password.value) {
+        errors.password = 'Password is required';
+        return false;
+      }
+      
+      if (!isLogin.value) {
+        if (password.value.length < 8) {
+          errors.password = 'Password must be at least 8 characters';
+          return false;
+        }
+        
+        if (!/[A-Z]/.test(password.value)) {
+          errors.password = 'Password must contain at least one uppercase letter';
+          return false;
+        }
+        
+        if (!/[0-9]/.test(password.value)) {
+          errors.password = 'Password must contain at least one number';
+          return false;
+        }
+      }
+      
+      return true;
+    };
+
+    const validateConfirmPassword = () => {
+      activeField.value = null;
+      errors.confirmPassword = '';
+      
+      if (!confirmPassword.value) {
+        errors.confirmPassword = 'Please confirm your password';
+        return false;
+      }
+      
+      if (confirmPassword.value !== password.value) {
+        errors.confirmPassword = 'Passwords do not match';
+        return false;
+      }
+      
+      return true;
+    };
+
+    const validateTerms = () => {
+      errors.terms = '';
+      
+      if (!agreeToTerms.value) {
+        errors.terms = 'You must agree to the terms';
+        return false;
+      }
+      
+      return true;
+    };
+
+    // Validate all fields
+    const validateAll = () => {
+      const emailValid = validateEmail();
+      const passwordValid = validatePassword();
+      
+      if (isLogin.value) {
+        return emailValid && passwordValid;
+      } else {
+        const confirmValid = validateConfirmPassword();
+        const termsValid = validateTerms();
+        return emailValid && passwordValid && confirmValid && termsValid;
+      }
+    };
+
+    // Toggle between login and register
+    const toggleAuthMode = () => {
+      // Reset form state
+      isLogin.value = !isLogin.value;
+      authError.value = '';
+      
+      // Clear all errors
+      Object.keys(errors).forEach(key => {
+        errors[key] = '';
+      });
+      
+      // Reset fields when switching to login
+      if (isLogin.value) {
+        confirmPassword.value = '';
+        agreeToTerms.value = false;
+      }
+      
+      // Animation for mode toggle
+      gsap.fromTo(".register-card", 
+        { scale: 0.95, opacity: 0.5 },
+        { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }
       );
-      camera.value.position.z = 5;
-      
-      // Create renderer
-      renderer.value = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-      renderer.value.setSize(window.innerWidth, window.innerHeight);
-      renderer.value.setPixelRatio(window.devicePixelRatio);
-      
-      // Append to DOM
-      if (cosmicCanvas.value) {
-        cosmicCanvas.value.appendChild(renderer.value.domElement);
-      }
-      
-      // Create stars
-      const starGeometry = new THREE.BufferGeometry();
-      const starMaterial = new THREE.PointsMaterial({
-        color: 0xFFFFFF,
-        size: starfieldParams.size,
-        transparent: true,
-      });
-      
-      const starPositions = [];
-      const starColors = [];
-      
-      for (let i = 0; i < starfieldParams.count; i++) {
-        const x = (Math.random() - 0.5) * starfieldParams.distance;
-        const y = (Math.random() - 0.5) * starfieldParams.distance;
-        const z = (Math.random() - 0.5) * starfieldParams.distance;
-        
-        starPositions.push(x, y, z);
-        
-        // Give some stars color variation
-        if (Math.random() > 0.8) {
-          const r = Math.random();
-          const g = Math.random();
-          const b = Math.random();
-          starColors.push(r, g, b, 1);
-        } else {
-          starColors.push(1, 1, 1, 1); // White stars
-        }
-      }
-      
-      starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
-      starGeometry.setAttribute('color', new THREE.Float32BufferAttribute(starColors, 4));
-      
-      const starPoints = new THREE.Points(starGeometry, starMaterial);
-      scene.value.add(starPoints);
-      stars.value.push(starPoints);
-      
-      // Add nebula clouds (particles with different colors)
-      const nebulaGeometry = new THREE.BufferGeometry();
-      const nebulaMaterial = new THREE.PointsMaterial({
-        size: 0.05,
-        transparent: true,
-        opacity: 0.6,
-        vertexColors: true,
-      });
-      
-      const nebulaPositions = [];
-      const nebulaColors = [];
-      
-      for (let i = 0; i < 1000; i++) {
-        // Create clusters of particles
-        const angle = Math.random() * Math.PI * 2;
-        const radius = 5 + Math.random() * 10;
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-        const z = (Math.random() - 0.5) * 10;
-        
-        nebulaPositions.push(x, y, z);
-        
-        // Pink/purple nebula colors
-        const r = 0.5 + Math.random() * 0.5;
-        const g = 0.2 + Math.random() * 0.3;
-        const b = 0.5 + Math.random() * 0.5;
-        nebulaColors.push(r, g, b, 1);
-      }
-      
-      nebulaGeometry.setAttribute('position', new THREE.Float32BufferAttribute(nebulaPositions, 3));
-      nebulaGeometry.setAttribute('color', new THREE.Float32BufferAttribute(nebulaColors, 4));
-      
-      const nebula = new THREE.Points(nebulaGeometry, nebulaMaterial);
-      nebula.position.z = -20;
-      scene.value.add(nebula);
-      
-      // Animation function
-      const animate = () => {
-        animationFrame = requestAnimationFrame(animate);
-        
-        // Rotate stars
-        stars.value.forEach(star => {
-          star.rotation.x += 0.0003;
-          star.rotation.y += 0.0002;
-        });
-        
-        // Make nebula move
-        nebula.rotation.z += 0.001;
-        
-        // Update renderer
-        renderer.value.render(scene.value, camera.value);
-      };
-      
-      // Start animation
-      animate();
-      
-      // Handle window resize
-      window.addEventListener('resize', () => {
-        camera.value.aspect = window.innerWidth / window.innerHeight;
-        camera.value.updateProjectionMatrix();
-        renderer.value.setSize(window.innerWidth, window.innerHeight);
-      });
     };
 
-    // Handle authentication
-    const handleAuth = async () => {
+    // Handle form submission
+    const handleRegister = async () => {
+      // Validate form
+      if (!validateAll()) return;
+      
+      isLoading.value = true;
+      authError.value = '';
+      
       try {
-        authError.value = '';
-        
-        if (!isLogin.value && authForm.password !== authForm.confirmPassword) {
-          authError.value = 'Passwords do not match';
-          return;
-        }
-        
         if (isLogin.value) {
-          // Login process
-          const userCredential = await signInWithEmailAndPassword(
-            auth, 
-            authForm.email, 
-            authForm.password
-          );
-          const user = userCredential.user;
-          
-          // Get user profile
-          const docRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(docRef);
-          
-          if (docSnap.exists()) {
-            const userData = docSnap.data();
-            Object.assign(userProfile, userData);
-          }
-          
-          showNotification('LOGIN SUCCESSFUL! Welcome back, explorer!', 'success');
+          // Login
+          await signInWithEmailAndPassword(auth, email.value, password.value);
+          router.push('/explore');
         } else {
-          // Sign up process
-          const userCredential = await createUserWithEmailAndPassword(
-            auth, 
-            authForm.email, 
-            authForm.password
-          );
+          // Register
+          const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
           const user = userCredential.user;
           
-          // Create user profile
-          const newUser = {
+          // Send email verification
+          await sendEmailVerification(user);
+          
+          // Create user document in Firestore
+          await setDoc(doc(db, "users", user.uid), {
             uid: user.uid,
             email: user.email,
-            displayName: 'Cosmic Explorer',
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp(),
+            displayName: "Cosmic Explorer",
             level: 1,
             experience: 0,
-            createdAt: new Date().toISOString(),
-            favorites: []
-          };
+            profileComplete: false
+          });
           
-          // Save to Firestore
-          await setDoc(doc(db, "users", user.uid), newUser);
-          Object.assign(userProfile, newUser);
+          // Show success animation
+          showSuccess.value = true;
           
-          showNotification('ACCOUNT CREATED! Welcome to the cosmic journey!', 'success');
+          // Wait for animation, then redirect to onboarding
+          setTimeout(() => {
+            router.push('/onboarding');
+          }, 2500);
+        }
+      } catch (error) {
+        console.error("Authentication error:", error);
+        
+        // Handle specific Firebase errors with user-friendly messages
+        if (error.code === 'auth/email-already-in-use') {
+          authError.value = 'This email is already registered. Try logging in instead.';
+        } else if (error.code === 'auth/invalid-email') {
+          authError.value = 'Please enter a valid email address.';
+        } else if (error.code === 'auth/weak-password') {
+          authError.value = 'Your password is too weak. Please choose a stronger password.';
+        } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+          authError.value = 'Invalid email or password. Please try again.';
+        } else if (error.code === 'auth/too-many-requests') {
+          authError.value = 'Too many unsuccessful login attempts. Please try again later.';
+        } else {
+          authError.value = 'An error occurred. Please try again later.';
         }
         
-        // Reset form
-        authForm.email = '';
-        authForm.password = '';
-        authForm.confirmPassword = '';
-        
-        // Navigate to home
-        currentView.value = 'home';
-        
-        // Load user favorites
-        loadUserFavorites();
-        
-      } catch (error) {
-        console.error("Auth error:", error);
-        authError.value = error.message;
-        showNotification('AUTHENTICATION ERROR', 'error');
+        isLoading.value = false;
       }
     };
 
-    // Handle logout
-    const handleLogout = async () => {
-      try {
-        await signOut(auth);
-        isAuthenticated.value = false;
-        
-        // Reset user data
-        Object.assign(userProfile, {
-          uid: '',
-          displayName: '',
-          photoURL: '',
-          level: 1,
-          experience: 0
-        });
-        
-        userFavorites.value = [];
-        showNotification('LOGGED OUT. Until next time, explorer!', 'info');
-        
-      } catch (error) {
-        console.error("Logout error:", error);
-        showNotification('LOGOUT FAILED', 'error');
-      }
-    };
-
-    // Load user favorites
-    const loadUserFavorites = async () => {
-      if (!isAuthenticated.value || !userProfile.uid) return;
-      
-      try {
-        const q = query(
-          collection(db, "favorites"),
-          where("userId", "==", userProfile.uid)
-        );
-        
-        const querySnapshot = await getDocs(q);
-        const favs = [];
-        
-        querySnapshot.forEach((doc) => {
-          favs.push(doc.data().dimension);
-        });
-        
-        userFavorites.value = favs;
-        
-      } catch (error) {
-        console.error("Error loading favorites:", error);
-      }
-    };
-
-    // Save favorite dimension
-    const saveFavorite = async (dimension) => {
-      if (!isAuthenticated.value) {
-        showNotification('LOGIN REQUIRED to save favorites', 'warning');
-        return;
-      }
-      
-      try {
-        // Check if already favorited
-        const isDuplicate = userFavorites.value.some(fav => fav.id === dimension.id);
-        
-        if (isDuplicate) {
-          showNotification('This dimension is already in your favorites!', 'info');
-          return;
-        }
-        
-        // Add to favorites collection
-        await addDoc(collection(db, "favorites"), {
-          userId: userProfile.uid,
-          dimension: dimension,
-          addedAt: new Date().toISOString()
-        });
-        
-        // Update local state
-        userFavorites.value.push(dimension);
-        
-        // Add experience points
-        userProfile.experience += 50;
-        if (userProfile.experience >= 1000) {
-          userProfile.level += 1;
-          userProfile.experience -= 1000;
-          showNotification(`LEVEL UP! You are now level ${userProfile.level}!`, 'success');
-        }
-        
-        // Update user profile
-        await updateDoc(doc(db, "users", userProfile.uid), {
-          level: userProfile.level,
-          experience: userProfile.experience
-        });
-        
-        // Show notification
-        showNotification('DIMENSION SAVED to your favorites!', 'success');
-        
-        // Animate favorite button
-        gsap.to(".cosmic-btn", {
-          scale: 1.2,
-          duration: 0.3,
-          yoyo: true,
-          repeat: 1
-        });
-        
-      } catch (error) {
-        console.error("Error saving favorite:", error);
-        showNotification('ERROR saving favorite', 'error');
-      }
-    };
-
-    // Select dimension
-    const selectDimension = (dimension) => {
-      selectedDimension.value = dimension;
-      
-      // Animate selection
-      anime({
-        targets: '.dimension-card',
-        scale: 0.95,
-        duration: 200,
-        easing: 'easeInOutQuad'
-      });
-      
-      anime({
-        targets: '.dimension-card.selected',
-        scale: 1.05,
-        duration: 300,
-        easing: 'easeInOutQuad'
-      });
-      
-      // Animate detail panel appearance
-      gsap.from(".dimension-detail", {
-        y: 50,
-        opacity: 0,
-        duration: 0.5,
-        ease: "power2.out"
-      });
-    };
-
-    // Notification system
-    const showNotification = (message, type = 'info') => {
-      const notification = {
-        message,
-        type,
-        id: Date.now()
-      };
-      
-      notifications.value.push(notification);
-      
-      // Auto remove after 4 seconds
-      setTimeout(() => {
-        notifications.value = notifications.value.filter(n => n.id !== notification.id);
-      }, 4000);
-    };
-
-    // Lifecycle hooks
+    // Animations
     onMounted(() => {
-      // Initialize THREE.js
-      initThreeJs();
+      // Activate form with delay
+      setTimeout(() => {
+        formActive.value = true;
+      }, 300);
       
-      // Initialize UI animations
-      anime({
-        targets: '.cosmic-title',
-        opacity: [0, 1],
-        translateY: [20, 0],
-        delay: 300,
-        duration: 1000,
-        easing: 'easeOutExpo'
+      // Animate logo
+      gsap.from(".cosmic-logo", {
+        rotation: 360,
+        scale: 0,
+        opacity: 0,
+        duration: 1.5,
+        ease: "elastic.out(1, 0.5)"
       });
       
-      gsap.from(".hero-title", {
+      // Animate title
+      gsap.from(".logo-text", {
         y: -50,
         opacity: 0,
         duration: 1,
         delay: 0.5
       });
       
-      gsap.from(".hero-subtitle", {
+      // Animate form container
+      gsap.from(".register-card", {
         y: 50,
         opacity: 0,
         duration: 1,
-        delay: 0.8
+        delay: 0.8,
+        ease: "power3.out"
       });
-      
-      gsap.from(".cosmic-btn", {
-        scale: 0,
-        opacity: 0,
-        duration: 0.5,
-        delay: 1.2,
-        ease: "back.out(1.7)"
-      });
-      
-      // Setup auth state listener
-      onAuthStateChanged(auth, (user) => {
-        isAuthenticated.value = !!user;
-        
-        if (user) {
-          userProfile.uid = user.uid;
-          
-          // Load user data
-          const docRef = doc(db, "users", user.uid);
-          getDoc(docRef).then((docSnap) => {
-            if (docSnap.exists()) {
-              const userData = docSnap.data();
-              Object.assign(userProfile, userData);
-            }
-          });
-          
-          // Load favorites
-          loadUserFavorites();
-        }
-      });
-    });
-    
-    // Cleanup function
-    const cleanup = () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-      }
-      
-      if (renderer.value) {
-        renderer.value.dispose();
-      }
-    };
-
-    // Watch for view changes to animate transitions
-    watch(currentView, (newView, oldView) => {
-      // Fade out old view
-      const oldViewElement = document.querySelector(`.${oldView}-view`);
-      const newViewElement = document.querySelector(`.${newView}-view`);
-      
-      if (oldViewElement) {
-        gsap.to(oldViewElement, {
-          opacity: 0,
-          y: -30,
-          duration: 0.3,
-          onComplete: () => {
-            // Fade in new view
-            if (newViewElement) {
-              gsap.fromTo(newViewElement, 
-                { opacity: 0, y: 30 },
-                { opacity: 1, y: 0, duration: 0.3 }
-              );
-            }
-          }
-        });
-      } else if (newViewElement) {
-        // Just fade in new view if no old view
-        gsap.fromTo(newViewElement, 
-          { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, duration: 0.3 }
-        );
-      }
     });
 
     return {
-      // State
-      currentView,
-      isAuthenticated,
+      email,
+      password,
+      confirmPassword,
+      agreeToTerms,
       isLogin,
-      cosmicCanvas,
-      authForm,
+      showPassword,
+      isLoading,
       authError,
-      userProfile,
-      userFavorites,
-      notifications,
-      dimensions,
-      selectedDimension,
-      
-      // Methods
-      handleAuth,
-      handleLogout,
-      saveFavorite,
-      selectDimension,
-      showNotification
+      errors,
+      activeField,
+      formActive,
+      showTerms,
+      showSuccess,
+      passwordStrength,
+      strengthColor,
+      focusField,
+      validateEmail,
+      validatePassword,
+      validateConfirmPassword,
+      validateTerms,
+      toggleAuthMode,
+      handleRegister
     };
   }
 };
 </script>
 
-<style>
-/* COSMIC STYLING */
+<style scoped>
+/* COSMIC STYLING FOR LEGENDARY REGISTER */
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;700&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Rajdhani', sans-serif;
-}
-
-:root {
-  /* Primary color scheme */
-  --cosmic-bg: #070b19;
-  --cosmic-primary: #9d4edd;
-  --cosmic-secondary: #3a0ca3;
-  --cosmic-accent: #4cc9f0;
-  --cosmic-highlight: #f72585;
-  --cosmic-text: #e2e2e2;
-  --cosmic-dark: #0f1642;
-  
-  /* UI Elements */
-  --nav-height: 70px;
-  --card-bg: rgba(10, 10, 40, 0.7);
-  --card-border: rgba(99, 89, 255, 0.3);
-}
-
-body {
-  background-color: var(--cosmic-bg);
-  color: var(--cosmic-text);
-  overflow-x: hidden;
-}
-
-/* CONTAINER */
-.cosmic-container {
-  width: 100%;
+.cosmic-register {
   min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at center, #1a1a2e 0%, #16213e 50%, #0f0f29 100%);
   position: relative;
+  overflow: hidden;
+  padding: 2rem;
+  perspective: 1000px;
 }
 
-/* CANVAS */
-#cosmic-canvas {
-  position: fixed;
+/* COSMIC BACKGROUND EFFECTS */
+
+/* Particles */
+.particle-container {
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: -1;
-}
-
-/* NAVIGATION */
-.cosmic-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: var(--nav-height);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 2rem;
-  background: linear-gradient(to bottom, rgba(10, 10, 40, 0.9), rgba(10, 10, 40, 0));
-  z-index: 100;
-  backdrop-filter: blur(5px);
-  transition: all 0.3s ease;
-}
-
-.cosmic-title {
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 900;
-  font-size: 1.8rem;
-  color: var(--cosmic-accent);
-  text-shadow: 0 0 10px rgba(76, 201, 240, 0.6);
-  letter-spacing: 2px;
-}
-
-.nav-links {
-  display: flex;
-  gap: 1rem;
-}
-
-.nav-btn {
-  background: transparent;
-  border: none;
-  color: var(--cosmic-text);
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 4px;
-  position: relative;
   overflow: hidden;
+  z-index: 0;
 }
 
-.nav-btn::after {
-  content: '';
+.particle {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: var(--cosmic-accent);
-  transition: width 0.3s ease;
+  width: var(--size);
+  height: var(--size);
+  background: white;
+  border-radius: 50%;
+  left: var(--left);
+  top: var(--top);
+  animation: floatingParticle 20s linear infinite;
+  animation-delay: var(--animation-delay);
+  opacity: 0.6;
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
 }
 
-.nav-btn:hover::after {
-  width: 100%;
-}
-
-.nav-btn.active {
-  color: var(--cosmic-accent);
-}
-
-.nav-btn.active::after {
-  width: 100%;
-}
-
-.auth-btn {
-  background: linear-gradient(135deg, var(--cosmic-primary), var(--cosmic-secondary));
-  border-radius: 20px;
-  padding: 0.5rem 1.5rem;
-  font-weight: 700;
-  color: white;
-  box-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
-}
-
-.auth-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 20px rgba(157, 78, 221, 0.7);
-}
-
-.logout-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 0.5rem 1.5rem;
-}
-
-.logout-btn:hover {
-  background: rgba(255, 77, 77, 0.2);
-}
-
-/* MAIN CONTENT */
-.cosmic-content {
-  padding-top: var(--nav-height);
-  min-height: 100vh;
-  width: 100%;
-  position: relative;
-}
-
-/* HOME VIEW */
-.home-view {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - var(--nav-height));
-  text-align: center;
-  padding: 2rem;
-}
-
-.cosmic-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  max-width: 800px;
-}
-
-.hero-title {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 4rem;
-  font-weight: 900;
-  color: white;
-  text-shadow: 0 0 20px rgba(157, 78, 221, 0.8);
-  letter-spacing: 4px;
-  margin: 0;
-}
-
-.hero-subtitle {
-  font-size: 1.5rem;
-  font-weight: 300;
-  color: var(--cosmic-accent);
-  letter-spacing: 2px;
-  margin: 0;
-  max-width: 600px;
-}
-
-.cosmic-btn {
-  background: linear-gradient(135deg, var(--cosmic-primary), var(--cosmic-secondary));
-  color: white;
-  border: none;
-  border-radius: 30px;
-  padding: 1rem 2.5rem;
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 700;
-  font-size: 1.1rem;
-  letter-spacing: 1px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(157, 78, 221, 0.5);
-  transition: all 0.3s ease;
-}
-
-.cosmic-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0 30px rgba(157, 78, 221, 0.8);
-}
-
-.cosmic-btn:active {
-  transform: translateY(1px);
-}
-
-.pulse-btn {
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
+@keyframes floatingParticle {
   0% {
-    box-shadow: 0 0 0 0 rgba(157, 78, 221, 0.7);
+    transform: translateY(0) translateX(0);
+    opacity: 0;
   }
-  70% {
-    box-shadow: 0 0 0 15px rgba(157, 78, 221, 0);
+  50% {
+    opacity: 0.8;
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(157, 78, 221, 0);
+    transform: translateY(-100vh) translateX(50px);
+    opacity: 0;
   }
 }
 
-/* EXPLORE VIEW */
-.explore-view {
-  padding: 2rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.dimension-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.dimension-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  padding: 1.5rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.dimension-card::before {
-  content: '';
+/* Nebula Effect */
+.nebula-effect {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(157, 78, 221, 0.1), rgba(76, 201, 240, 0.1));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: -1;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(76, 201, 240, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(172, 67, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(247, 37, 133, 0.05) 0%, transparent 70%);
+  filter: blur(10px);
+  animation: nebulaFloat 15s ease infinite alternate;
+  z-index: 0;
 }
 
-.dimension-card:hover::before {
+@keyframes nebulaFloat {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+/* Cosmic Rings */
+.cosmic-rings {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+}
+
+.ring {
+  position: absolute;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.ring1 {
+  width: 300px;
+  height: 300px;
+  border-color: rgba(157, 78, 221, 0.3);
+  animation: pulsate 4s linear infinite;
+}
+
+.ring2 {
+  width: 500px;
+  height: 500px;
+  border-color: rgba(76, 201, 240, 0.2);
+  animation: pulsate 6s linear infinite reverse;
+}
+
+.ring3 {
+  width: 700px;
+  height: 700px;
+  border-color: rgba(247, 37, 133, 0.1);
+  animation: pulsate 8s linear infinite;
+}
+
+@keyframes pulsate {
+  0% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.6;
+  }
+}
+
+/* MAIN CONTAINER */
+.register-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  max-width: 450px;
+  width: 100%;
+  transform: scale(0.9);
+  opacity: 0;
+  transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.container-activated {
+  transform: scale(1);
   opacity: 1;
 }
 
-.dimension-card h3 {
-  font-family: 'Orbitron', sans-serif;
-  margin-bottom: 0.5rem;
-  font-size: 1.2rem;
-  color: var(--cosmic-accent);
-}
-
-.dimension-card.selected {
-  border-color: var(--cosmic-primary);
-  box-shadow: 0 0 20px rgba(157, 78, 221, 0.3);
-}
-
-.dimension-energy-meter {
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  margin-top: 1rem;
-  overflow: hidden;
-}
-
-.energy-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--cosmic-accent), var(--cosmic-primary));
-  transition: width 1s ease;
-}
-
-.dimension-detail {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  padding: 2rem;
+/* LOGO SECTION */
+.logo-section {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  align-self: start;
-}
-
-.dimension-detail h2 {
-  font-family: 'Orbitron', sans-serif;
-  color: var(--cosmic-primary);
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.dimension-detail p {
-  line-height: 1.6;
-}
-
-/* AUTH VIEW */
-.auth-view {
-  display: flex;
-  justify-content: center;
   align-items: center;
-  min-height: calc(100vh - var(--nav-height));
-  padding: 2rem;
+  gap: 1rem;
 }
 
-.auth-container {
-  width: 100%;
-  max-width: 450px;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  padding: 2.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
+.cosmic-logo {
+  position: relative;
+  width: 80px;
+  height: 80px;
 }
 
-.auth-container h2 {
+.logo-star {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  background: #4cc9f0;
+  border-radius: 50%;
+  box-shadow: 0 0 20px #4cc9f0;
+  animation: starPulse 3s ease-in-out infinite;
+}
+
+.logo-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  border: 2px solid #9d4edd;
+  border-radius: 50%;
+  animation: orbitRotate 8s linear infinite;
+}
+
+.logo-orbit::before {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #9d4edd;
+  border-radius: 50%;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 0 10px #9d4edd;
+}
+
+@keyframes starPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 20px #4cc9f0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    box-shadow: 0 0 30px #4cc9f0;
+  }
+}
+
+@keyframes orbitRotate {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.logo-text {
   font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 2rem;
+  color: white;
+  text-shadow: 0 0 15px rgba(76, 201, 240, 0.7);
+  text-align: center;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+/* REGISTER CARD */
+.register-card {
+  background: rgba(10, 10, 40, 0.8);
+  border: 1px solid rgba(157, 78, 221, 0.3);
+  border-radius: 15px;
+  padding: 2.5rem;
+  width: 100%;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(76, 201, 240, 0.2);
+  backdrop-filter: blur(10px);
+  transform-style: preserve-3d;
+  transition: all 0.5s ease;
+}
+
+.register-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  color: #4cc9f0;
   text-align: center;
   margin-bottom: 2rem;
-  color: var(--cosmic-accent);
+  letter-spacing: 1px;
 }
 
-.auth-form {
+/* FORM STYLING */
+.register-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -1083,231 +1196,108 @@ body {
 }
 
 .form-group label {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
   font-size: 0.9rem;
-  font-weight: 700;
+  color: #e2e2e2;
   letter-spacing: 1px;
 }
 
+.input-wrapper {
+  position: relative;
+}
+
 .cosmic-input {
+  width: 100%;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.8rem 1rem;
-  border-radius: 5px;
+  border-radius: 8px;
+  padding: 1rem 2.5rem 1rem 1rem;
   color: white;
+  font-family: 'Rajdhani', sans-serif;
   font-size: 1rem;
   transition: all 0.3s ease;
 }
 
 .cosmic-input:focus {
   outline: none;
-  border-color: var(--cosmic-accent);
-  box-shadow: 0 0 10px rgba(76, 201, 240, 0.3);
+  border-color: #4cc9f0;
+  box-shadow: 0 0 15px rgba(76, 201, 240, 0.3);
 }
 
-.auth-error {
-  color: #ff5555;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  padding: 0.8rem;
-  background: rgba(255, 0, 0, 0.1);
-  border-radius: 5px;
-  text-align: center;
+.input-active {
+  border-color: #4cc9f0;
+  box-shadow: 0 0 15px rgba(76, 201, 240, 0.3);
 }
 
-.auth-submit-btn {
-  margin-top: 1rem;
+.input-filled {
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-.auth-toggle {
-  text-align: center;
-  margin-top: 1.5rem;
-  font-size: 0.9rem;
-}
-
-.toggle-link {
-  color: var(--cosmic-accent);
-  cursor: pointer;
-  font-weight: 700;
-  margin-left: 0.5rem;
-}
-
-.toggle-link:hover {
-  text-decoration: underline;
-}
-
-/* USER PROFILE */
-.user-profile {
-  position: fixed;
-  top: var(--nav-height);
-  right: 2rem;
-  z-index: 90;
-  transition: all 0.3s ease;
-}
-
-.profile-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 30px;
-  padding: 0.5rem 1rem;
-  backdrop-filter: blur(5px);
-}
-
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid var(--cosmic-primary);
-}
-
-.user-avatar img {
+.input-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.user-info {
-  display: flex;
-  flex-direction: column;
+.input-active + .input-glow {
+  opacity: 1;
+  box-shadow: 0 0 20px rgba(76, 201, 240, 0.4);
 }
 
-.user-name {
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.user-level {
-  font-size: 0.8rem;
-  color: var(--cosmic-accent);
-}
-
-.favorites-panel {
-  margin-top: 1rem;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  padding: 1.5rem;
-  backdrop-filter: blur(5px);
-  max-width: 250px;
-}
-
-.favorites-panel h3 {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-  color: var(--cosmic-accent);
-}
-
-.favorites-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.favorite-item {
-  padding: 0.8rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 5px;
-  font-size: 0.9rem;
+.input-icon, .toggle-password {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 1.2rem;
 }
 
-.favorite-item:hover {
-  background: rgba(157, 78, 221, 0.2);
+/* Error styling */
+.field-error .cosmic-input {
+  border-color: #e74c3c;
+  box-shadow: 0 0 15px rgba(231, 76, 60, 0.3);
 }
 
-/* NOTIFICATIONS */
-.notification-container {
-  position: fixed;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
+.error-message {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  margin: 0.3rem 0 0;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+/* Password strength meter */
+.password-strength {
+  margin-top: 0.5rem;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 0.5rem;
-  max-width: 400px;
-  width: 100%;
 }
 
-.notification {
-  padding: 1rem 1.5rem;
-  border-radius: 5px;
-  backdrop-filter: blur(10px);
-  animation: slideUp 0.3s ease forwards;
-  font-weight: 600;
-  text-align: center;
+.strength-meter {
+  flex-grow: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
 }
 
-.notification.success {
-  background: rgba(39, 174, 96, 0.8);
-  border-left: 4px solid #27ae60;
-}
-
-.notification.error {
-  background: rgba(231, 76, 60, 0.8);
-  border-left: 4px solid #e74c3c;
-}
-
-.notification.warning {
-  background: rgba(241, 196, 15, 0.8);
-  border-left: 4px solid #f1c40f;
-  color: #333;
-}
-
-.notification.info {
-  background: rgba(52, 152, 219, 0.8);
-  border-left: 4px solid #3498db;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* RESPONSIVE DESIGN */
-@media (max-width: 768px) {
-  .explore-view {
-    grid-template-columns: 1fr;
-  }
-  
-  .hero-title {
-    font-size: 2.5rem;
-  }
-  
-  .hero-subtitle {
-    font-size: 1.2rem;
-  }
-  
-  .cosmic-nav {
-    padding: 0 1rem;
-  }
-  
-  .cosmic-title {
-    font-size: 1.3rem;
-  }
-  
-  .nav-btn {
-    font-size: 0.9rem;
-    padding: 0.5rem 0.8rem;
-  }
-  
-  .auth-container {
-    padding: 1.5rem;
-  }
-  
-  .user-profile {
-    right: 1rem;
-  }
+.strength-fill {
+  height: 100%;
+  transition: all 0.3s ease;
 }
 </style>
