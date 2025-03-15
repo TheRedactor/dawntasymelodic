@@ -127,13 +127,13 @@
     return html;
   });
   
-  // Dynamic KaTeX initialization for math rendering
+  // Dynamically import KaTeX and apply math rendering (with @vite-ignore)
   const initMathRendering = async () => {
     if (props.enableMath && contentRef.value) {
       try {
-        const katex = await import('katex');
-        await import('katex/dist/katex.min.css');
-        const renderMathInElement = (await import('katex/contrib/auto-render')).default;
+        const katex = await import(/* @vite-ignore */ 'katex');
+        const renderMathInElement = (await import(/* @vite-ignore */ 'katex/contrib/auto-render')).default;
+        await import(/* @vite-ignore */ 'katex/dist/katex.min.css');
         renderMathInElement(contentRef.value, {
           delimiters: [
             { left: "$$", right: "$$", display: true },
@@ -156,13 +156,9 @@
         try {
           await navigator.clipboard.writeText(code);
           showCopySuccess.value = true;
-          setTimeout(() => {
-            showCopySuccess.value = false;
-          }, 2000);
+          setTimeout(() => { showCopySuccess.value = false; }, 2000);
           button.classList.add('copied');
-          setTimeout(() => {
-            button.classList.remove('copied');
-          }, 1000);
+          setTimeout(() => { button.classList.remove('copied'); }, 1000);
         } catch (e) {
           console.error('Failed to copy code:', e);
         }
@@ -200,6 +196,7 @@
   </script>
   
   <style>
+  /* BASE STYLES */
   .markdown-content {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     line-height: 1.6;
@@ -212,6 +209,8 @@
   .markdown-content.dark-mode {
     color: #e0e0e0;
   }
+  
+  /* HEADINGS */
   .markdown-content h1,
   .markdown-content h2,
   .markdown-content h3,
@@ -238,6 +237,8 @@
   .markdown-content h5 { font-size: 0.875em; }
   .markdown-content h6 { font-size: 0.85em; color: #777; }
   .markdown-content.dark-mode h6 { color: #aaa; }
+  
+  /* HEADING ANCHORS */
   .heading-anchor {
     color: inherit;
     text-decoration: none;
@@ -254,32 +255,14 @@
   .heading-anchor:hover .anchor-link {
     opacity: 1;
   }
+  
+  /* PARAGRAPHS */
   .markdown-content p {
     margin-top: 0;
     margin-bottom: 1em;
   }
-  .markdown-content strong { font-weight: 600; }
-  .markdown-content em { font-style: italic; }
-  .markdown-content del { text-decoration: line-through; }
-  .markdown-content blockquote {
-    margin: 1em 0;
-    padding: 0.5em 1em;
-    border-left: 4px solid #8b5cf6;
-    background-color: rgba(139,92,246,0.05);
-    color: #666;
-  }
-  .markdown-content.dark-mode blockquote {
-    background-color: rgba(139,92,246,0.1);
-    color: #bbb;
-  }
-  .markdown-content ul,
-  .markdown-content ol {
-    margin-top: 0;
-    margin-bottom: 1em;
-    padding-left: 2em;
-  }
-  .markdown-content li { margin-bottom: 0.25em; }
-  .markdown-content li > p { margin-top: 1em; }
+  
+  /* CODE BLOCKS & INLINE CODE */
   .code-block-wrapper {
     position: relative;
     margin: 1.5em 0;
@@ -345,6 +328,8 @@
     color: inherit;
     white-space: pre;
   }
+  
+  /* LINKS */
   .markdown-link {
     color: #8b5cf6;
     text-decoration: none;
@@ -360,6 +345,8 @@
     font-size: 0.8em;
     display: inline-block;
   }
+  
+  /* TABLES */
   .markdown-content table {
     width: 100%;
     margin: 1em 0;
@@ -391,6 +378,8 @@
   .markdown-content.dark-mode tr:nth-child(even) {
     background-color: rgba(255,255,255,0.025);
   }
+  
+  /* IMAGES */
   .image-container {
     margin: 1.5em 0;
     text-align: center;
@@ -429,6 +418,8 @@
     border: none;
     margin: 2em 0;
   }
+  
+  /* MATH */
   .math-inline {
     font-family: 'KaTeX_Main', serif;
     padding: 0 0.2em;
@@ -443,6 +434,8 @@
   .markdown-content.dark-mode .math-display {
     background-color: rgba(139,92,246,0.1);
   }
+  
+  /* COPY SUCCESS TOAST */
   .copy-success-toast {
     position: fixed;
     bottom: 20px;
@@ -465,6 +458,8 @@
     85% { opacity: 1; transform: translateY(0); }
     100% { opacity: 0; transform: translateY(-20px); }
   }
+  
+  /* COSMIC KEYWORDS */
   .cosmic-keyword {
     color: #8b5cf6;
     font-weight: 500;
