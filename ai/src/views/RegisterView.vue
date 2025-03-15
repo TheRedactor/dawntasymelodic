@@ -1,1304 +1,207 @@
 <template>
-  <div class="cosmic-register">
-    <!-- ANIMATED BACKGROUND PARTICLES -->
-    <div class="particle-container">
-      <div v-for="n in 50" :key="n" class="particle" 
-           :style="{ 
-             '--size': `${Math.random() * 6 + 1}px`,
-             '--left': `${Math.random() * 100}%`,
-             '--top': `${Math.random() * 100}%`,
-             '--animation-delay': `${Math.random() * 5}s`
-           }">
-      </div>
-    </div>
-    
-    <!-- ANIMATED NEBULA EFFECT -->
-    <div class="nebula-effect"></div>
-    
-    <!-- PULSATING RINGS -->
-    <div class="cosmic-rings">
-      <div class="ring ring1"></div>
-      <div class="ring ring2"></div>
-      <div class="ring ring3"></div>
-    </div>
-
-    <!-- MAIN CONTAINER -->
-    <div class="register-container" :class="{ 'container-activated': formActive }">
-      <!-- COSMIC LOGO -->
-      <div class="logo-section">
-        <div class="cosmic-logo">
-          <div class="logo-star"></div>
-          <div class="logo-orbit"></div>
-        </div>
-        <h1 class="logo-text">COSMIC VOYAGER</h1>
-      </div>
-      
-      <!-- AUTH FORM -->
-      <div class="register-card">
-        <h2 class="register-title">{{ isLogin ? 'ACCESS THE COSMOS' : 'CREATE DIMENSIONAL ACCOUNT' }}</h2>
-        
-        <form @submit.prevent="handleRegister" class="register-form">
-          <!-- Email Field -->
-          <div class="form-group" :class="{ 'field-error': errors.email }">
-            <label for="email">QUANTUM EMAIL</label>
-            <div class="input-wrapper">
-              <input 
-                id="email"
-                v-model="email" 
-                type="email" 
-                required
-                autocomplete="email"
-                @focus="focusField('email')"
-                @blur="validateEmail"
-                class="cosmic-input"
-                :class="{ 'input-active': activeField === 'email', 'input-filled': email }"
-              />
-              <div class="input-glow"></div>
-              <span class="input-icon">📡</span>
-            </div>
-            <p v-if="errors.email" class="error-message">{{ errors.email }}</p>
-          </div>
-          
-          <!-- Password Field -->
-          <div class="form-group" :class="{ 'field-error': errors.password }">
-            <label for="password">STELLAR PASSWORD</label>
-            <div class="input-wrapper">
-              <input 
-                id="password"
-                v-model="password" 
-                :type="showPassword ? 'text' : 'password'" 
-                required
-                autocomplete="new-password"
-                @focus="focusField('password')"
-                @blur="validatePassword"
-                class="cosmic-input"
-                :class="{ 'input-active': activeField === 'password', 'input-filled': password }"
-              />
-              <div class="input-glow"></div>
-              <span class="toggle-password" @click="showPassword = !showPassword">
-                {{ showPassword ? '👁️' : '🔒' }}
-              </span>
-            </div>
-            
-            <!-- Password Strength Meter -->
-            <div v-if="!isLogin && password" class="password-strength">
-              <div class="strength-meter">
-                <div class="strength-fill" :style="{ width: `${passwordStrength.score * 25}%`, 
-                                                   backgroundColor: strengthColor }"></div>
-              </div>
-              <span class="strength-text">{{ passwordStrength.message }}</span>
-            </div>
-            
-            <p v-if="errors.password" class="error-message">{{ errors.password }}</p>
-          </div>
-          
-          <!-- Confirm Password Field (Sign up only) -->
-          <div v-if="!isLogin" class="form-group" :class="{ 'field-error': errors.confirmPassword }">
-            <label for="confirmPassword">CONFIRM PASSWORD</label>
-            <div class="input-wrapper">
-              <input 
-                id="confirmPassword"
-                v-model="confirmPassword" 
-                :type="showPassword ? 'text' : 'password'" 
-                required
-                autocomplete="new-password"
-                @focus="focusField('confirmPassword')"
-                @blur="validateConfirmPassword"
-                class="cosmic-input"
-                :class="{ 'input-active': activeField === 'confirmPassword', 'input-filled': confirmPassword }"
-              />
-              <div class="input-glow"></div>
-            </div>
-            <p v-if="errors.confirmPassword" class="error-message">{{ errors.confirmPassword }}</p>
-          </div>
-          
-          <!-- Terms Checkbox (Sign up only) -->
-          <div v-if="!isLogin" class="form-group terms-group" :class="{ 'field-error': errors.terms }">
-            <div class="cosmic-checkbox">
-              <input 
-                id="terms" 
-                v-model="agreeToTerms" 
-                type="checkbox" 
-                required
-                @change="validateTerms"
-              />
-              <label for="terms">
-                I agree to the <span class="terms-link" @click.prevent="showTerms = true">Cosmic Terms</span>
-              </label>
-            </div>
-            <p v-if="errors.terms" class="error-message">{{ errors.terms }}</p>
-          </div>
-          
-          <!-- Auth Error Message -->
-          <div v-if="authError" class="auth-error">
-            <div class="error-icon">⚠️</div>
-            <p>{{ authError }}</p>
-          </div>
-          
-          <!-- Submit Button -->
-          <button 
-            type="submit" 
-            class="cosmic-btn register-btn"
-            :class="{ 'btn-loading': isLoading }"
-            :disabled="isLoading"
-          >
-            <span v-if="!isLoading">{{ isLogin ? 'ENTER THE COSMOS' : 'INITIATE JOURNEY' }}</span>
-            <span v-else class="loader"></span>
-          </button>
-        </form>
-        
-        <!-- Toggle Login/Register -->
-        <div class="auth-toggle">
-          <p>
-            {{ isLogin ? "Don't have a cosmic account?" : "Already have dimensional access?" }}
-            <span @click="toggleAuthMode" class="toggle-link">
-              {{ isLogin ? 'CREATE ONE' : 'ACCESS NOW' }}
-            </span>
-          </p>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Terms Modal -->
-    <div v-if="showTerms" class="terms-modal">
-      <div class="terms-content">
-        <h3>COSMIC VOYAGER TERMS</h3>
-        <div class="terms-body">
-          <p>Welcome to the Cosmic Voyager experience! By creating an account, you agree to:</p>
-          <ul>
-            <li>Respect the universal laws of cosmic exploration</li>
-            <li>Maintain the confidentiality of your dimensional access credentials</li>
-            <li>Share your discoveries with the cosmic community</li>
-            <li>Never attempt to disrupt the quantum fabric of our platform</li>
-            <li>Accept that interdimensional travel carries inherent risks</li>
-          </ul>
-          <p>All account data is stored securely in our quantum-encrypted database. Your privacy across all dimensions is our priority.</p>
-        </div>
-        <button @click="showTerms = false" class="cosmic-btn close-terms-btn">ACKNOWLEDGE</button>
-      </div>
-    </div>
-    
-    <!-- Success Animation Container -->
-    <div v-if="showSuccess" class="success-container">
-      <div class="success-animation">
-        <div class="checkmark-circle">
-          <div class="checkmark"></div>
-        </div>
-        <h2>ACCOUNT CREATED!</h2>
-        <p>Preparing your cosmic journey...</p>
-      </div>
+  <div id="register-page">
+    <!-- THREE.js cosmic starfield -->
+    <canvas ref="starCanvas" class="starfield"></canvas>
+    <div class="form-container">
+      <h1 ref="title" class="epic-title">Register Your Cosmic Account</h1>
+      <form @submit.prevent="register">
+        <input v-model="username" type="text" placeholder="Username" required />
+        <input v-model="email" type="email" placeholder="Email" required />
+        <input v-model="password" type="password" placeholder="Password" required />
+        <button type="submit" ref="submitButton">Create Account</button>
+      </form>
+      <p v-if="error" class="error">{{ error }}</p>
     </div>
   </div>
 </template>
 
-<script>
-import { ref, reactive, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { getApp, getApps, initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword,
-  sendEmailVerification
-} from 'firebase/auth';
-import { 
-  getFirestore, 
-  doc, 
-  setDoc, 
-  serverTimestamp 
-} from 'firebase/firestore';
-import gsap from 'gsap';
+<script setup>
+import { ref, onMounted } from 'vue';
+import { initializeApp } from "firebase/app";
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+import gsap from "gsap";
+import * as THREE from "three";
+import anime from "animejs/lib/anime.es.js";
 
-export default {
-  name: 'RegisterView',
-  setup() {
-    // Initialize Firebase - WITH ERROR PREVENTION
-    let app;
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+// Firebase configuration - replace with your own project's config
+const firebaseConfig = {
+  apiKey: "VITE_FIREBASE_API_KEY",
+  authDomain: "VITE_FIREBASE_AUTH_DOMAIN",
+  projectId: "VITE_FIREBASE_PROJECT_ID",
+  storageBucket: "VITE_FIREBASE_STORAGE_BUCKET",
+  messagingSenderId: "VITE_FIREBASE_MESSAGING_SENDER_ID",
+  appId: "VITE_FIREBASE_APP_ID"
+};
 
-    // FIX FOR FIREBASE ERROR - Check if app already exists
-    try {
-      if (getApps().length === 0) {
-        app = initializeApp(firebaseConfig);
-      } else {
-        app = getApp(); // Use existing app if it's already initialized
-      }
-    } catch (error) {
-      console.error("Firebase initialization error:", error);
-    }
+// Initialize Firebase services
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const router = useRouter();
+// Reactive form data and error handling
+const email = ref('');
+const password = ref('');
+const username = ref('');
+const error = ref('');
 
-    // Form state
-    const email = ref('');
-    const password = ref('');
-    const confirmPassword = ref('');
-    const agreeToTerms = ref(false);
-    const isLogin = ref(false);
-    const showPassword = ref(false);
-    const isLoading = ref(false);
-    const authError = ref('');
-    const activeField = ref(null);
-    const formActive = ref(false);
-    const showTerms = ref(false);
-    const showSuccess = ref(false);
+// DOM refs for animations
+const title = ref(null);
+const submitButton = ref(null);
+const starCanvas = ref(null);
 
-    // Validation state
-    const errors = reactive({
-      email: '',
-      password: '',
-      confirmPassword: '',
-      terms: ''
+const register = async () => {
+  error.value = '';
+  try {
+    // Create the Firebase Authentication user
+    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+    const user = userCredential.user;
+    
+    // Update the user's display name with the username
+    await updateProfile(user, { displayName: username.value });
+    
+    // Save user data to Firestore in a new document
+    await setDoc(doc(db, "users", user.uid), {
+      username: username.value,
+      email: email.value,
+      createdAt: new Date().toISOString()
     });
-
-    // Password strength computation
-    const passwordStrength = computed(() => {
-      if (!password.value) return { score: 0, message: '' };
-      
-      let score = 0;
-      let message = 'Weak';
-      
-      // Length check
-      if (password.value.length >= 8) score++;
-      if (password.value.length >= 12) score++;
-      
-      // Complexity checks
-      if (/[A-Z]/.test(password.value)) score++;
-      if (/[0-9]/.test(password.value)) score++;
-      if (/[^A-Za-z0-9]/.test(password.value)) score++;
-      
-      // Determine message
-      if (score === 5) message = 'Extraordinary';
-      else if (score === 4) message = 'Strong';
-      else if (score === 3) message = 'Good';
-      else if (score === 2) message = 'Moderate';
-      
-      return { score, message };
-    });
-
-    // Color for strength meter
-    const strengthColor = computed(() => {
-      const colors = [
-        '#e74c3c', // Weak - Red
-        '#e67e22', // Moderate - Orange
-        '#f1c40f', // Good - Yellow
-        '#2ecc71', // Strong - Green
-        '#9b59b6'  // Extraordinary - Purple
-      ];
-      return colors[passwordStrength.value.score - 1] || colors[0];
-    });
-
-    // Field focus handler
-    const focusField = (field) => {
-      activeField.value = field;
-    };
-
-    // Validation methods
-    const validateEmail = () => {
-      activeField.value = null;
-      errors.email = '';
-      
-      if (!email.value) {
-        errors.email = 'Email is required';
-        return false;
-      }
-      
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.value)) {
-        errors.email = 'Please enter a valid email address';
-        return false;
-      }
-      
-      return true;
-    };
-
-    const validatePassword = () => {
-      activeField.value = null;
-      errors.password = '';
-      
-      if (!password.value) {
-        errors.password = 'Password is required';
-        return false;
-      }
-      
-      if (!isLogin.value) {
-        if (password.value.length < 8) {
-          errors.password = 'Password must be at least 8 characters';
-          return false;
-        }
-        
-        if (!/[A-Z]/.test(password.value)) {
-          errors.password = 'Password must contain at least one uppercase letter';
-          return false;
-        }
-        
-        if (!/[0-9]/.test(password.value)) {
-          errors.password = 'Password must contain at least one number';
-          return false;
-        }
-      }
-      
-      return true;
-    };
-
-    const validateConfirmPassword = () => {
-      activeField.value = null;
-      errors.confirmPassword = '';
-      
-      if (!confirmPassword.value) {
-        errors.confirmPassword = 'Please confirm your password';
-        return false;
-      }
-      
-      if (confirmPassword.value !== password.value) {
-        errors.confirmPassword = 'Passwords do not match';
-        return false;
-      }
-      
-      return true;
-    };
-
-    const validateTerms = () => {
-      errors.terms = '';
-      
-      if (!agreeToTerms.value) {
-        errors.terms = 'You must agree to the terms';
-        return false;
-      }
-      
-      return true;
-    };
-
-    // Validate all fields
-    const validateAll = () => {
-      const emailValid = validateEmail();
-      const passwordValid = validatePassword();
-      
-      if (isLogin.value) {
-        return emailValid && passwordValid;
-      } else {
-        const confirmValid = validateConfirmPassword();
-        const termsValid = validateTerms();
-        return emailValid && passwordValid && confirmValid && termsValid;
-      }
-    };
-
-    // Toggle between login and register
-    const toggleAuthMode = () => {
-      // Reset form state
-      isLogin.value = !isLogin.value;
-      authError.value = '';
-      
-      // Clear all errors
-      Object.keys(errors).forEach(key => {
-        errors[key] = '';
-      });
-      
-      // Reset fields when switching to login
-      if (isLogin.value) {
-        confirmPassword.value = '';
-        agreeToTerms.value = false;
-      }
-      
-      // Animation for mode toggle
-      gsap.fromTo(".register-card", 
-        { scale: 0.95, opacity: 0.5 },
-        { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)" }
-      );
-    };
-
-    // Handle form submission
-    const handleRegister = async () => {
-      // Validate form
-      if (!validateAll()) return;
-      
-      isLoading.value = true;
-      authError.value = '';
-      
-      try {
-        if (isLogin.value) {
-          // Login
-          await signInWithEmailAndPassword(auth, email.value, password.value);
-          router.push('/explore');
-        } else {
-          // Register
-          const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
-          const user = userCredential.user;
-          
-          // Send email verification
-          await sendEmailVerification(user);
-          
-          // Create user document in Firestore
-          await setDoc(doc(db, "users", user.uid), {
-            uid: user.uid,
-            email: user.email,
-            createdAt: serverTimestamp(),
-            lastLogin: serverTimestamp(),
-            displayName: "Cosmic Explorer",
-            level: 1,
-            experience: 0,
-            profileComplete: false
-          });
-          
-          // Show success animation
-          showSuccess.value = true;
-          
-          // Wait for animation, then redirect to onboarding
-          setTimeout(() => {
-            router.push('/onboarding');
-          }, 2500);
-        }
-      } catch (error) {
-        console.error("Authentication error:", error);
-        
-        // Handle specific Firebase errors with user-friendly messages
-        if (error.code === 'auth/email-already-in-use') {
-          authError.value = 'This email is already registered. Try logging in instead.';
-        } else if (error.code === 'auth/invalid-email') {
-          authError.value = 'Please enter a valid email address.';
-        } else if (error.code === 'auth/weak-password') {
-          authError.value = 'Your password is too weak. Please choose a stronger password.';
-        } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-          authError.value = 'Invalid email or password. Please try again.';
-        } else if (error.code === 'auth/too-many-requests') {
-          authError.value = 'Too many unsuccessful login attempts. Please try again later.';
-        } else {
-          authError.value = 'An error occurred. Please try again later.';
-        }
-        
-        isLoading.value = false;
-      }
-    };
-
-    // Animations
-    onMounted(() => {
-      // Activate form with delay
-      setTimeout(() => {
-        formActive.value = true;
-      }, 300);
-      
-      // Animate logo
-      gsap.from(".cosmic-logo", {
-        rotation: 360,
-        scale: 0,
-        opacity: 0,
-        duration: 1.5,
-        ease: "elastic.out(1, 0.5)"
-      });
-      
-      // Animate title
-      gsap.from(".logo-text", {
-        y: -50,
-        opacity: 0,
-        duration: 1,
-        delay: 0.5
-      });
-      
-      // Animate form container
-      gsap.from(".register-card", {
-        y: 50,
-        opacity: 0,
-        duration: 1,
-        delay: 0.8,
-        ease: "power3.out"
-      });
-    });
-
-    return {
-      email,
-      password,
-      confirmPassword,
-      agreeToTerms,
-      isLogin,
-      showPassword,
-      isLoading,
-      authError,
-      errors,
-      activeField,
-      formActive,
-      showTerms,
-      showSuccess,
-      passwordStrength,
-      strengthColor,
-      focusField,
-      validateEmail,
-      validatePassword,
-      validateConfirmPassword,
-      validateTerms,
-      toggleAuthMode,
-      handleRegister
-    };
+    
+    console.log("Cosmic registration successful:", user);
+  } catch (err) {
+    error.value = err.message;
+    console.error("Registration error:", err);
   }
 };
+
+onMounted(() => {
+  // GSAP animations for a smooth, epic entry
+  gsap.from(title.value, { duration: 1.5, opacity: 0, y: -50, ease: "power2.out" });
+  gsap.from(submitButton.value, { duration: 1, opacity: 0, delay: 0.5, scale: 0.5, ease: "elastic.out(1, 0.3)" });
+  
+  // AnimeJS for input fields; staggered sliding-in effect
+  anime({
+    targets: 'input',
+    translateX: [-50, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(100)
+  });
+  
+  // Setup THREE.js cosmic starfield background
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({ canvas: starCanvas.value, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  
+  // Create starfield particles
+  const starGeometry = new THREE.BufferGeometry();
+  const starCount = 10000;
+  const starVertices = [];
+  for (let i = 0; i < starCount; i++) {
+    starVertices.push((Math.random() - 0.5) * 2000);
+    starVertices.push((Math.random() - 0.5) * 2000);
+    starVertices.push((Math.random() - 0.5) * 2000);
+  }
+  starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+  
+  const starMaterial = new THREE.PointsMaterial({
+    color: 0xffffff,
+    size: 1,
+    transparent: true,
+  });
+  
+  const stars = new THREE.Points(starGeometry, starMaterial);
+  scene.add(stars);
+  camera.position.z = 1;
+  
+  const animate = () => {
+    requestAnimationFrame(animate);
+    // Add parallax rotation to the starfield
+    stars.rotation.x += 0.0005;
+    stars.rotation.y += 0.0005;
+    renderer.render(scene, camera);
+  };
+  animate();
+  
+  // Update renderer on window resize for responsiveness
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+});
 </script>
 
 <style scoped>
-/* COSMIC STYLING FOR LEGENDARY REGISTER */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
-/* FIXED: Allow scrolling and position UI in-frame */
-.cosmic-register {
-  min-height: 100vh;
+#register-page {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* Changed from center to flex-start */
-  background: radial-gradient(circle at center, #1a1a2e 0%, #16213e 50%, #0f0f29 100%);
+  align-items: center;
+}
+
+.starfield {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.form-container {
   position: relative;
-  overflow-y: auto; /* Allow vertical scrolling */
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.75);
   padding: 2rem;
-  perspective: 1000px;
-}
-
-/* COSMIC BACKGROUND EFFECTS */
-
-/* Particles */
-.particle-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 0;
-}
-
-.particle {
-  position: absolute;
-  width: var(--size);
-  height: var(--size);
-  background: white;
-  border-radius: 50%;
-  left: var(--left);
-  top: var(--top);
-  animation: floatingParticle 20s linear infinite;
-  animation-delay: var(--animation-delay);
-  opacity: 0.6;
-  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
-}
-
-@keyframes floatingParticle {
-  0% {
-    transform: translateY(0) translateX(0);
-    opacity: 0;
-  }
-  50% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(-100vh) translateX(50px);
-    opacity: 0;
-  }
-}
-
-/* Nebula Effect */
-.nebula-effect {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 20% 30%, rgba(76, 201, 240, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, rgba(172, 67, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(247, 37, 133, 0.05) 0%, transparent 70%);
-  filter: blur(10px);
-  animation: nebulaFloat 15s ease infinite alternate;
-  z-index: 0;
-}
-
-@keyframes nebulaFloat {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 100% 100%;
-  }
-}
-
-/* Cosmic Rings */
-.cosmic-rings {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 0;
-}
-
-.ring {
-  position: absolute;
-  border: 2px solid transparent;
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.ring1 {
-  width: 300px;
-  height: 300px;
-  border-color: rgba(157, 78, 221, 0.3);
-  animation: pulsate 4s linear infinite;
-}
-
-.ring2 {
-  width: 500px;
-  height: 500px;
-  border-color: rgba(76, 201, 240, 0.2);
-  animation: pulsate 6s linear infinite reverse;
-}
-
-.ring3 {
-  width: 700px;
-  height: 700px;
-  border-color: rgba(247, 37, 133, 0.1);
-  animation: pulsate 8s linear infinite;
-}
-
-@keyframes pulsate {
-  0% {
-    transform: translate(-50%, -50%) scale(0.95);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(0.95);
-    opacity: 0.6;
-  }
-}
-
-/* MAIN CONTAINER */
-.register-container {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-  max-width: 450px;
-  width: 100%;
-  transform: scale(0.9);
-  opacity: 1;
-  transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.container-activated {
-  transform: scale(1);
-  opacity: 1;
-}
-
-/* LOGO SECTION */
-.logo-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.cosmic-logo {
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-
-.logo-star {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 20px;
-  height: 20px;
-  background: #4cc9f0;
-  border-radius: 50%;
-  box-shadow: 0 0 20px #4cc9f0;
-  animation: starPulse 3s ease-in-out infinite;
-}
-
-.logo-orbit {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 60px;
-  height: 60px;
-  border: 2px solid #9d4edd;
-  border-radius: 50%;
-  animation: orbitRotate 8s linear infinite;
-}
-
-.logo-orbit::before {
-  content: '';
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background: #9d4edd;
-  border-radius: 50%;
-  top: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  box-shadow: 0 0 10px #9d4edd;
-}
-
-@keyframes starPulse {
-  0%, 100% {
-    transform: translate(-50%, -50%) scale(1);
-    box-shadow: 0 0 20px #4cc9f0;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.2);
-    box-shadow: 0 0 30px #4cc9f0;
-  }
-}
-
-@keyframes orbitRotate {
-  0% {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-  100% {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-
-.logo-text {
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 900;
-  font-size: 2rem;
-  color: white;
-  text-shadow: 0 0 15px rgba(76, 201, 240, 0.7);
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
   text-align: center;
-  letter-spacing: 2px;
-  margin: 0;
-}
-
-/* REGISTER CARD */
-.register-card {
-  background: rgba(10, 10, 40, 0.8);
-  border: 1px solid rgba(157, 78, 221, 0.3);
-  border-radius: 15px;
-  padding: 2.5rem;
-  width: 100%;
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(76, 201, 240, 0.2);
-  backdrop-filter: blur(10px);
-  transform-style: preserve-3d;
-  transition: all 0.5s ease;
-}
-
-.register-title {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1.5rem;
-  color: #4cc9f0;
-  text-align: center;
-  margin-bottom: 2rem;
-  letter-spacing: 1px;
-}
-
-/* FORM STYLING */
-.register-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-group label {
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #e2e2e2;
-  letter-spacing: 1px;
-}
-
-.input-wrapper {
-  position: relative;
-}
-
-.cosmic-input {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 1rem 2.5rem 1rem 1rem;
-  color: white;
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.cosmic-input:focus {
-  outline: none;
-  border-color: #4cc9f0;
-  box-shadow: 0 0 15px rgba(76, 201, 240, 0.3);
-}
-
-.input-active {
-  border-color: #4cc9f0;
-  box-shadow: 0 0 15px rgba(76, 201, 240, 0.3);
-}
-
-.input-filled {
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.input-glow {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-  pointer-events: none;
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.input-active + .input-glow {
-  opacity: 1;
-  box-shadow: 0 0 20px rgba(76, 201, 240, 0.4);
-}
-
-.input-icon, .toggle-password {
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  font-size: 1.2rem;
-}
-
-/* Error styling */
-.field-error .cosmic-input {
-  border-color: #e74c3c;
-  box-shadow: 0 0 15px rgba(231, 76, 60, 0.3);
-}
-
-.error-message {
-  color: #e74c3c;
-  font-size: 0.85rem;
-  margin: 0.3rem 0 0;
-  animation: shake 0.5s ease-in-out;
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-5px); }
-  40%, 80% { transform: translateX(5px); }
-}
-
-/* Password strength meter */
-.password-strength {
-  margin-top: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.strength-meter {
-  flex-grow: 1;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.strength-fill {
-  height: 100%;
-  transition: all 0.3s ease;
-}
-
-.strength-text {
-  font-size: 0.8rem;
-  color: #e2e2e2;
-}
-
-/* Terms checkbox */
-.terms-group {
-  margin-top: 0.5rem;
-}
-
-.cosmic-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.cosmic-checkbox input[type="checkbox"] {
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.05);
-  position: relative;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.cosmic-checkbox input[type="checkbox"]:checked {
-  background: #4cc9f0;
-  border-color: #4cc9f0;
-}
-
-.cosmic-checkbox input[type="checkbox"]:checked::after {
-  content: '✓';
-  position: absolute;
-  color: white;
-  font-size: 14px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.cosmic-checkbox label {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.terms-link {
-  color: #4cc9f0;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.terms-link:hover {
-  color: #9d4edd;
-}
-
-/* Auth error */
-.auth-error {
-  background: rgba(231, 76, 60, 0.1);
-  border-left: 3px solid #e74c3c;
-  padding: 1rem;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-.error-icon {
-  font-size: 1.5rem;
-}
-
-.auth-error p {
-  margin: 0;
-  font-size: 0.9rem;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Button */
-.cosmic-btn {
-  background: linear-gradient(135deg, #9d4edd, #4cc9f0);
-  color: white;
-  border: none;
-  border-radius: 30px;
-  padding: 1rem 2rem;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 0 0 5px rgba(76, 201, 240, 0.2);
-}
-
-.cosmic-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.2), 
-    transparent
-  );
-  transition: all 0.5s ease;
-}
-
-.cosmic-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3), 0 0 0 5px rgba(76, 201, 240, 0.3);
-}
-
-.cosmic-btn:hover::before {
-  left: 100%;
-}
-
-.cosmic-btn:active {
-  transform: translateY(1px);
-}
-
-.btn-loading {
-  cursor: not-allowed;
-  opacity: 0.8;
-}
-
-.loader {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.register-btn {
-  width: 100%;
-  margin-top: 1rem;
-  height: 50px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Auth toggle */
-.auth-toggle {
-  text-align: center;
-  margin-top: 1.5rem;
-}
-
-.auth-toggle p {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.toggle-link {
-  color: #4cc9f0;
-  font-weight: 700;
-  cursor: pointer;
-  margin-left: 0.3rem;
-  transition: all 0.3s ease;
-}
-
-.toggle-link:hover {
-  color: #9d4edd;
-  text-decoration: underline;
-}
-
-/* Terms Modal */
-.terms-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 2rem;
-  animation: modalFadeIn 0.3s ease-in-out;
 }
 
-.terms-content {
-  background: rgba(10, 10, 40, 0.9);
-  border: 1px solid rgba(157, 78, 221, 0.3);
-  border-radius: 15px;
-  padding: 2rem;
-  max-width: 600px;
-  width: 100%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(76, 201, 240, 0.3);
-}
-
-.terms-content h3 {
+.epic-title {
+  color: #fff;
   font-family: 'Orbitron', sans-serif;
-  color: #4cc9f0;
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.terms-body {
-  margin-bottom: 2rem;
-}
-
-.terms-body p {
   margin-bottom: 1rem;
-  line-height: 1.6;
+  font-size: 2rem;
 }
 
-.terms-body ul {
-  margin: 1rem 0;
-  padding-left: 1.5rem;
-}
-
-.terms-body li {
-  margin-bottom: 0.5rem;
-}
-
-.close-terms-btn {
-  display: block;
-  margin: 0 auto;
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Success Animation */
-.success-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(10, 10, 40, 0.9);
-  backdrop-filter: blur(10px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-  animation: successFadeIn 0.5s ease-in-out;
-}
-
-.success-animation {
+form {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 2rem;
+  gap: 1rem;
 }
 
-.checkmark-circle {
-  width: 150px;
-  height: 150px;
-  position: relative;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  animation: circleScale 0.5s ease-in-out forwards;
+input {
+  padding: 0.75rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
 }
 
-.checkmark {
-  width: 60px;
-  height: 120px;
-  border-right: 8px solid #4cc9f0;
-  border-bottom: 8px solid #4cc9f0;
-  transform: rotate(45deg) scale(0);
-  transform-origin: center;
-  animation: checkmarkDraw 0.8s ease-in-out 0.5s forwards;
+button {
+  padding: 0.75rem;
+  border: none;
+  border-radius: 5px;
+  background: linear-gradient(45deg, #00dbde, #fc00ff);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
-@keyframes circleScale {
-  from {
-    transform: scale(0);
-    box-shadow: none;
-  }
-  to {
-    transform: scale(1);
-    box-shadow: 0 0 50px rgba(76, 201, 240, 0.5);
-  }
+button:hover {
+  transform: scale(1.05);
 }
 
-@keyframes checkmarkDraw {
-  from {
-    transform: rotate(45deg) scale(0);
-  }
-  to {
-    transform: rotate(45deg) scale(1);
-  }
-}
-
-.success-animation h2 {
-  font-family: 'Orbitron', sans-serif;
-  color: #4cc9f0;
-  margin: 0;
-  animation: textFadeIn 0.5s ease-in-out 1s forwards;
-  opacity: 0;
-}
-
-.success-animation p {
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-  animation: textFadeIn 0.5s ease-in-out 1.5s forwards;
-  opacity: 0;
-}
-
-@keyframes textFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes successFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .register-container {
-    padding: 1rem;
-  }
-  
-  .register-card {
-    padding: 1.5rem;
-  }
-  
-  .logo-text {
-    font-size: 1.5rem;
-  }
-  
-  .register-title {
-    font-size: 1.2rem;
-  }
+.error {
+  color: #ff5555;
+  font-size: 0.9rem;
 }
 </style>

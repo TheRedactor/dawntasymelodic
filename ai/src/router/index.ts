@@ -127,6 +127,16 @@ const routes: Array<RouteRecordRaw & { meta: EnhancedRouteMetadata }> = [
       title: 'Complete Your Profile - DawntasyAI' 
     }
   },
+  {
+    path: '/test',
+    name: 'Test',
+    component: () => import('@/views/TestTheAI.vue'),
+    meta: { 
+      requiresAuth: false,  // Changed to require auth but with special handling
+      transition: 'fade',
+      title: 'Get a Taster - DawntasyAI' 
+    }
+  }
 ];
 
 // 🔥 FIXED: Simple root history with NO path prefix
