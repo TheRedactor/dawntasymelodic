@@ -1,134 +1,382 @@
 <template>
-  <div class="chat-container">
-    <div class="chat-messages" ref="chatMessages">
-      <div v-for="message in messages" :key="message.id" class="message" :class="{ 'sent': message.sentByUser }">
-        <span>{{ message.username }}: </span>
-        <span>{{ message.content }}</span>
+  <div class="cosmic-chat" :class="{'dark-mode': darkMode}">
+    <!-- Chat Sidebar -->
+    <div class="chat-sidebar">
+      <div class="user-profile">
+        <img :src="user.photoURL" class="profile-image" v-if="user"/>
+        <button @click="toggleDarkMode" class="theme-toggle">
+          {{ darkMode ? '🌞' : '🌙' }}
+        </button>
+      </div>
+      <button class="new-chat-btn" @click="createNewChat">
+        🚀 New Chat
+      </button>
+      <div class="chat-history">
+        <div v-for="chat in userChats" 
+             :key="chat.id"
+             class="chat-item"
+             @click="loadChat(chat.id)">
+          {{ chat.title || 'New Chat' }}
+        </div>
       </div>
     </div>
-    <div class="chat-input">
-      <input v-model="newMessage" @keyup.enter="sendMessage" placeholder="Type your message..." />
-      <button @click="sendMessage">Send</button>
+
+    <!-- Main Chat Area -->
+    <div class="chat-main">
+      <div class="messages-container" ref="messagesContainer">
+        <transition-group name="message-fade">
+          <div v-for="message in currentMessages" 
+               :key="message.id"
+               class="message-card"
+               :class="{'user-message': message.role === 'user'}">
+            <div class="message-header">
+              <img v-if="message.role === 'user'" 
+                   :src="user.photoURL" 
+                   class="message-avatar"/>
+              <div class="ai-avatar" v-else>🌌</div>
+              <span class="username">{{ message.role === 'user' ? user.displayName : 'Dawntasy AI' }}</span>
+            </div>
+            <div class="message-content">
+              <MarkdownRenderer :content="message.content"/>
+            </div>
+          </div>
+        </transition-group>
+        
+        <div v-if="isLoading" class="loading-indicator">
+          <div class="quantum-loader"></div>
+          <div class="typing-indicator">
+            <div class="pulse-dot"></div>
+            <div class="pulse-dot"></div>
+            <div class="pulse-dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Input Area -->
+      <div class="message-input-area">
+        <div class="tools-row">
+          <button class="tool-btn" @click="toggleTools">
+            <span class="tool-icon">🛠️</span>
+          </button>
+          <input type="file" 
+                 @change="handleFileUpload" 
+                 class="file-input"
+                 ref="fileInput"/>
+        </div>
+        
+        <div class="input-wrapper">
+          <textarea v-model="userMessage"
+                    @keydown.enter.exact.prevent="sendMessage"
+                    placeholder="Ask me anything..."
+                    class="message-textarea"
+                    ref="textarea"
+                    rows="1"></textarea>
+          <button @click="sendMessage" 
+                  class="send-btn"
+                  :disabled="isLoading">
+            ➤
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getAuth } from 'firebase/auth';
-import { getFirestore, collection, addDoc, onSnapshot } from 'firebase/firestore';
-import axios from 'axios';
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import { db, auth } from '@/firebase'
+import { collection, query, where, getDocs, addDoc, doc, getDoc } from 'firebase/firestore'
+import { useUserStore } from '@/stores/user'
+import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 
-const messages = ref([]);
-const newMessage = ref('');
-const auth = getAuth();
-const db = getFirestore();
+const userStore = useUserStore()
+const user = computed(() => userStore.user)
 
-// Firebase Authentication
-const user = auth.currentUser;
-const username = user ? user.displayName : 'Guest';
+// Firebase Data
+const userChats = ref([])
+const currentChat = ref(null)
+const currentMessages = ref([])
 
-// Fetch messages from Firebase
-onMounted(() => {
-  const chatCollection = collection(db, 'chats');
-  onSnapshot(chatCollection, (snapshot) => {
-    messages.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    scrollToBottom();
-  });
-});
+// OpenAI Configuration
+const isLoading = ref(false)
+const userMessage = ref('')
+const darkMode = ref(false)
 
-// Send message
-const sendMessage = async () => {
-  if (!newMessage.value.trim()) return;
+// DOM Refs
+const messagesContainer = ref(null)
+const textarea = ref(null)
 
-  // Add message to Firestore
-  await addDoc(collection(db, 'chats'), {
-    username,
-    content: newMessage.value,
-    sentByUser: true
-  });
+// Theme Handling
+const toggleDarkMode = () => {
+  darkMode.value = !darkMode.value
+  localStorage.setItem('darkMode', darkMode.value)
+}
 
-  // Clear input
-  newMessage.value = '';
-
-  // API call to OpenAI
+// Chat Management
+const createNewChat = async () => {
   try {
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-      headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      data: {
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: newMessage.value }],
-        max_tokens: 150
-      }
-    });
-
-    // Add AI response to Firestore
-    await addDoc(collection(db, 'chats'), {
-      username: 'AI',
-      content: response.data.choices[0].message.content,
-      sentByUser: false
-    });
+    const chatRef = await addDoc(collection(db, 'chats'), {
+      userId: user.value.uid,
+      createdAt: new Date(),
+      title: 'New Chat'
+    })
+    currentChat.value = chatRef.id
+    currentMessages.value = []
   } catch (error) {
-    console.error('Error sending message:', error);
+    console.error('Error creating chat:', error)
   }
-};
+}
 
-// Scroll to the bottom of the chat
+const loadChat = async (chatId) => {
+  try {
+    const chatDoc = await getDoc(doc(db, 'chats', chatId))
+    const messagesQuery = query(collection(db, 'messages'), 
+      where('chatId', '==', chatId))
+    const messagesSnapshot = await getDocs(messagesQuery)
+    
+    currentChat.value = chatId
+    currentMessages.value = messagesSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }))
+    
+    scrollToBottom()
+  } catch (error) {
+    console.error('Error loading chat:', error)
+  }
+}
+
+// OpenAI API Integration
+const sendMessage = async () => {
+  if (!userMessage.value.trim() || isLoading.value) return
+
+  try {
+    isLoading.value = true
+    const userMessageData = {
+      content: userMessage.value,
+      role: 'user',
+      timestamp: new Date(),
+      chatId: currentChat.value
+    }
+    
+    // Save user message to Firebase
+    const userMsgRef = await addDoc(collection(db, 'messages'), userMessageData)
+    currentMessages.value.push({ id: userMsgRef.id, ...userMessageData })
+    
+    // Generate AI response
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [
+          ...currentMessages.value
+            .filter(m => m.role !== 'system')
+            .map(m => ({ role: m.role, content: m.content })),
+          { role: "user", content: userMessage.value }
+        ],
+        stream: true
+      })
+    })
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+    
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let aiMessage = { content: '', role: 'assistant' }
+    
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      
+      const chunk = decoder.decode(value)
+      chunk.split('\n').forEach(line => {
+        const message = line.replace(/^data: /, '')
+        if (message === '[DONE]') return
+        if (message) {
+          try {
+            const parsed = JSON.parse(message)
+            aiMessage.content += parsed.choices[0].delta?.content || ''
+          } catch (e) {
+            console.error('Error parsing chunk:', e)
+          }
+        }
+      })
+      
+      // Update message in real-time
+      if (!currentMessages.value.find(m => m.role === 'assistant' && !m.id)) {
+        currentMessages.value.push(aiMessage)
+      }
+      scrollToBottom()
+    }
+
+    // Save final AI response to Firebase
+    const aiMsgRef = await addDoc(collection(db, 'messages'), {
+      ...aiMessage,
+      timestamp: new Date(),
+      chatId: currentChat.value
+    })
+    aiMessage.id = aiMsgRef.id
+  } catch (error) {
+    console.error('API Error:', error)
+    // Auto-retry logic here
+  } finally {
+    isLoading.value = false
+    userMessage.value = ''
+    scrollToBottom()
+  }
+}
+
+// Scroll Handling
 const scrollToBottom = () => {
-  const chatMessages = ref('chatMessages');
-  chatMessages.value.scrollTop = chatMessages.value.scrollHeight;
-};
+  nextTick(() => {
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTo({
+        top: messagesContainer.value.scrollHeight,
+        behavior: 'smooth'
+      })
+    }
+  })
+}
+
+// Initial Setup
+onMounted(async () => {
+  darkMode.value = localStorage.getItem('darkMode') === 'true'
+  if (user.value) {
+    const chatsQuery = query(collection(db, 'chats'), 
+      where('userId', '==', user.value.uid))
+    const querySnapshot = await getDocs(chatsQuery)
+    userChats.value = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }))
+  }
+})
 </script>
 
 <style scoped>
-.chat-container {
+/* Cosmic Theme Variables */
+:root {
+  --cosmic-primary: #2A2356;
+  --star-dust: #E0DAF8;
+  --nebula-purple: #7B61FF;
+  --dark-matter: #0A0815;
+  --supernova: #FFD700;
+}
+
+.dark-mode {
+  --cosmic-primary: #0A0815;
+  --star-dust: #C0B3F0;
+  --nebula-purple: #9D8AFF;
+  --dark-matter: #1A1730;
+  --supernova: #FFE55C;
+}
+
+.cosmic-chat {
   display: flex;
-  flex-direction: column;
   height: 100vh;
-  background: linear-gradient(135deg, #6e8efb, #a777e3);
-  font-family: Arial, sans-serif;
+  background: var(--dark-matter);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.chat-messages {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 20px;
+
+/* Chat Sidebar Styles */
+.chat-sidebar {
+  width: 260px;
+  background: var(--cosmic-primary);
+  padding: 1.5rem;
+  border-right: 1px solid rgba(255,255,255,0.1);
 }
-.message {
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 5px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.message.sent {
-  background-color: #e0ffe0;
-  text-align: right;
-}
-.chat-input {
-  display: flex;
-  padding: 10px;
-  border-top: 1px solid #ccc;
-}
-.chat-input input {
-  flex-grow: 1;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  margin-right: 10px;
-}
-.chat-input button {
-  padding: 10px;
-  background-color: #6e8efb;
-  border: none;
-  border-radius: 5px;
+
+.new-chat-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--nebula-purple);
   color: white;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: transform 0.2s;
 }
-.chat-input button:hover {
-  background-color: #a777e3;
+
+/* Message Card Animations */
+.message-fade-enter-active,
+.message-fade-leave-active {
+  transition: all 0.4s ease;
 }
+.message-fade-enter-from,
+.message-fade-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Quantum Loader Animation */
+@keyframes quantum-pulse {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.7; }
+}
+
+.quantum-loader {
+  width: 40px;
+  height: 40px;
+  background: var(--nebula-purple);
+  border-radius: 50%;
+  animation: quantum-pulse 1.5s infinite;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  display: flex;
+  gap: 6px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--supernova);
+  border-radius: 50%;
+  animation: pulse 1.4s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* Message Input Area */
+.message-input-area {
+  position: relative;
+  padding: 1.5rem;
+  background: var(--cosmic-primary);
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.message-textarea {
+  width: 100%;
+  background: var(--dark-matter);
+  color: var(--star-dust);
+  border: 1px solid var(--nebula-purple);
+  border-radius: 12px;
+  padding: 1rem;
+  resize: none;
+  transition: all 0.3s;
+}
+
+.send-btn {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  background: var(--nebula-purple);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+/* Add remaining styles for full cosmic effect... */
 </style>
