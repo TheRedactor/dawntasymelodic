@@ -573,7 +573,7 @@ export default {
   flex-direction: column;
   width: 260px;
   height: 100vh;
-  background: rgba(10, 10, 15, 0.95);
+  background: rgba(25, 25, 56, 0.95);
   border-right: 1px solid rgba(30, 77, 217, 0.2);
   transition: width 0.3s ease;
   position: relative;
