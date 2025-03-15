@@ -1,6 +1,6 @@
 <template>
   <div id="register-page">
-    <!-- THREE.js cosmic starfield -->
+    <!-- THREE.js Cosmic Starfield Background -->
     <canvas ref="starCanvas" class="starfield"></canvas>
     <div class="form-container">
       <h1 ref="title" class="epic-title">Register Your Cosmic Account</h1>
@@ -13,21 +13,55 @@
         </button>
       </form>
       <p v-if="error" class="error">{{ error }}</p>
-      <p class="login-link">Already have an account? <router-link to="/login">Login here</router-link></p>
+      <p class="login-link">
+        Already have an account?
+        <router-link to="/login">Login here</router-link>
+      </p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/store/auth';
-import gsap from "gsap";
-import * as THREE from "three";
-import anime from "animejs/lib/anime.es.js";
+import { getApp, getApps, initializeApp } from 'firebase/app';
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence
+} from 'firebase/auth';
+import { getFirestore, setDoc, doc, serverTimestamp } from 'firebase/firestore';
+import gsap from 'gsap';
+import * as THREE from 'three';
+import anime from 'animejs/lib/anime.es.js';
 
-// Use the AuthStore instead of direct Firebase calls
-const authStore = useAuthStore();
+// Firebase configuration (replace with your actual config)
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Prevent duplicate initialization
+let app;
+try {
+  if (getApps().length === 0) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApp();
+  }
+} catch (error) {
+  console.error("Firebase initialization error:", error);
+}
+
+const auth = getAuth(app);
+const db = getFirestore(app);
 const router = useRouter();
 
 // Reactive form data and state
@@ -42,7 +76,7 @@ const title = ref(null);
 const submitButton = ref(null);
 const starCanvas = ref(null);
 
-// Register function using the auth store - FIXED IMPLEMENTATION
+// Registration function using Firebase Auth and Firestore
 const register = async () => {
   if (isLoading.value) return;
   
@@ -50,67 +84,50 @@ const register = async () => {
   isLoading.value = true;
   
   try {
-    const { success, error: registrationError, user } = await authStore.registerUser(
-      email.value, 
-      password.value, 
-      username.value
-    );
+    // Set persistence based on your desired option (local in this case)
+    await setPersistence(auth, browserLocalPersistence);
     
-    if (success) {
-      console.log("🎉 Cosmic registration successful!", user);
-      
-      // Redirect to the specified URL
-      window.location.href = 'https://ai.dawntasy.com/onboarding';
-
-    } else {
-      error.value = registrationError || "An unknown error occurred during registration";
-      console.error("Registration error:", registrationError);
-    }
+    // Create the user with email and password
+    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+    const user = userCredential.user;
+    
+    // Update the user's display name with the provided username
+    await updateProfile(user, { displayName: username.value });
+    
+    // Create a Firestore document in 'users' collection for the user
+    await setDoc(doc(db, 'users', user.uid), {
+      username: username.value,
+      email: email.value,
+      createdAt: serverTimestamp()
+    });
+    
+    console.log("🎉 Cosmic registration successful!", user);
+    
+    // Redirect to the onboarding page
+    window.location.href = 'https://ai.dawntasy.com/onboarding';
   } catch (err) {
-    error.value = err.message || "Failed to create account";
     console.error("Registration error:", err);
+    // Handle errors based on error codes
+    if (err.code === 'auth/email-already-in-use') {
+      error.value = 'This quantum ID is already in use.';
+    } else if (err.code === 'auth/invalid-email') {
+      error.value = 'The provided quantum ID is invalid.';
+    } else if (err.code === 'auth/weak-password') {
+      error.value = 'Dimensional key too weak. Must be at least 6 characters.';
+    } else {
+      error.value = err.message || 'An unknown error occurred during registration';
+    }
   } finally {
     isLoading.value = false;
   }
 };
 
-// Portal effect for transitions
-const createPortalEffect = (callback) => {
-  // Create portal element
-  const portal = document.createElement('div');
-  portal.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    width: 100vw;
-    height: 100vh;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.8) 0%, transparent 70%);
-    border-radius: 50%;
-    z-index: 9999;
-    opacity: 0;
-    transition: transform 1s cubic-bezier(0.19, 1, 0.22, 1), opacity 1s cubic-bezier(0.19, 1, 0.22, 1);
-  `;
-  document.body.appendChild(portal);
-  
-  // Animate portal opening
-  setTimeout(() => {
-    portal.style.opacity = '1';
-    portal.style.transform = 'translate(-50%, -50%) scale(5)';
-    
-    // Execute callback after animation completes
-    setTimeout(() => {
-      callback();
-    }, 1000);
-  }, 50);
-};
-
 onMounted(() => {
-  // GSAP animations for a smooth, epic entry
+  // Animate title and submit button using GSAP for a legendary entrance
   gsap.from(title.value, { duration: 1.5, opacity: 0, y: -50, ease: "power2.out" });
   gsap.from(submitButton.value, { duration: 1, opacity: 0, delay: 0.5, scale: 0.5, ease: "elastic.out(1, 0.3)" });
   
-  // AnimeJS for input fields; staggered sliding-in effect
+  // Staggered sliding-in effect for input fields using AnimeJS
   anime({
     targets: 'input',
     translateX: [-50, 0],
@@ -118,13 +135,12 @@ onMounted(() => {
     delay: anime.stagger(100)
   });
   
-  // Setup THREE.js cosmic starfield background
+  // THREE.js cosmic starfield background setup
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ canvas: starCanvas.value, alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   
-  // Create starfield particles
   const starGeometry = new THREE.BufferGeometry();
   const starCount = 10000;
   const starVertices = [];
@@ -138,7 +154,7 @@ onMounted(() => {
   const starMaterial = new THREE.PointsMaterial({
     color: 0xffffff,
     size: 1,
-    transparent: true,
+    transparent: true
   });
   
   const stars = new THREE.Points(starGeometry, starMaterial);
@@ -147,7 +163,6 @@ onMounted(() => {
   
   const animate = () => {
     requestAnimationFrame(animate);
-    // Add parallax rotation to the starfield
     stars.rotation.x += 0.0005;
     stars.rotation.y += 0.0005;
     renderer.render(scene, camera);
@@ -191,9 +206,9 @@ onMounted(() => {
   background: rgba(0, 0, 0, 0.75);
   padding: 2rem;
   border-radius: 10px;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
   text-align: center;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(8px);
   max-width: 400px;
   width: 90%;
 }
@@ -203,7 +218,7 @@ onMounted(() => {
   font-family: 'Orbitron', sans-serif;
   margin-bottom: 1.5rem;
   font-size: 2rem;
-  text-shadow: 0 0 10px rgba(139, 92, 246, 0.7);
+  text-shadow: 0 0 10px rgba(139,92,246,0.8);
 }
 
 form {
@@ -219,7 +234,8 @@ input {
   font-size: 1rem;
   background: rgba(255, 255, 255, 0.1);
   color: white;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba(139,92,246,0.3);
+  transition: box-shadow 0.3s ease;
 }
 
 input::placeholder {
@@ -229,7 +245,7 @@ input::placeholder {
 input:focus {
   outline: none;
   border-color: #8b5cf6;
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 10px rgba(139,92,246,0.8);
 }
 
 button {
@@ -247,7 +263,7 @@ button {
 
 button:not(:disabled):hover {
   transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.7);
+  box-shadow: 0 0 15px rgba(139,92,246,0.7);
 }
 
 button:disabled {
@@ -280,20 +296,6 @@ button:disabled {
 
 .login-link a:hover {
   text-decoration: underline;
-  text-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
-}
-
-@media (max-width: 480px) {
-  .form-container {
-    padding: 1.5rem;
-  }
-  
-  .epic-title {
-    font-size: 1.5rem;
-  }
-  
-  input, button {
-    padding: 0.6rem;
-  }
+  text-shadow: 0 0 5px rgba(139,92,246,0.5);
 }
 </style>
