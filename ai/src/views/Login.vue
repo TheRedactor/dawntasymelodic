@@ -2,14 +2,17 @@
   <div class="cosmic-login">
     <!-- DYNAMIC STAR FIELD BACKGROUND -->
     <div class="star-field">
-      <div v-for="n in 100" :key="`star-${n}`" class="star"
-           :style="{
-              '--size': `${Math.random() * 3 + 1}px`,
-              '--x': `${Math.random() * 100}%`,
-              '--y': `${Math.random() * 100}%`,
-              '--duration': `${Math.random() * 50 + 20}s`
-           }">
-      </div>
+      <div
+        v-for="n in 100"
+        :key="`star-${n}`"
+        class="star"
+        :style="{
+          '--size': `${Math.random() * 3 + 1}px`,
+          '--x': `${Math.random() * 100}%`,
+          '--y': `${Math.random() * 100}%`,
+          '--duration': `${Math.random() * 50 + 20}s`
+        }"
+      ></div>
     </div>
 
     <!-- ANIMATED GALAXY EFFECT -->
@@ -100,7 +103,7 @@
             <!-- REMEMBER ME & FORGOT PASSWORD -->
             <div class="form-options">
               <div class="remember-option">
-                <input id="remember" v-model="rememberMe" type="checkbox" class="cosmic-checkbox">
+                <input id="remember" v-model="rememberMe" type="checkbox" class="cosmic-checkbox" />
                 <label for="remember">REMEMBER COORDINATES</label>
               </div>
               <button type="button" @click="forgotPassword" class="forgot-btn">LOST KEY?</button>
@@ -167,7 +170,7 @@ import gsap from 'gsap';
 export default {
   name: 'LoginView',
   setup() {
-    // Initialize Firebase with error prevention
+    // Initialize Firebase with prevention of duplicate initialization
     let app;
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
@@ -178,12 +181,11 @@ export default {
       appId: "YOUR_APP_ID"
     };
 
-    // FIX: Prevent duplicate Firebase initialization
     try {
       if (getApps().length === 0) {
         app = initializeApp(firebaseConfig);
       } else {
-        app = getApp(); // Use existing app
+        app = getApp();
       }
     } catch (error) {
       console.error("Firebase initialization error:", error);
@@ -224,52 +226,36 @@ export default {
     };
 
     const activateField = (field) => {
-      errors[field] = ''; // Clear error when field is focused
-      isActivated.value = true; // Activate login button style
+      errors[field] = '';
+      isActivated.value = true;
     };
-
-    // ANIMATION STATES
-    const tunnelTimeline = ref(null);
 
     // LOGIN FUNCTION
     const handleLogin = async () => {
       validateEmail();
       validatePassword();
-
-      if (errors.email || errors.password) {
-        return; // Stop login if there are validation errors
-      }
+      if (errors.email || errors.password) return;
 
       isLoading.value = true;
       loginError.value = '';
-      loginStep.value = 1; // Start login sequence
+      loginStep.value = 1;
 
       try {
-        // Set persistence based on "Remember Me"
         await setPersistence(auth, rememberMe.value ? browserLocalPersistence : browserSessionPersistence);
         loginStep.value = 2;
-
-        // Sign in with email and password
         await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
         loginStep.value = 3;
 
-        // Simulate scanning effect before redirecting
         isScanning.value = true;
-
-        // SUCCESSFUL LOGIN: PERFORM ANIMATION AND REDIRECT
         setTimeout(() => {
           isScanning.value = false;
           loginSuccess.value = true;
           portalActive.value = true;
-
-          // Delay the actual redirection to ai.dawntasy.com/chat
           setTimeout(() => {
-            window.location.href = 'https://ai.dawntasy.com/chat'; // REDIRECT HERE
-          }, 2000); // Adjust delay as needed
-
-        }, 2000); // Adjust the scanning simulation time
+            window.location.href = 'https://ai.dawntasy.com/chat';
+          }, 2000);
+        }, 2000);
       } catch (error) {
-        // Handle specific Firebase authentication errors
         switch (error.code) {
           case 'auth/user-not-found':
             loginError.value = 'QUANTUM ID NOT FOUND. ENSURE CORRECT REALM.';
@@ -290,7 +276,6 @@ export default {
       }
     };
 
-    // FORGOT PASSWORD FUNCTION
     const forgotPassword = async () => {
       try {
         await sendPasswordResetEmail(auth, credentials.email);
@@ -301,16 +286,12 @@ export default {
       }
     };
 
-    // NAVIGATION FUNCTION
     const navigateToRegister = () => {
       router.push('/register');
     };
 
     onMounted(() => {
-      // START ANIMATION
       portalActive.value = true;
-
-      // GSAP ANIMATIONS FOR ENERGY WAVES
       gsap.to(".energy-wave", {
         duration: 2,
         x: "100px",
@@ -320,22 +301,15 @@ export default {
         stagger: 0.2,
         opacity: 0.5
       });
-
-      // GSAP ANIMATIONS FOR GALAXY SPIRAL
       gsap.to(".galaxy-spiral", {
         duration: 100,
         rotation: 360,
         repeat: -1,
         ease: "linear"
       });
-
-      // TIMELINE FOR WARP TUNNEL
-      tunnelTimeline.value = gsap.timeline({ repeat: -1, yoyo: false });
-      tunnelTimeline.value.to(".warp-tunnel", {
-        duration: 1,
-        xPercent: 100,
-        ease: "power4.inOut",
-      });
+      // Warp tunnel timeline (if needed for later effects)
+      // Start subtle entrance animations
+      gsap.from(".login-portal", { duration: 1, opacity: 0, scale: 0.9, ease: "power3.out" });
     });
 
     return {
@@ -355,8 +329,7 @@ export default {
       activateField,
       handleLogin,
       forgotPassword,
-      navigateToRegister,
-      tunnelTimeline
+      navigateToRegister
     };
   }
 };
@@ -372,7 +345,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(to bottom, #040d21, #00040f);
+  background: linear-gradient(to bottom, #0b132b, #020c1b);
   font-family: 'Roboto', sans-serif;
 }
 
@@ -389,23 +362,19 @@ export default {
 
 .star {
   position: absolute;
-  background: white;
+  background: #ffffff;
   border-radius: 50%;
-  animation: twinkle var(--duration) linear infinite;
   width: var(--size);
   height: var(--size);
   top: var(--y);
   left: var(--x);
-  opacity: 0.7;
+  animation: twinkle var(--duration) linear infinite;
+  opacity: 0.8;
 }
 
 @keyframes twinkle {
-  0%, 100% {
-    opacity: 0.7;
-  }
-  50% {
-    opacity: 0.3;
-  }
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0.3; }
 }
 
 /* GALAXY SPIRAL */
@@ -418,7 +387,7 @@ export default {
   height: 400px;
   background: url('https://i.imgur.com/zKIW3wA.png') center/cover;
   border-radius: 50%;
-  opacity: 0.3;
+  opacity: 0.35;
   z-index: 1;
 }
 
@@ -429,34 +398,25 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 2;
+  pointer-events: none;
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
-  z-index: 2;
-  pointer-events: none;
 }
 
 .energy-wave {
   position: absolute;
   width: 200%;
   height: 200%;
-  background: radial-gradient(ellipse at center, rgba(52, 152, 219, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
+  background: radial-gradient(ellipse at center, rgba(52,152,219,0.25) 0%, transparent 70%);
   border-radius: 50%;
   opacity: 0;
 }
 
-.wave1 {
-  transform: translate(-50%, -50%) scale(1);
-}
-
-.wave2 {
-  transform: translate(-50%, -50%) scale(1.2);
-}
-
-.wave3 {
-  transform: translate(-50%, -50%) scale(1.4);
-}
+.wave1 { transform: translate(-50%, -50%) scale(1); }
+.wave2 { transform: translate(-50%, -50%) scale(1.2); }
+.wave3 { transform: translate(-50%, -50%) scale(1.4); }
 
 /* MAIN LOGIN PORTAL */
 .login-portal {
@@ -464,23 +424,20 @@ export default {
   z-index: 3;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
   padding: 3rem;
   width: 100%;
   max-width: 500px;
   text-align: center;
-  transition: all 0.3s ease-in-out;
-  opacity: 1;
-  transform: scale(1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 8px 32px rgba(31,38,135,0.37);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .login-portal.portal-active {
-  opacity: 1;
   transform: scale(1.05);
-  box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.5);
+  box-shadow: 0 12px 48px rgba(31,38,135,0.5);
 }
 
 /* PORTAL HEADER */
@@ -505,7 +462,13 @@ export default {
   height: 30px;
   background: linear-gradient(45deg, #6a5acd, #2e86ab);
   border-radius: 50%;
-  box-shadow: 0 0 15px rgba(106, 90, 205, 0.8);
+  box-shadow: 0 0 15px rgba(106,90,205,0.8);
+  animation: corePulse 4s infinite ease-in-out;
+}
+
+@keyframes corePulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.2); }
 }
 
 .emblem-ring {
@@ -515,17 +478,13 @@ export default {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 3px dashed rgba(255, 255, 255, 0.3);
+  border: 3px dashed rgba(255,255,255,0.3);
   animation: rotateRing 15s linear infinite;
 }
 
 @keyframes rotateRing {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .emblem-particles {
@@ -552,23 +511,19 @@ export default {
 }
 
 @keyframes floatParticles {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 .portal-title {
   font-size: 2.2rem;
   margin-bottom: 0.5rem;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 10px rgba(255,255,255,0.5);
 }
 
 .portal-subtitle {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255,255,255,0.7);
 }
 
 /* AUTHENTICATION INTERFACE */
@@ -577,14 +532,15 @@ export default {
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 .interface-screen {
   position: relative;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0,0,0,0.8);
   padding: 2rem;
   border-radius: 8px;
+  overflow: hidden;
 }
 
 .screen-scanner {
@@ -593,10 +549,10 @@ export default {
   left: 0;
   width: 100%;
   height: 5px;
-  background: rgba(52, 152, 219, 0.7);
-  box-shadow: 0 0 20px rgba(52, 152, 219, 0.8);
-  animation: scan 3s linear infinite;
+  background: rgba(52,152,219,0.7);
+  box-shadow: 0 0 20px rgba(52,152,219,0.8);
   transform: translateY(-100%);
+  animation: scan 3s linear infinite;
 }
 
 .screen-scanner.scanning {
@@ -604,12 +560,8 @@ export default {
 }
 
 @keyframes scan {
-  0% {
-    top: 0%;
-  }
-  100% {
-    top: 100%;
-  }
+  0% { top: 0%; }
+  100% { top: 100%; }
 }
 
 .status-indicators {
@@ -624,7 +576,7 @@ export default {
   border-radius: 50%;
   background: #333;
   margin: 0 0.5rem;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
 }
 
 .status-light.active {
@@ -649,7 +601,7 @@ export default {
 .form-group label {
   display: block;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255,255,255,0.8);
   margin-bottom: 0.4rem;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -663,24 +615,24 @@ export default {
 .cosmic-input {
   width: 100%;
   padding: 0.8rem 1rem;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,0.5);
   border: none;
   border-radius: 5px;
   color: #fff;
   font-size: 1rem;
   transition: box-shadow 0.3s ease;
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
   outline: none;
   position: relative;
   z-index: 2;
 }
 
 .cosmic-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255,255,255,0.5);
 }
 
 .cosmic-input:focus {
-  box-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+  box-shadow: 0 0 10px rgba(52,152,219,0.7);
 }
 
 .input-effects {
@@ -700,7 +652,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(52, 152, 219, 0.3);
+  background: rgba(52,152,219,0.3);
   opacity: 0;
   transition: opacity 0.3s ease;
   border-radius: 5px;
@@ -716,19 +668,15 @@ export default {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(to right, transparent, rgba(52, 152, 219, 0.8), transparent);
+  background: linear-gradient(to right, transparent, rgba(52,152,219,0.8), transparent);
   transform: translateY(-100%);
   animation: scanLine 4s linear infinite;
   border-radius: 2px;
 }
 
 @keyframes scanLine {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
+  0% { left: -100%; }
+  100% { left: 100%; }
 }
 
 .field-icon {
@@ -736,7 +684,7 @@ export default {
   top: 50%;
   right: 1rem;
   transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255,255,255,0.6);
   font-size: 1.2rem;
   pointer-events: none;
   z-index: 1;
@@ -755,7 +703,7 @@ export default {
 
 .form-group.error .cosmic-input {
   border-color: #e74c3c;
-  box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
+  box-shadow: 0 0 8px rgba(231,76,60,0.5);
 }
 
 /* FORM OPTIONS */
@@ -764,7 +712,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255,255,255,0.7);
   font-size: 0.85rem;
 }
 
@@ -778,9 +726,9 @@ export default {
   appearance: none;
   width: 16px;
   height: 16px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,0.5);
   border-radius: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255,255,255,0.3);
   cursor: pointer;
   position: relative;
   outline: none;
@@ -818,7 +766,7 @@ export default {
 
 /* LOGIN ERROR */
 .login-error {
-  background: rgba(231, 76, 60, 0.1);
+  background: rgba(231,76,60,0.1);
   color: #e74c3c;
   border-left: 3px solid #e74c3c;
   padding: 1rem;
@@ -852,7 +800,7 @@ export default {
 
 .login-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5);
+  box-shadow: 0 5px 15px rgba(52,152,219,0.5);
 }
 
 .login-btn:disabled {
@@ -874,16 +822,14 @@ export default {
   margin: -12px 0 0 -12px;
   width: 24px;
   height: 24px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  border: 3px solid rgba(255,255,255,0.3);
   border-radius: 50%;
   border-top-color: #fff;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .btn-activated {
@@ -894,7 +840,7 @@ export default {
 .create-account {
   margin-top: 2rem;
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255,255,255,0.7);
 }
 
 .register-link {
@@ -915,7 +861,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0,0,0,0.9);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -949,6 +895,6 @@ export default {
 
 .success-message p {
   font-size: 1.2rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255,255,255,0.8);
 }
 </style>
