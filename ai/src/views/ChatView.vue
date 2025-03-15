@@ -185,7 +185,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { marked } from 'marked';
 import { useAuthStore } from '@/store/auth';
-import { useOpenAI } from '@/server/api/openai';
+import { useOpenAI } from '../../server/api/openai';
 import { useChatStore } from '@/store/chat';
 import { format } from 'date-fns';
 import hljs from 'highlight.js';
