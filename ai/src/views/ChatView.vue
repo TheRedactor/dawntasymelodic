@@ -84,7 +84,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
-import { db, auth } from '@/firebase'
+import { db, auth } from '@/firebase/init'
 import { collection, query, where, getDocs, addDoc, doc, getDoc } from 'firebase/firestore'
 import { useUserStore } from '@/store/user'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
