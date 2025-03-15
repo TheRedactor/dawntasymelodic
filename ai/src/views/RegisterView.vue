@@ -17,25 +17,31 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { initializeApp } from "firebase/app";
+import { getApps, getApp, initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import gsap from "gsap";
 import * as THREE from "three";
 import anime from "animejs/lib/anime.es.js";
 
-// Firebase configuration - replace with your own project's config
+// Firebase configuration with explicit dummy values (replace these with your real config)
 const firebaseConfig = {
-  apiKey: "VITE_FIREBASE_API_KEY",
-  authDomain: "VITE_FIREBASE_AUTH_DOMAIN",
-  projectId: "VITE_FIREBASE_PROJECT_ID",
-  storageBucket: "VITE_FIREBASE_STORAGE_BUCKET",
-  messagingSenderId: "VITE_FIREBASE_MESSAGING_SENDER_ID",
-  appId: "VITE_FIREBASE_APP_ID"
+  apiKey: "ABC123DEF456GHI789",
+  authDomain: "cosmic-app.firebaseapp.com",
+  projectId: "cosmic-app",
+  storageBucket: "cosmic-app.appspot.com",
+  messagingSenderId: "1234567890",
+  appId: "1:1234567890:web:abcdef123456"
 };
 
-// Initialize Firebase services
-const firebaseApp = initializeApp(firebaseConfig);
+// Initialize Firebase services with duplicate-app check
+let firebaseApp;
+if (!getApps().length) {
+  firebaseApp = initializeApp(firebaseConfig);
+} else {
+  firebaseApp = getApp();
+}
+
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 
