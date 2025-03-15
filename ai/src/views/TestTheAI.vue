@@ -929,3 +929,4 @@ Current mode: ${mode.value}`;
   height: 70%;
   animation: ringRotate 7s linear infinite reverse;
 }
+</style>
