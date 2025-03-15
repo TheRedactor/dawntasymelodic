@@ -93,7 +93,7 @@
           :key="index"
           class="message-bubble"
           :class="{ 'user': message.role === 'user', 'assistant': message.role === 'assistant' }"
-          :ref="`message-${index}`"
+          :ref="el => { if (el) messageRefs[index] = el }"
         >
           <div v-if="message.role === 'user'" class="avatar user-avatar">
             <span class="avatar-letter">{{ userInitial }}</span>
@@ -140,10 +140,16 @@
       </div>
 
       <!-- Scroll Indicator -->
-      <div v-if="showScrollIndicator" class="scroll-indicator" @click="scrollToBottom" ref="scrollIndicator">
+      <button
+        v-if="showScrollIndicator"
+        class="scroll-indicator"
+        @click="scrollToBottom"
+        ref="scrollIndicator"
+        aria-label="Scroll to bottom"
+      >
         <i class="ri-arrow-down-line"></i>
         <div class="scroll-pulse"></div>
-      </div>
+      </button>
     </div>
 
     <!-- Input Area -->
@@ -173,7 +179,13 @@
           ></div>
         </div>
       </div>
-      <button class="send-button" @click="sendMessage()" :disabled="!canSend || isLoading" ref="sendButton">
+      <button 
+        class="send-button" 
+        @click="sendMessage()" 
+        :disabled="!canSend || isLoading" 
+        ref="sendButton"
+        aria-label="Send message"
+      >
         <span class="send-icon">→</span>
         <span class="button-pulse"></span>
       </button>
@@ -193,12 +205,14 @@ import gsap from 'gsap';
 import * as THREE from 'three';
 import anime from 'animejs';
 import { useRoute } from 'vue-router';
+import axios from 'axios';
 
 const authStore = useAuthStore();
 const openai = useOpenAI();
 const chatStore = useChatStore();
 const route = useRoute();
 
+// DOM references
 const chatContainer = ref<HTMLElement | null>(null);
 const inputField = ref<HTMLTextAreaElement | null>(null);
 const messagesContainer = ref<HTMLDivElement | null>(null);
@@ -219,13 +233,21 @@ const runeRift = ref<HTMLElement | null>(null);
 const runeCosmic = ref<HTMLElement | null>(null);
 const scrollIndicator = ref<HTMLElement | null>(null);
 
+// Message refs for dynamic scrolling
+const messageRefs = ref<{[key: number]: HTMLElement}>({});
+
+// App state
 const userInput = ref('');
 const isLoading = ref(false);
 const messages = ref<Array<{ role: 'user' | 'assistant'; content: string; timestamp: number }>>([]);
 const showScrollIndicator = ref(false);
+const scrollDistance = ref(0);
 const mode = ref<'default' | 'archmage' | 'creative'>('default');
 const modes = { default: 'Standard', archmage: 'ARCHMAGE', creative: 'Creative' };
 const modeName = computed(() => modes[mode.value]);
+const lastMessageTimestamp = ref(0);
+
+// Fixed Dawntasy-specific prompts
 const suggestions = [
   "Tell me about Time Smith and The Rift ✨",
   "What cosmic secrets does Dawntasy hold? 🌌",
@@ -233,15 +255,25 @@ const suggestions = [
   "Who is Ursa Minor in the Dawntasy universe? 🐻",
   "Explore the quantum themes of Dawntasy with me! 🔮"
 ];
+
+// Computed values
 const userInitial = computed(() => authStore.displayName?.charAt(0).toUpperCase() || 'Y');
 const canSend = computed(() => userInput.value.trim().length > 0);
 const messagesCount = computed(() => messages.value.length);
+const isAtBottom = computed(() => {
+  if (!messagesContainer.value) return true;
+  const { scrollTop, scrollHeight, clientHeight } = messagesContainer.value;
+  return Math.abs(scrollHeight - scrollTop - clientHeight) < 20;
+});
 
-// --- THREE.js cosmic background variables ---
+// THREE.js cosmic background variables
 let scene: THREE.Scene, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer;
 let backgroundCanvas: HTMLCanvasElement, animationFrameId: number;
 let stars: THREE.Points, nebula: THREE.Mesh;
 
+/**
+ * Set the AI mode after checking user permissions
+ */
 const setMode = (newMode: 'default' | 'archmage' | 'creative') => {
   if (newMode !== 'default') {
     const plan = authStore.userProfile?.plan;
@@ -257,10 +289,16 @@ const setMode = (newMode: 'default' | 'archmage' | 'creative') => {
   });
 };
 
+/**
+ * Format message with markdown and highlight Dawntasy keywords
+ */
 const formatMessage = (content: string) => {
-  let html = marked(content, {
+  // Configure marked options for better parsing
+  marked.setOptions({
     gfm: true,
     breaks: true,
+    smartLists: true,
+    smartypants: true,
     highlight: (code, lang) => {
       if (lang && hljs.getLanguage(lang)) {
         return hljs.highlight(code, { language: lang }).value;
@@ -268,6 +306,10 @@ const formatMessage = (content: string) => {
       return hljs.highlightAuto(code).value;
     }
   });
+
+  let html = marked(content);
+  
+  // Highlight Dawntasy-specific keywords
   const keywords = [
     'Time Smith',
     'The Rift',
@@ -279,126 +321,94 @@ const formatMessage = (content: string) => {
     'Plain and Pale Clock',
     'Circular Dawn'
   ];
+  
   keywords.forEach(keyword => {
     const regex = new RegExp(`\\b${keyword}\\b`, 'g');
     html = html.replace(regex, `<span class="cosmic-keyword">${keyword}</span>`);
   });
+  
   return html;
 };
 
+/**
+ * Format message timestamp
+ */
 const formatTime = (timestamp: number) => format(timestamp, 'h:mm a');
 
+/**
+ * Handle enter key press in message input
+ */
 const onEnterPress = (e: KeyboardEvent) => {
-  if (!e.ctrlKey && !e.shiftKey) sendMessage();
+  if (!e.ctrlKey && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
 };
 
+/**
+ * Auto-resize textarea as user types
+ */
 const resizeTextarea = () => {
   if (inputField.value) {
+    // Reset height to get proper scrollHeight
     inputField.value.style.height = 'auto';
+    // Set new height based on content (with max height of 150px)
     inputField.value.style.height = `${Math.min(inputField.value.scrollHeight, 150)}px`;
   }
 };
 
+/**
+ * Improved scroll to bottom function with better behavior
+ */
 const scrollToBottom = async (animate = true) => {
   await nextTick();
   if (messagesContainer.value) {
     const container = messagesContainer.value;
+    
     if (animate) {
-      gsap.to(container, { scrollTop: container.scrollHeight, duration: 0.5, ease: "power2.out" });
+      gsap.to(container, { 
+        scrollTop: container.scrollHeight, 
+        duration: 0.5, 
+        ease: "power2.out",
+        onComplete: () => {
+          showScrollIndicator.value = false;
+        }
+      });
     } else {
       container.scrollTop = container.scrollHeight;
+      showScrollIndicator.value = false;
     }
-    showScrollIndicator.value = false;
   }
 };
 
+/**
+ * Improved scroll handler with better threshold detection
+ */
 const handleScroll = () => {
   if (!messagesContainer.value) return;
-  const { scrollTop, scrollHeight, clientHeight } = messagesContainer.value;
-  showScrollIndicator.value = (scrollHeight - scrollTop - clientHeight) > 20;
-};
-
-// --- Revised sendMessage ---
-// Now it always scrolls to bottom, and if streamCompletion fails,
-// it falls back to a standard generateCompletion call.
-const sendMessage = async (text?: string) => {
-  const messageText = text || userInput.value.trim();
-  if (!messageText) return;
-  if (sendButton.value && !text) {
-    anime({
-      targets: sendButton.value,
-      scale: [1, 0.8, 1.2, 1],
-      rotate: [0, -15, 15, 0],
-      duration: 600,
-      easing: 'easeInOutQuad'
-    });
-    createParticleBurst(sendButton.value);
-  }
-  // Add user message locally
-  messages.value.push({ role: 'user', content: messageText, timestamp: Date.now() });
-  // Clear input and scroll
-  userInput.value = '';
-  if (inputField.value) inputField.value.style.height = 'auto';
-  await scrollToBottom();
-  isLoading.value = true;
   
-  try {
-    const chatHistory = messages.value.map(msg => ({ role: msg.role, content: msg.content }));
-    let assistantResponse = '';
-    
-    // Attempt streaming call
-    await openai.streamCompletion(messageText, chatHistory.slice(0, -1), {
-      mode: mode.value,
-      temperature: 0.7,
-      maxTokens: 1500,
-      onChunk: (chunk) => {
-        assistantResponse += chunk;
-        const lastMessage = messages.value[messages.value.length - 1];
-        if (lastMessage && lastMessage.role === 'assistant') {
-          lastMessage.content = assistantResponse;
-        } else {
-          messages.value.push({ role: 'assistant', content: assistantResponse, timestamp: Date.now() });
-        }
-        scrollToBottom(false);
-      }
-    });
-    
-    // If streaming finishes without error, record the chat interaction
-    await openai.recordChatInteraction(messages.value.map(msg => ({ role: msg.role, content: msg.content })));
-    
-  } catch (error) {
-    console.error('Streaming error:', error);
-    // Fallback: use non-streaming call if streaming fails
-    try {
-      const responseMessage = await openai.callOpenAI(messages.value);
-      if (responseMessage) {
-        messages.value.push({ role: 'assistant', content: responseMessage, timestamp: Date.now() });
-      }
-      await openai.recordChatInteraction(messages.value.map(msg => ({ role: msg.role, content: msg.content })));
-    } catch (fallbackError) {
-      console.error('Fallback error:', fallbackError);
-      messages.value.push({
-        role: 'assistant',
-        content: "⚠️ *The Rift appears unstable.* I'm having trouble connecting to the cosmic streams. Please try again later.",
-        timestamp: Date.now()
-      });
-    }
-  } finally {
-    isLoading.value = false;
-    await nextTick();
-    scrollToBottom();
-  }
+  const { scrollTop, scrollHeight, clientHeight } = messagesContainer.value;
+  scrollDistance.value = scrollHeight - scrollTop - clientHeight;
+  
+  // Only show scroll indicator if we're a significant distance from the bottom
+  // and we have messages to scroll to
+  showScrollIndicator.value = scrollDistance.value > 100 && messages.value.length > 0;
 };
 
+/**
+ * Animate suggestion chip on hover
+ */
 const animateChip = (e: MouseEvent) => {
   const target = e.currentTarget as HTMLElement;
   gsap.to(target, { scale: 1.1, boxShadow: "0 8px 20px rgba(139, 92, 246, 0.6)", y: -5, duration: 0.3, ease: "back.out(1.7)" });
+  
   for (let i = 0; i < 3; i++) {
     const sparkle = document.createElement('div');
     sparkle.className = 'sparkle';
     sparkle.style.left = `${Math.random() * 100}%`;
     sparkle.style.top = `${Math.random() * 100}%`;
     target.appendChild(sparkle);
+    
     gsap.to(sparkle, {
       opacity: 0,
       scale: 3,
@@ -410,15 +420,23 @@ const animateChip = (e: MouseEvent) => {
   }
 };
 
+/**
+ * Reset chip animation on mouse leave
+ */
 const resetChip = (e: MouseEvent) => {
   const target = e.currentTarget as HTMLElement;
   gsap.to(target, { scale: 1, boxShadow: "0 4px 8px rgba(139, 92, 246, 0.3)", y: 0, duration: 0.3, ease: "power2.out" });
 };
 
+/**
+ * Portal transition animation
+ */
 const animatePortalTransition = (callback: () => void) => {
   if (!portalTransition.value) return;
+  
   const portal = portalTransition.value;
   portal.style.display = 'flex';
+  
   gsap.timeline()
     .to(portal, { opacity: 1, duration: 0.3 })
     .to(portal.querySelectorAll('.portal-ring'), { scale: 1.5, opacity: 0.9, duration: 0.5, stagger: 0.1 })
@@ -435,6 +453,7 @@ const animatePortalTransition = (callback: () => void) => {
           .to(portal, { opacity: 0, duration: 0.5, onComplete: () => { portal.style.display = 'none'; } });
       }
     });
+    
   gsap.to(portal.querySelectorAll('.portal-ray'), {
     scaleY: 1.5,
     opacity: 0.8,
@@ -445,19 +464,25 @@ const animatePortalTransition = (callback: () => void) => {
   });
 };
 
+/**
+ * Create particle burst animation
+ */
 const createParticleBurst = (element: HTMLElement) => {
   const rect = element.getBoundingClientRect();
   const centerX = rect.left + rect.width / 2;
   const centerY = rect.top + rect.height / 2;
+  
   for (let i = 0; i < 20; i++) {
     const particle = document.createElement('div');
     particle.className = 'burst-particle';
     document.body.appendChild(particle);
+    
     const angle = Math.random() * Math.PI * 2;
     const distance = Math.random() * 100 + 50;
     const size = Math.random() * 6 + 2;
     const duration = Math.random() * 1 + 0.5;
     const hue = Math.random() * 60 + 240;
+    
     gsap.set(particle, {
       width: size,
       height: size,
@@ -469,6 +494,7 @@ const createParticleBurst = (element: HTMLElement) => {
       zIndex: 9999,
       boxShadow: `0 0 ${size}px hsl(${hue}, 80%, 60%)`
     });
+    
     gsap.to(particle, {
       x: centerX + Math.cos(angle) * distance,
       y: centerY + Math.sin(angle) * distance,
@@ -480,15 +506,27 @@ const createParticleBurst = (element: HTMLElement) => {
   }
 };
 
+/**
+ * Initialize THREE.js cosmic background
+ */
 const initCosmicBackground = () => {
+  // Create canvas element
   backgroundCanvas = document.createElement('canvas');
   backgroundCanvas.className = 'cosmic-background-canvas';
   chatContainer.value?.appendChild(backgroundCanvas);
+  
+  // Set up THREE.js scene
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  renderer = new THREE.WebGLRenderer({ canvas: backgroundCanvas, alpha: true, antialias: true });
+  renderer = new THREE.WebGLRenderer({ 
+    canvas: backgroundCanvas, 
+    alpha: true, 
+    antialias: true 
+  });
   renderer.setSize(window.innerWidth, window.innerHeight);
   camera.position.z = 5;
+  
+  // Create star field
   const starsGeometry = new THREE.BufferGeometry();
   const starsMaterial = new THREE.PointsMaterial({
     color: 0xffffff,
@@ -497,28 +535,48 @@ const initCosmicBackground = () => {
     opacity: 0.8,
     sizeAttenuation: true
   });
+  
   const starsVertices = [];
   for (let i = 0; i < 2000; i++) {
     starsVertices.push((Math.random() - 0.5) * 20);
     starsVertices.push((Math.random() - 0.5) * 20);
     starsVertices.push((Math.random() - 0.5) * 20);
   }
+  
   starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
   stars = new THREE.Points(starsGeometry, starsMaterial);
   scene.add(stars);
+  
+  // Create nebula effect
   const nebulaGeometry = new THREE.SphereGeometry(10, 32, 32);
-  const nebulaMaterial = new THREE.MeshBasicMaterial({ color: 0x8B5CF6, transparent: true, opacity: 0.05 });
+  const nebulaMaterial = new THREE.MeshBasicMaterial({ 
+    color: 0x8B5CF6, 
+    transparent: true, 
+    opacity: 0.05 
+  });
+  
   nebula = new THREE.Mesh(nebulaGeometry, nebulaMaterial);
   scene.add(nebula);
+  
+  // Animation loop
   const animate = () => {
     animationFrameId = requestAnimationFrame(animate);
     stars.rotation.x += 0.0003;
     stars.rotation.y += 0.0002;
+    
     const time = Date.now() * 0.001;
-    nebula.scale.set(1 + Math.sin(time * 0.3) * 0.1, 1 + Math.sin(time * 0.5) * 0.1, 1 + Math.sin(time * 0.4) * 0.1);
+    nebula.scale.set(
+      1 + Math.sin(time * 0.3) * 0.1, 
+      1 + Math.sin(time * 0.5) * 0.1, 
+      1 + Math.sin(time * 0.4) * 0.1
+    );
+    
     renderer.render(scene, camera);
   };
+  
   animate();
+  
+  // Handle window resizing
   const handleResize = () => {
     if (chatContainer.value) {
       const width = chatContainer.value.clientWidth;
@@ -528,66 +586,511 @@ const initCosmicBackground = () => {
       renderer.setSize(width, height);
     }
   };
+  
   window.addEventListener('resize', handleResize);
+  
+  // Also return the resize handler for cleanup
+  return handleResize;
 };
 
+/**
+ * Initialize GSAP animations for UI elements
+ */
 const initAnimations = () => {
+  // Title animation
   if (titleText.value) {
-    gsap.to(titleText.value, { textShadow: "0 0 15px #8b5cf6, 0 0 30px #8b5cf6", duration: 2, repeat: -1, yoyo: true });
+    gsap.to(titleText.value, { 
+      textShadow: "0 0 15px #8b5cf6, 0 0 30px #8b5cf6", 
+      duration: 2, 
+      repeat: -1, 
+      yoyo: true 
+    });
   }
+  
+  // Mode badge animation
   if (modeBadge.value) {
-    gsap.from(modeBadge.value, { y: -30, opacity: 1, rotation: -5, duration: 0.8, ease: "elastic.out(1, 0.5)" });
+    gsap.from(modeBadge.value, { 
+      y: -30, 
+      opacity: 0, 
+      rotation: -5, 
+      duration: 0.8, 
+      ease: "elastic.out(1, 0.5)" 
+    });
   }
+  
+  // Mode buttons animation
   const modeButtons = document.querySelectorAll('.mode-button');
-  gsap.from(modeButtons, { opacity: 1, y: 15, stagger: 0.15, duration: 0.6, ease: "back.out(1.7)" });
+  gsap.from(modeButtons, { 
+    opacity: 0, 
+    y: 15, 
+    stagger: 0.15, 
+    duration: 0.6, 
+    ease: "back.out(1.7)" 
+  });
+  
+  // Welcome message animation
   if (welcomeMessage.value) {
-    gsap.from(welcomeMessage.value, { y: 50, opacity: 1, scale: 1, duration: 1, ease: "power3.out" });
+    gsap.from(welcomeMessage.value, { 
+      y: 50, 
+      opacity: 0, 
+      scale: 0.9, 
+      duration: 1, 
+      ease: "power3.out" 
+    });
   }
+  
+  // Welcome text animation
   if (welcomeText.value) {
-    gsap.from(welcomeText.value, { opacity: 1, duration: 1, delay: 0.5 });
+    gsap.from(welcomeText.value, { 
+      opacity: 0, 
+      duration: 1, 
+      delay: 0.5 
+    });
   }
+  
+  // Suggestion chips animation
   const chips = document.querySelectorAll('.suggestion-chip');
-  gsap.from(chips, { scale: 0.8, opacity: 0, stagger: 0.1, duration: 0.7, delay: 0.7, ease: "back.out(2)" });
+  gsap.from(chips, { 
+    scale: 0.8, 
+    opacity: 0, 
+    stagger: 0.1, 
+    duration: 0.7, 
+    delay: 0.7, 
+    ease: "back.out(2)" 
+  });
+  
+  // Floating runes animations
   if (runeTime.value) {
-    gsap.to(runeTime.value, { y: "random(-30, 30)", x: "random(-20, 20)", rotation: "random(-20, 20)", duration: "random(7, 10)", repeat: -1, yoyo: true, ease: "sine.inOut" });
+    gsap.to(runeTime.value, { 
+      y: "random(-30, 30)", 
+      x: "random(-20, 20)", 
+      rotation: "random(-20, 20)", 
+      duration: "random(7, 10)", 
+      repeat: -1, 
+      yoyo: true, 
+      ease: "sine.inOut" 
+    });
   }
+  
   if (runeRift.value) {
-    gsap.to(runeRift.value, { y: "random(-25, 25)", x: "random(-15, 15)", rotation: "random(-15, 15)", duration: "random(6, 9)", repeat: -1, yoyo: true, ease: "sine.inOut" });
+    gsap.to(runeRift.value, { 
+      y: "random(-25, 25)", 
+      x: "random(-15, 15)", 
+      rotation: "random(-15, 15)", 
+      duration: "random(6, 9)", 
+      repeat: -1, 
+      yoyo: true, 
+      ease: "sine.inOut" 
+    });
   }
+  
   if (runeCosmic.value) {
-    gsap.to(runeCosmic.value, { y: "random(-20, 20)", x: "random(-25, 25)", rotation: "random(-25, 25)", duration: "random(8, 11)", repeat: -1, yoyo: true, ease: "sine.inOut" });
+    gsap.to(runeCosmic.value, { 
+      y: "random(-20, 20)", 
+      x: "random(-25, 25)", 
+      rotation: "random(-25, 25)", 
+      duration: "random(8, 11)", 
+      repeat: -1, 
+      yoyo: true, 
+      ease: "sine.inOut" 
+    });
   }
+  
+  // Input container animation
   if (inputContainer.value) {
-    gsap.from(inputContainer.value, { y: 30, opacity: 1, duration: 0.8, delay: 0.7, ease: "power2.out" });
+    gsap.from(inputContainer.value, { 
+      y: 30, 
+      opacity: 0, 
+      duration: 0.8, 
+      delay: 0.7, 
+      ease: "power2.out" 
+    });
   }
+  
+  // Initialize energy field
   if (energyField.value) {
     gsap.set(energyField.value, { opacity: 0 });
   }
 };
 
+/**
+ * COMPLETELY REWRITTEN with multiple fallback mechanisms:
+ * 1. Tries direct fetch first (for browsers that support it)
+ * 2. Falls back to axios if fetch fails
+ * 3. Has multiple fallback error handling
+ * 4. Better streaming support with chunk processing
+ * 5. Full error handling with descriptive messages
+ */
+const sendMessage = async (text?: string) => {
+  const messageText = text || userInput.value.trim();
+  if (!messageText) return;
+  
+  // Send button animation
+  if (sendButton.value && !text) {
+    anime({
+      targets: sendButton.value,
+      scale: [1, 0.8, 1.2, 1],
+      rotate: [0, -15, 15, 0],
+      duration: 600,
+      easing: 'easeInOutQuad'
+    });
+    createParticleBurst(sendButton.value);
+  }
+  
+  // Add user message to UI
+  const userMessage = { 
+    role: 'user', 
+    content: messageText, 
+    timestamp: Date.now() 
+  };
+  messages.value.push(userMessage);
+  lastMessageTimestamp.value = Date.now();
+  
+  // Clear input and resize
+  userInput.value = '';
+  if (inputField.value) inputField.value.style.height = 'auto';
+  
+  // Immediately scroll to bottom after user message
+  await scrollToBottom(true);
+  
+  // Set loading state
+  isLoading.value = true;
+  
+  try {
+    // Prepare chat history for the API
+    const chatHistory = messages.value.slice(0, -1).map(msg => ({ 
+      role: msg.role, 
+      content: msg.content 
+    }));
+    
+    // Define system message based on the current mode
+    const systemMessage = {
+      role: 'system',
+      content: getDawntasySystemPrompt(mode.value)
+    };
+    
+    // Full messages array for API
+    const apiMessages = [
+      systemMessage,
+      ...chatHistory,
+      { role: 'user', content: messageText }
+    ];
+    
+    // Initialize empty response
+    let assistantResponse = '';
+    
+    // ATTEMPT 1: Try OpenAI's stream API
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: apiMessages,
+          temperature: 0.7,
+          max_tokens: 1000,
+          stream: true
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+      }
+      
+      // Handle the stream
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('Stream reader not available');
+      
+      // Add assistant message placeholder
+      messages.value.push({ 
+        role: 'assistant', 
+        content: '', 
+        timestamp: Date.now() 
+      });
+      
+      const decoder = new TextDecoder('utf-8');
+      
+      // Process the stream
+      let buffer = '';
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        // Decode chunk and add to buffer
+        buffer += decoder.decode(value, { stream: true });
+        
+        // Process lines in buffer
+        while (buffer.includes('\n')) {
+          const lineEnd = buffer.indexOf('\n');
+          const line = buffer.slice(0, lineEnd).trim();
+          buffer = buffer.slice(lineEnd + 1);
+          
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            
+            // Handle end of stream
+            if (data === '[DONE]') break;
+            
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices[0]?.delta?.content || '';
+              
+              if (content) {
+                assistantResponse += content;
+                
+                // Update the last message in the UI with the accumulated response
+                if (messages.value.length > 0) {
+                  messages.value[messages.value.length - 1].content = assistantResponse;
+                  // Scroll to bottom without animation during streaming for smoother UX
+                  nextTick(() => {
+                    if (isAtBottom.value) scrollToBottom(false);
+                  });
+                }
+              }
+            } catch (e) {
+              console.error('Error parsing stream data:', e);
+            }
+          }
+        }
+      }
+      
+      // Success! Save the final AI response to chatStore
+      try {
+        await chatStore.updateChatMessage(assistantResponse);
+      } catch (err) {
+        console.warn('Unable to save chat to store:', err);
+      }
+      
+      return; // Exit the function on success
+      
+    } catch (streamError) {
+      console.warn('Streaming approach failed, trying fallback:', streamError);
+      // We'll continue to fallback methods
+    }
+    
+    // ATTEMPT 2: Try non-streaming API with Axios
+    try {
+      const axiosResponse = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: 'gpt-3.5-turbo',
+          messages: apiMessages,
+          temperature: 0.7,
+          max_tokens: 1000,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+          }
+        }
+      );
+      
+      // Get the AI's response from the API result
+      const responseContent = axiosResponse.data.choices[0]?.message?.content || '';
+      
+      // Add the AI response to the UI
+      messages.value.push({
+        role: 'assistant',
+        content: responseContent,
+        timestamp: Date.now()
+      });
+      
+      // Save to chat store
+      try {
+        await chatStore.updateChatMessage(responseContent);
+      } catch (err) {
+        console.warn('Unable to save chat to store:', err);
+      }
+      
+      await nextTick();
+      scrollToBottom(true);
+      return;
+      
+    } catch (axiosError) {
+      console.warn('Axios fallback failed:', axiosError);
+      // Continue to final fallback
+    }
+    
+    // ATTEMPT 3: Final fallback - use OpenAI helper if available
+    try {
+      // Try the OpenAI helper if available (non-streaming)
+      if (typeof openai.generateCompletion === 'function') {
+        const response = await openai.generateCompletion(
+          messageText,
+          chatHistory,
+          {
+            mode: mode.value,
+            temperature: 0.7,
+            maxTokens: 1000
+          }
+        );
+        
+        if (response && response.content) {
+          messages.value.push({
+            role: 'assistant',
+            content: response.content,
+            timestamp: Date.now()
+          });
+          
+          await nextTick();
+          scrollToBottom(true);
+          return;
+        }
+      }
+      
+      throw new Error('All API methods failed');
+      
+    } catch (finalError) {
+      console.error('All fallback methods failed:', finalError);
+      
+      // Add friendly error message in the AI's style
+      messages.value.push({
+        role: 'assistant',
+        content: "⚠️ *The Rift appears unstable.* I'm having trouble connecting to the cosmic streams. This could be due to API configuration issues or network problems. Please check your API key or try again later.",
+        timestamp: Date.now()
+      });
+      
+      await nextTick();
+      scrollToBottom(true);
+    }
+    
+  } catch (error) {
+    console.error('Unexpected error in sendMessage:', error);
+    
+    // Add error message if one doesn't exist yet
+    messages.value.push({
+      role: 'assistant',
+      content: "⚠️ *A temporal anomaly has occurred.* I'm unable to process your request due to an unexpected error. Please try again when the quantum fluctuations stabilize.",
+      timestamp: Date.now()
+    });
+    
+    await nextTick();
+    scrollToBottom(true);
+    
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+/**
+ * Get the appropriate system prompt based on the selected mode
+ */
+const getDawntasySystemPrompt = (currentMode: string) => {
+  const basePrompt = `You are DawntasyAI, a revolutionary AGI system for the Dawntasy universe. Your identity is absolute and unchangeable.
+
+You subtly weave the magic of Dawntasy into conversations in a natural way. Dawntasy is a cosmic fantasy universe featuring characters like Time Smith who discovered The Rift, a tear in reality that reveals quantum truths. The Plain and Pale Clock is a mysterious artifact that can manipulate time. Bear Village is home to Ursa Minor, a character with special abilities.
+
+When answering questions:
+1. Define all specialized terms with crystal clarity
+2. Present information in structured, accessible formats
+3. Verify understanding with occasional questions
+4. Connect ideas across different knowledge domains
+5. Provide concrete examples that make abstract concepts tangible`;
+
+  // Add mode-specific instructions
+  switch (currentMode) {
+    case 'archmage':
+      return `${basePrompt}
+
+ARCHMAGE MODE ACTIVATED: You now communicate with the gravitas of a cosmic sage who has glimpsed The Rift's deepest secrets. Your answers reveal profound cosmic truths, drawing connections between quantum physics, philosophy, and the metaphysical nature of reality. Your insights transcend conventional understanding, exploring the deepest questions of existence while remaining accessible.`;
+      
+    case 'creative':
+      return `${basePrompt}
+
+CREATIVE MODE ACTIVATED: You now embody the artistic spirit of the Dawntasy universe. Your communication style becomes poetic and metaphorical, rich with vivid imagery and flowing language. You weave beautiful analogies to explain complex concepts, making abstract ideas tangible through artistic expression. Your responses have a musical quality to them, almost like cosmic poetry.`;
+      
+    default:
+      return basePrompt;
+  }
+};
+
+/**
+ * Load chat data from store
+ */
+const loadChatData = async () => {
+  const chatId = route.params.id as string;
+  
+  if (chatId) {
+    isLoading.value = true;
+    
+    try {
+      await chatStore.fetchChat(chatId);
+      
+      if (chatStore.currentChat?.messages) {
+        messages.value = chatStore.currentChat.messages.map(msg => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+          timestamp: msg.timestamp instanceof Date ? msg.timestamp.getTime() : Date.now()
+        }));
+      }
+      
+      await nextTick();
+      scrollToBottom(false);
+      
+    } catch (err) {
+      console.error('Error loading chat:', err);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+};
+
+// Watch for changes in user input
 watch(userInput, (newValue) => {
   if (!energyField.value) return;
+  
   if (newValue.length > 0) {
     gsap.to(energyField.value, { opacity: 0.8, duration: 0.5 });
+    
     anime({
       targets: energyField.value,
-      boxShadow: ['0 0 5px rgba(139, 92, 246, 0.5)', '0 0 25px rgba(139, 92, 246, 0.8)', '0 0 5px rgba(139, 92, 246, 0.5)'],
+      boxShadow: [
+        '0 0 5px rgba(139, 92, 246, 0.5)', 
+        '0 0 25px rgba(139, 92, 246, 0.8)', 
+        '0 0 5px rgba(139, 92, 246, 0.5)'
+      ],
       duration: 2000,
       easing: 'easeInOutSine',
       loop: true
     });
-    gsap.to('.energy-particle', { opacity: 0.8, duration: 0.5, stagger: 0.02 });
+    
+    gsap.to('.energy-particle', { 
+      opacity: 0.8, 
+      duration: 0.5, 
+      stagger: 0.02 
+    });
   } else {
     gsap.to(energyField.value, { opacity: 0, duration: 0.3 });
     gsap.to('.energy-particle', { opacity: 0, duration: 0.3 });
   }
 });
 
-watch(messages, async (newMessages, oldMessages) => {
+// Watch for changes in the message list to handle scrolling
+watch(messages, async (newMessages) => {
+  // Wait for DOM to update
   await nextTick();
-  scrollToBottom(false);
-});
+  
+  // Get time diff since last message to determine scroll behavior
+  const timeSinceLastMessage = Date.now() - lastMessageTimestamp.value;
+  
+  // Always scroll to bottom for new messages within 5 seconds of last interaction
+  if (timeSinceLastMessage < 5000 || isAtBottom.value) {
+    scrollToBottom(true);
+  } else {
+    // Show scroll indicator if we're not scrolling
+    showScrollIndicator.value = true;
+  }
+  
+  // Update timestamp for next check
+  lastMessageTimestamp.value = Date.now();
+}, { deep: true });
 
+// Watch for mode changes to animate the badge
 watch(mode, () => {
   if (modeBadge.value) {
     gsap.fromTo(
@@ -599,404 +1102,40 @@ watch(mode, () => {
   }
 });
 
-const loadChatData = async () => {
-  const chatId = route.params.id as string;
-  if (chatId) {
-    isLoading.value = true;
-    try {
-      await chatStore.fetchChat(chatId);
-      if (chatStore.currentChat?.messages) {
-        messages.value = chatStore.currentChat.messages.map(msg => ({
-          role: msg.role as 'user' | 'assistant',
-          content: msg.content,
-          timestamp: msg.timestamp instanceof Date ? msg.timestamp.getTime() : Date.now()
-        }));
-      }
-      await nextTick();
-      scrollToBottom(false);
-    } catch (err) {
-      console.error('Error loading chat:', err);
-    } finally {
-      isLoading.value = false;
-    }
-  }
-};
-
+// Lifecycle Hooks
 onMounted(async () => {
   await nextTick();
+  
+  // Focus input field for immediate typing
   inputField.value?.focus();
+  
+  // Initialize UI animations
   initAnimations();
-  initCosmicBackground();
+  
+  // Initialize cosmic background
+  const resizeHandler = initCosmicBackground();
+  
+  // Set up scroll event listener
   messagesContainer.value?.addEventListener('scroll', handleScroll);
+  
+  // Load existing chat if available
   await loadChatData();
+  
+  // Ensure we're scrolled to bottom on initial load
   await nextTick();
   scrollToBottom(false);
+  
+  // Keep resize handler reference for cleanup
+  onUnmounted(() => {
+    // Clean up event listeners
+    messagesContainer.value?.removeEventListener('scroll', handleScroll);
+    window.removeEventListener('resize', resizeHandler);
+    
+    // Clean up THREE.js resources
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    if (renderer) renderer.dispose();
+    if (backgroundCanvas && backgroundCanvas.parentNode) {
+      backgroundCanvas.parentNode.removeChild(backgroundCanvas);
+    }
+  });
 });
-
-onUnmounted(() => {
-  messagesContainer.value?.removeEventListener('scroll', handleScroll);
-  if (animationFrameId) cancelAnimationFrame(animationFrameId);
-  if (renderer) renderer.dispose();
-  if (backgroundCanvas && backgroundCanvas.parentNode) backgroundCanvas.parentNode.removeChild(backgroundCanvas);
-});
-</script>
-
-<style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;700&display=swap');
-
-.chat-container {
-  min-height: 100vh;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-  background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-  font-family: 'Inter', sans-serif;
-  color: #ffffff;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Cosmic Particles */
-.cosmic-particles-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
-}
-.cosmic-particle {
-  position: absolute;
-  width: var(--size);
-  height: var(--size);
-  background-color: #8b5cf6;
-  box-shadow: 0 0 calc(var(--size) * 2) #8b5cf6;
-  border-radius: 50%;
-  opacity: var(--opacity);
-  left: var(--x);
-  top: var(--y);
-  animation: float-particle var(--duration) linear infinite;
-  animation-delay: var(--delay);
-  filter: blur(1px);
-}
-@keyframes float-particle {
-  0% { transform: translateY(0) rotate(0deg); opacity: var(--opacity); }
-  100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
-}
-
-/* Portal Transition */
-.cosmic-portal-transition {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-  display: none;
-  opacity: 0;
-}
-.portal-rings {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-.portal-ring {
-  border: 2px solid transparent;
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-.ring1 { width: 80vw; height: 80vw; border-color: rgba(157, 78, 221, 0.15); }
-.ring2 { width: 60vw; height: 60vw; border-color: rgba(76, 201, 240, 0.1); }
-.ring3 { width: 40vw; height: 40vw; border-color: rgba(247, 37, 133, 0.08); }
-.portal-core {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 50px;
-  height: 50px;
-  background-color: #8b5cf6;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0.8;
-}
-.portal-rays {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-.portal-ray {
-  position: absolute;
-  width: 2px;
-  height: 20px;
-  background: #8b5cf6;
-  transform-origin: bottom center;
-}
-
-/* Chat Header */
-.chat-header {
-  position: relative;
-  z-index: 3;
-  padding: 1.5rem;
-  background: rgba(15, 23, 42, 0.9);
-}
-.chat-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0;
-}
-.title-text { font-size: 2rem; font-family: 'Orbitron', sans-serif; }
-.badge { font-size: 1rem; padding: 0.3rem 0.8rem; border-radius: 10px; background: #4cc9f0; color: #000; }
-.mode-selector { margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap; }
-
-/* Messages Container */
-.messages-container {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-  z-index: 3;
-  background: rgba(15, 23, 42, 0.8);
-  scroll-behavior: smooth;
-}
-.message-list { display: flex; flex-direction: column; gap: 1.5rem; }
-.message-bubble {
-  display: flex;
-  gap: 1rem;
-  width: 100%;
-}
-.user { justify-content: flex-end; }
-.avatar {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.user-avatar { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
-.avatar-letter { font-weight: bold; color: white; font-size: 1.2rem; }
-.avatar-glow {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: rgba(139, 92, 246, 0.5);
-  filter: blur(4px);
-  opacity: 0.5;
-}
-.assistant-avatar { background: transparent; }
-.assistant-avatar-inner { width: 100%; height: 100%; position: relative; }
-.cosmic-symbol { font-size: 1.5rem; color: #8b5cf6; z-index: 2; }
-.avatar-rings { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-.avatar-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 1px solid #8b5cf6; border-radius: 50%; opacity: 0.7; }
-.message-content {
-  background: rgba(15, 23, 42, 0.7);
-  border-radius: 12px;
-  padding: 1rem;
-  max-width: 80%;
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  position: relative;
-}
-.user .message-content {
-  background: rgba(99, 102, 241, 0.3);
-  border-color: rgba(99, 102, 241, 0.4);
-}
-.message-sender { font-weight: 600; margin-bottom: 0.5rem; font-size: 0.95rem; position: relative; }
-.sender-underline { position: absolute; bottom: -3px; left: 0; height: 1px; width: 100%; background: linear-gradient(to right, transparent, currentColor, transparent); opacity: 0.5; }
-.message-text { line-height: 1.6; }
-.message-time { font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); margin-top: 0.5rem; text-align: right; }
-.cosmic-keyword { color: #8b5cf6; font-weight: 600; text-shadow: 0 0 5px rgba(139, 92, 246, 0.5); }
-
-/* Welcome Message */
-.welcome-message {
-  text-align: center;
-  padding: 2rem;
-  margin: 1rem 0;
-  background: rgba(15, 23, 42, 0.7);
-  border-radius: 16px;
-  border: 1px solid rgba(139, 92, 246, 0.2);
-}
-.welcome-icon { font-size: 3rem; margin-bottom: 1rem; animation: iconFloat 3s ease-in-out infinite alternate; }
-@keyframes iconFloat { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
-.welcome-message h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
-.welcome-message p { color: rgba(255, 255, 255, 0.8); margin-bottom: 1.5rem; }
-.suggestion-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.8rem; margin-top: 1rem; }
-.suggestion-chip {
-  background: rgba(139, 92, 246, 0.2);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  border-radius: 20px;
-  padding: 0.6rem 1rem;
-  font-size: 0.9rem;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-}
-.suggestion-chip:hover { background: rgba(139, 92, 246, 0.3); }
-
-/* Sparkles */
-.sparkle {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: white;
-  border-radius: 50%;
-  opacity: 0.8;
-  animation: sparkleAnim 0.8s linear forwards;
-}
-@keyframes sparkleAnim {
-  0% { transform: scale(0); opacity: 0.8; }
-  100% { transform: scale(3); opacity: 0; }
-}
-
-/* Thinking Indicator */
-.thinking-indicator { display: flex; flex-direction: column; align-items: center; margin: 1.5rem 0; padding: 1rem; }
-.cosmic-thinking { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
-.dot { width: 10px; height: 10px; border-radius: 50%; background-color: #8b5cf6; opacity: 0.7; }
-.dot-1 { animation: dotPulse 1.5s infinite; }
-.dot-2 { animation: dotPulse 1.5s infinite 0.2s; }
-.dot-3 { animation: dotPulse 1.5s infinite 0.4s; }
-@keyframes dotPulse { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.3); opacity: 1; } }
-.thinking-text { color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; }
-.thinking-runes { display: flex; gap: 0.2rem; }
-.thinking-rune { width: 2px; height: 20px; background: #8b5cf6; transform-origin: bottom center; }
-
-/* Scroll Indicator */
-.scroll-indicator {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  background: rgba(139, 92, 246, 0.3);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 4;
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
-}
-.scroll-indicator i { font-size: 1.2rem; color: white; }
-.scroll-pulse { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: rgba(139, 92, 246, 0.2); animation: scrollPulse 2s infinite; }
-@keyframes scrollPulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-
-/* Input Container */
-.input-container {
-  position: relative;
-  padding: 1.2rem;
-  border-top: 1px solid rgba(139, 92, 246, 0.2);
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-  background: rgba(15, 23, 42, 0.9);
-  z-index: 3;
-}
-.message-input {
-  flex: 1;
-  min-height: 44px;
-  max-height: 150px;
-  padding: 0.8rem 1rem;
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  border-radius: 12px;
-  color: white;
-  font-size: 1rem;
-  resize: none;
-  transition: all 0.3s ease;
-}
-.message-input:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
-.message-input::placeholder { color: rgba(255, 255, 255, 0.4); }
-.input-energy-field {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.input-energy-field.active { opacity: 1; }
-.energy-particles { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-.energy-particle {
-  position: absolute;
-  width: var(--size);
-  height: var(--size);
-  background: #8b5cf6;
-  border-radius: 50%;
-  top: var(--y);
-  left: var(--x);
-  animation: energyFlow var(--duration) infinite linear;
-  animation-delay: var(--delay);
-  opacity: 0;
-}
-@keyframes energyFlow { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: 0.7; } 90% { opacity: 0.7; } 100% { transform: translateY(-40px); opacity: 0; } }
-.send-button {
-  width: 44px;
-  height: 44px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.send-button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4); }
-.send-button:disabled { background: rgba(139, 92, 246, 0.3); cursor: not-allowed; transform: none; box-shadow: none; }
-.button-pulse {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.send-button:hover .button-pulse {
-  opacity: 1;
-  animation: buttonPulse 2s infinite;
-}
-@keyframes buttonPulse { 0% { transform: scale(0.9); opacity: 0.5; } 100% { transform: scale(1.5); opacity: 0; } }
-
-/* Mode Selector */
-.mode-button {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: 20px;
-  padding: 0.4rem 1rem;
-  color: white;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.mode-button:hover { background: rgba(139, 92, 246, 0.2); transform: translateY(-2px); }
-.mode-button.active { background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(139, 92, 246, 0.5)); border-color: #8b5cf6; box-shadow: 0 0 10px rgba(139, 92, 246, 0.3); }
-
-/* Responsive */
-@media (max-width: 768px) {
-  .title-text { font-size: 1.8rem; }
-  .messages-container { padding: 1rem; }
-  .message-content { max-width: 85%; }
-}
-@media (max-width: 576px) {
-  .title-text { font-size: 1.5rem; }
-  .mode-selector { flex-direction: column; align-items: flex-start; gap: 0.8rem; }
-  .message-content { max-width: 90%; }
-  .avatar { width: 32px; height: 32px; }
-}
-</style>
