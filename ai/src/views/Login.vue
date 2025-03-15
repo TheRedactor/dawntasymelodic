@@ -1,21 +1,20 @@
-// LoginView.vue - ULTRA LEGENDARY COSMIC LOGIN 🌌
 <template>
   <div class="cosmic-login">
     <!-- DYNAMIC STAR FIELD BACKGROUND -->
     <div class="star-field">
-      <div v-for="n in 100" :key="`star-${n}`" class="star" 
-           :style="{ 
+      <div v-for="n in 100" :key="`star-${n}`" class="star"
+           :style="{
               '--size': `${Math.random() * 3 + 1}px`,
-              '--x': `${Math.random() * 100}%`, 
+              '--x': `${Math.random() * 100}%`,
               '--y': `${Math.random() * 100}%`,
               '--duration': `${Math.random() * 50 + 20}s`
            }">
       </div>
     </div>
-    
+
     <!-- ANIMATED GALAXY EFFECT -->
     <div class="galaxy-spiral"></div>
-    
+
     <!-- ENERGY WAVES -->
     <div class="energy-field">
       <div class="energy-wave wave1"></div>
@@ -35,28 +34,28 @@
         <h1 class="portal-title">COSMIC VOYAGER</h1>
         <p class="portal-subtitle">INTERDIMENSIONAL ACCESS PORTAL</p>
       </div>
-      
+
       <!-- AUTHENTICATION INTERFACE -->
       <div class="portal-interface">
         <div class="interface-screen">
           <div class="screen-scanner" :class="{ 'scanning': isScanning }"></div>
-          
+
           <!-- STATUS INDICATORS -->
           <div class="status-indicators">
             <div class="status-light" :class="{ 'active': loginStep >= 1 }"></div>
             <div class="status-light" :class="{ 'active': loginStep >= 2 }"></div>
             <div class="status-light" :class="{ 'active': loginStep >= 3 }"></div>
           </div>
-          
+
           <!-- LOGIN FORM -->
           <form @submit.prevent="handleLogin" class="login-form">
             <div class="form-group" :class="{ 'error': errors.email }">
               <label for="email">QUANTUM IDENTIFIER</label>
               <div class="input-container">
-                <input 
-                  id="email" 
-                  v-model="credentials.email" 
-                  type="email" 
+                <input
+                  id="email"
+                  v-model="credentials.email"
+                  type="email"
                   required
                   placeholder="your-id@cosmic-realm.com"
                   autocomplete="email"
@@ -72,14 +71,14 @@
               </div>
               <p v-if="errors.email" class="error-message">{{ errors.email }}</p>
             </div>
-            
+
             <div class="form-group" :class="{ 'error': errors.password }">
               <label for="password">DIMENSIONAL KEY</label>
               <div class="input-container">
-                <input 
+                <input
                   id="password"
-                  v-model="credentials.password" 
-                  :type="showPassword ? 'text' : 'password'" 
+                  v-model="credentials.password"
+                  :type="showPassword ? 'text' : 'password'"
                   required
                   placeholder="••••••••••••"
                   autocomplete="current-password"
@@ -97,7 +96,7 @@
               </div>
               <p v-if="errors.password" class="error-message">{{ errors.password }}</p>
             </div>
-            
+
             <!-- REMEMBER ME & FORGOT PASSWORD -->
             <div class="form-options">
               <div class="remember-option">
@@ -106,16 +105,16 @@
               </div>
               <button type="button" @click="forgotPassword" class="forgot-btn">LOST KEY?</button>
             </div>
-            
+
             <!-- LOGIN ERROR MESSAGE -->
             <div v-if="loginError" class="login-error">
               <div class="error-icon">⚠️</div>
               <p>{{ loginError }}</p>
             </div>
-            
+
             <!-- LOGIN BUTTON -->
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               class="login-btn"
               :class="{ 'btn-loading': isLoading, 'btn-activated': isActivated }"
               :disabled="isLoading"
@@ -123,7 +122,7 @@
               <span v-if="!isLoading">{{ isLoading ? 'ACTIVATING...' : 'ACTIVATE PORTAL' }}</span>
               <div v-else class="btn-loader"></div>
             </button>
-            
+
             <!-- CREATE ACCOUNT LINK -->
             <div class="create-account">
               <p>NEED DIMENSIONAL ACCESS? <span @click="navigateToRegister" class="register-link">CREATE ACCOUNT</span></p>
@@ -132,7 +131,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- SUCCESS PORTAL EFFECT -->
     <div v-if="loginSuccess" class="portal-success">
       <div class="warp-tunnel"></div>
@@ -148,20 +147,20 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getApp, getApps, initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
-  setPersistence, 
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
   sendPasswordResetEmail
 } from 'firebase/auth';
-import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  updateDoc, 
-  serverTimestamp 
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  updateDoc,
+  serverTimestamp
 } from 'firebase/firestore';
 import gsap from 'gsap';
 
@@ -208,204 +207,135 @@ export default {
     const isScanning = ref(false);
     const isActivated = ref(false);
     const loginStep = ref(0);
-    
-    // VALIDATION STATE
+
+    // FORM VALIDATION
     const errors = reactive({
       email: '',
       password: ''
     });
 
-    // ANIMATIONS & EFFECTS
-    const activateField = (field) => {
-      isScanning.value = true;
-      
-      // Update login steps for animation
-      if (field === 'email') loginStep.value = 1;
-      if (field === 'password') loginStep.value = 2;
-      
-      // Play scanning sound effect
-      playSound('scan');
-    };
-    
-    // Sound Effects System
-    const playSound = (soundType) => {
-      // Implement audio if needed
-      console.log(`Playing sound: ${soundType}`);
-    };
-
-    // VALIDATION METHODS
     const validateEmail = () => {
-      isScanning.value = false;
-      errors.email = '';
-      
-      if (!credentials.email) {
-        errors.email = 'Quantum Identifier required for dimensional access';
-        return false;
-      }
-      
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(credentials.email)) {
-        errors.email = 'Invalid Quantum Identifier format';
-        return false;
-      }
-      
-      return true;
+      errors.email = emailRegex.test(credentials.email) ? '' : 'INVALID QUANTUM ID FORMAT';
     };
 
     const validatePassword = () => {
-      isScanning.value = false;
-      errors.password = '';
-      
-      if (!credentials.password) {
-        errors.password = 'Dimensional Key required for portal activation';
-        return false;
-      }
-      
-      if (credentials.password.length < 6) {
-        errors.password = 'Dimensional Key must be at least 6 characters';
-        return false;
-      }
-      
-      return true;
+      errors.password = credentials.password.length >= 8 ? '' : 'DIMENSIONAL KEY TOO SHORT (MIN. 8 CHARACTERS)';
     };
-    
-    // "Forgot Password" flow
-    const forgotPassword = async () => {
-      if (!credentials.email) {
-        errors.email = 'Enter your Quantum Identifier to reset your key';
-        return;
-      }
-      
-      if (!validateEmail()) return;
-      
-      try {
-        isLoading.value = true;
-        await sendPasswordResetEmail(auth, credentials.email);
-        loginError.value = '';
-        
-        // Display success message
-        const originalButtonText = document.querySelector('.login-btn').textContent;
-        document.querySelector('.login-btn').textContent = 'RESET LINK SENT ✓';
-        
-        setTimeout(() => {
-          document.querySelector('.login-btn').textContent = originalButtonText;
-          isLoading.value = false;
-        }, 3000);
-        
-      } catch (error) {
-        console.error('Error sending reset email:', error);
-        loginError.value = 'Unable to send reset link. Verify your Quantum Identifier.';
-        isLoading.value = false;
-      }
+
+    const activateField = (field) => {
+      errors[field] = ''; // Clear error when field is focused
+      isActivated.value = true; // Activate login button style
     };
-    
-    // HANDLE LOGIN SUBMISSION
+
+    // ANIMATION STATES
+    const tunnelTimeline = ref(null);
+
+    // LOGIN FUNCTION
     const handleLogin = async () => {
-      // Validate inputs
-      const isEmailValid = validateEmail();
-      const isPasswordValid = validatePassword();
-      
-      if (!isEmailValid || !isPasswordValid) {
-        return;
+      validateEmail();
+      validatePassword();
+
+      if (errors.email || errors.password) {
+        return; // Stop login if there are validation errors
       }
-      
+
       isLoading.value = true;
       loginError.value = '';
-      loginStep.value = 3;
-      
+      loginStep.value = 1; // Start login sequence
+
       try {
-        // Set persistence based on "remember me" option
+        // Set persistence based on "Remember Me"
         await setPersistence(auth, rememberMe.value ? browserLocalPersistence : browserSessionPersistence);
-        
-        // Activate button effect
-        isActivated.value = true;
-        
-        // Play activation sound
-        playSound('activate');
-        
-        // Login with Firebase
-        const userCredential = await signInWithEmailAndPassword(
-          auth, 
-          credentials.email, 
-          credentials.password
-        );
-        
-        const user = userCredential.user;
-        
-        // Update last login time in Firestore
-        try {
-          const userRef = doc(db, "users", user.uid);
-          const userSnap = await getDoc(userRef);
-          
-          if (userSnap.exists()) {
-            await updateDoc(userRef, {
-              lastLogin: serverTimestamp()
-            });
-          }
-        } catch (dbError) {
-          console.error("Error updating last login:", dbError);
-          // Non-critical error, continue login process
-        }
-        
-        // Show success animation
-        loginSuccess.value = true;
-        
-        // Redirect after animation completes
+        loginStep.value = 2;
+
+        // Sign in with email and password
+        await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
+        loginStep.value = 3;
+
+        // Simulate scanning effect before redirecting
+        isScanning.value = true;
+
+        // SUCCESSFUL LOGIN: PERFORM ANIMATION AND REDIRECT
         setTimeout(() => {
-          router.push('/dashboard');
-        }, 2500);
-        
+          isScanning.value = false;
+          loginSuccess.value = true;
+          portalActive.value = true;
+
+          // Delay the actual redirection to ai.dawntasy.com/chat
+          setTimeout(() => {
+            window.location.href = 'https://ai.dawntasy.com/chat'; // REDIRECT HERE
+          }, 2000); // Adjust delay as needed
+
+        }, 2000); // Adjust the scanning simulation time
       } catch (error) {
-        console.error('Login error:', error);
-        isLoading.value = false;
-        isActivated.value = false;
-        
-        // Handle specific Firebase auth errors
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-          loginError.value = 'Invalid Quantum Identifier or Dimensional Key';
-          playSound('error');
-        } else if (error.code === 'auth/too-many-requests') {
-          loginError.value = 'Access temporarily disabled. Too many failed attempts.';
-        } else {
-          loginError.value = 'Portal activation failed. Try again.';
+        // Handle specific Firebase authentication errors
+        switch (error.code) {
+          case 'auth/user-not-found':
+            loginError.value = 'QUANTUM ID NOT FOUND. ENSURE CORRECT REALM.';
+            break;
+          case 'auth/wrong-password':
+            loginError.value = 'INCORRECT DIMENSIONAL KEY. VERIFY ACCESS CODE.';
+            break;
+          case 'auth/too-many-requests':
+            loginError.value = 'ACCESS PORTAL OVERLOADED. RETRY IN A MOMENT.';
+            break;
+          default:
+            loginError.value = 'FAILED TO ESTABLISH COSMIC CONNECTION. CHECK CREDENTIALS.';
+            break;
         }
+      } finally {
+        isLoading.value = false;
+        loginStep.value = 0;
       }
     };
-    
+
+    // FORGOT PASSWORD FUNCTION
+    const forgotPassword = async () => {
+      try {
+        await sendPasswordResetEmail(auth, credentials.email);
+        alert('PASSWORD RESET INSTRUCTIONS SENT TO YOUR QUANTUM ID.');
+      } catch (error) {
+        console.error('Forgot Password Error', error);
+        alert('COULD NOT INITIATE PASSWORD RESET. ENSURE QUANTUM ID IS VALID.');
+      }
+    };
+
+    // NAVIGATION FUNCTION
     const navigateToRegister = () => {
       router.push('/register');
     };
-    
-    // Initialize animations on component mount
+
     onMounted(() => {
-      // Activate portal with slight delay for dramatic effect
-      setTimeout(() => {
-        portalActive.value = true;
-        
-        // Intro animation sequence
-        gsap.fromTo(".portal-title", 
-          { opacity: 0, y: -50 },
-          { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" }
-        );
-        
-        gsap.fromTo(".portal-subtitle", 
-          { opacity: 0 },
-          { opacity: 1, duration: 1.5, delay: 0.3 }
-        );
-        
-        gsap.fromTo(".cosmic-emblem", 
-          { scale: 0, rotation: -180 },
-          { scale: 1, rotation: 0, duration: 1.8, ease: "elastic.out(1, 0.5)" }
-        );
-        
-        gsap.fromTo(".interface-screen", 
-          { opacity: 0, scale: 0.9 },
-          { opacity: 1, scale: 1, duration: 1, delay: 0.7, ease: "power2.out" }
-        );
-        
-        // Play portal activation sound
-        playSound('portal');
-      }, 300);
+      // START ANIMATION
+      portalActive.value = true;
+
+      // GSAP ANIMATIONS FOR ENERGY WAVES
+      gsap.to(".energy-wave", {
+        duration: 2,
+        x: "100px",
+        yoyo: true,
+        repeat: -1,
+        ease: "sine.inOut",
+        stagger: 0.2,
+        opacity: 0.5
+      });
+
+      // GSAP ANIMATIONS FOR GALAXY SPIRAL
+      gsap.to(".galaxy-spiral", {
+        duration: 100,
+        rotation: 360,
+        repeat: -1,
+        ease: "linear"
+      });
+
+      // TIMELINE FOR WARP TUNNEL
+      tunnelTimeline.value = gsap.timeline({ repeat: -1, yoyo: false });
+      tunnelTimeline.value.to(".warp-tunnel", {
+        duration: 1,
+        xPercent: 100,
+        ease: "power4.inOut",
+      });
     });
 
     return {
@@ -414,194 +344,156 @@ export default {
       showPassword,
       isLoading,
       loginError,
-      errors,
+      loginSuccess,
       portalActive,
       isScanning,
       isActivated,
-      loginSuccess,
       loginStep,
-      activateField,
+      errors,
       validateEmail,
       validatePassword,
+      activateField,
       handleLogin,
       forgotPassword,
-      navigateToRegister
+      navigateToRegister,
+      tunnelTimeline
     };
   }
 };
 </script>
 
 <style scoped>
-/* COSMIC LOGIN STYLING */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;700&display=swap');
-
+/* GENERAL COSMIC STYLES */
 .cosmic-login {
-  min-height: 100vh;
+  position: relative;
   width: 100%;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-  position: relative;
-  overflow: hidden;
-  font-family: 'Rajdhani', sans-serif;
-  color: #e1e6ff;
-  perspective: 1000px;
+  background: linear-gradient(to bottom, #040d21, #00040f);
+  font-family: 'Roboto', sans-serif;
 }
 
 /* STAR FIELD BACKGROUND */
 .star-field {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  overflow: hidden;
   z-index: 0;
-  perspective: 340px;
 }
 
 .star {
   position: absolute;
-  width: var(--size);
-  height: var(--size);
   background: white;
   border-radius: 50%;
+  animation: twinkle var(--duration) linear infinite;
+  width: var(--size);
+  height: var(--size);
   top: var(--y);
   left: var(--x);
-  animation: starMovement var(--duration) linear infinite;
-  box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.4);
+  opacity: 0.7;
 }
 
-@keyframes starMovement {
-  0% {
-    transform: rotateZ(0deg) translateZ(0);
-    opacity: 0;
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.7;
   }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: rotateZ(360deg) translateZ(200px);
-    opacity: 0;
+  50% {
+    opacity: 0.3;
   }
 }
 
-/* GALAXY SPIRAL EFFECT */
+/* GALAXY SPIRAL */
 .galaxy-spiral {
-  position: fixed;
-  width: 200vmax;
-  height: 200vmax;
+  position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: 
-    radial-gradient(ellipse at center, transparent 0%, #090A0F 70%),
-    conic-gradient(
-      from 0deg, 
-      rgba(23, 36, 84, 0.2) 0%, 
-      rgba(76, 201, 240, 0.1) 25%,
-      rgba(142, 45, 226, 0.1) 50%,
-      rgba(243, 75, 143, 0.1) 75%, 
-      rgba(23, 36, 84, 0.2) 100%
-    );
-  opacity: 0.5;
+  width: 400px;
+  height: 400px;
+  background: url('https://i.imgur.com/zKIW3wA.png') center/cover;
   border-radius: 50%;
-  animation: galaxyRotate 180s linear infinite;
-  z-index: 0;
-  filter: blur(30px);
+  opacity: 0.3;
+  z-index: 1;
 }
 
-@keyframes galaxyRotate {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-/* ENERGY FIELD WAVES */
+/* ENERGY FIELD */
 .energy-field {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 150vmax;
-  height: 150vmax;
-  z-index: 0;
-  opacity: 0.5;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .energy-wave {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  border: 1px solid transparent;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at center, rgba(52, 152, 219, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
   border-radius: 50%;
+  opacity: 0;
 }
 
 .wave1 {
-  width: 100%;
-  height: 100%;
-  transform: translate(-50%, -50%);
-  border-color: rgba(76, 201, 240, 0.3);
-  animation: pulseWave 15s linear infinite;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .wave2 {
-  width: 80%;
-  height: 80%;
-  transform: translate(-50%, -50%);
-  border-color: rgba(148, 0, 211, 0.3);
-  animation: pulseWave 12s linear infinite reverse;
+  transform: translate(-50%, -50%) scale(1.2);
 }
 
 .wave3 {
-  width: 60%;
-  height: 60%;
-  transform: translate(-50%, -50%);
-  border-color: rgba(243, 75, 143, 0.3);
-  animation: pulseWave 10s linear infinite;
-}
-
-@keyframes pulseWave {
-  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.2; }
-  50% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.2; }
+  transform: translate(-50%, -50%) scale(1.4);
 }
 
 /* MAIN LOGIN PORTAL */
 .login-portal {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 3rem;
   width: 100%;
   max-width: 500px;
-  z-index: 10;
-  transform: perspective(1000px) rotateX(20deg) scale(0.8);
-  opacity: 0;
-  transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-align: center;
+  transition: all 0.3s ease-in-out;
+  opacity: 1;
+  transform: scale(1);
 }
 
-.portal-active {
-  transform: perspective(1000px) rotateX(0) scale(1);
+.login-portal.portal-active {
   opacity: 1;
+  transform: scale(1.05);
+  box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.5);
 }
 
 /* PORTAL HEADER */
 .portal-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   margin-bottom: 2rem;
-  width: 100%;
+  color: #fff;
 }
 
 .cosmic-emblem {
   position: relative;
-  width: 100px;
-  height: 100px;
-  margin-bottom: 1rem;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
 }
 
 .emblem-core {
@@ -611,35 +503,29 @@ export default {
   transform: translate(-50%, -50%);
   width: 30px;
   height: 30px;
-  background: #4cc9f0;
+  background: linear-gradient(45deg, #6a5acd, #2e86ab);
   border-radius: 50%;
-  box-shadow: 0 0 20px #4cc9f0, 0 0 60px rgba(76, 201, 240, 0.5);
-  animation: pulsateCore 4s ease-in-out infinite;
+  box-shadow: 0 0 15px rgba(106, 90, 205, 0.8);
 }
 
 .emblem-ring {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80px;
-  height: 80px;
-  border: 3px solid transparent;
-  border-top-color: #8e2de2;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
-  animation: rotateRing 8s linear infinite;
+  border: 3px dashed rgba(255, 255, 255, 0.3);
+  animation: rotateRing 15s linear infinite;
 }
 
-.emblem-ring::before {
-  content: '';
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  width: 15px;
-  height: 15px;
-  background: #8e2de2;
-  border-radius: 50%;
-  box-shadow: 0 0 15px #8e2de2;
+@keyframes rotateRing {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .emblem-particles {
@@ -648,87 +534,57 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  animation: rotateParticles 12s linear infinite reverse;
-}
-
-.emblem-particles::before,
-.emblem-particles::after {
-  content: '';
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background: #f34b8f;
   border-radius: 50%;
-  box-shadow: 0 0 10px #f34b8f;
+  overflow: hidden;
 }
 
 .emblem-particles::before {
-  top: 10px;
+  content: '';
+  position: absolute;
+  top: 50%;
   left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150%;
+  height: 150%;
+  background: url('https://i.imgur.com/yTj2XyG.png') center/cover;
+  opacity: 0.4;
+  animation: floatParticles 20s linear infinite;
 }
 
-.emblem-particles::after {
-  bottom: 10px;
-  left: 50%;
-}
-
-@keyframes pulsateCore {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 20px #4cc9f0, 0 0 60px rgba(76, 201, 240, 0.5); }
-  50% { transform: translate(-50%, -50%) scale(1.3); box-shadow: 0 0 30px #4cc9f0, 0 0 90px rgba(76, 201, 240, 0.7); }
-}
-
-@keyframes rotateRing {
-  0% { transform: translate(-50%, -50%) rotate(0); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-@keyframes rotateParticles {
-  0% { transform: rotate(0); }
-  100% { transform: rotate(360deg); }
+@keyframes floatParticles {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
 .portal-title {
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 900;
-  font-size: 2.5rem;
-  text-align: center;
-  margin: 0;
-  background: linear-gradient(to right, #4cc9f0, #8e2de2, #f34b8f);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 0 15px rgba(76, 201, 240, 0.5);
-  letter-spacing: 2px;
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 .portal-subtitle {
-  font-size: 1rem;
-  font-weight: 500;
-  text-align: center;
-  margin: 0.5rem 0 0;
-  color: rgba(225, 230, 255, 0.7);
-  letter-spacing: 3px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
 }
 
-/* INTERFACE SCREEN */
+/* AUTHENTICATION INTERFACE */
 .portal-interface {
-  width: 100%;
-  perspective: 800px;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .interface-screen {
-  background: rgba(10, 15, 30, 0.7);
-  border: 1px solid rgba(76, 201, 240, 0.3);
-  border-radius: 15px;
-  padding: 2.5rem;
-  width: 100%;
   position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.4),
-    0 0 80px rgba(76, 201, 240, 0.1),
-    inset 0 0 15px rgba(76, 201, 240, 0.1);
+  background: rgba(0, 0, 0, 0.8);
+  padding: 2rem;
+  border-radius: 8px;
 }
 
 .screen-scanner {
@@ -736,90 +592,95 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
-  height: 4px;
-  background: linear-gradient(to right, transparent, #4cc9f0, transparent);
-  opacity: 0;
-  z-index: 1;
-  box-shadow: 0 0 15px #4cc9f0;
+  height: 5px;
+  background: rgba(52, 152, 219, 0.7);
+  box-shadow: 0 0 20px rgba(52, 152, 219, 0.8);
+  animation: scan 3s linear infinite;
+  transform: translateY(-100%);
 }
 
-.scanning {
-  opacity: 1;
-  animation: scanning 2s ease-in-out infinite;
+.screen-scanner.scanning {
+  transform: translateY(0);
 }
 
-@keyframes scanning {
-  0% { top: 0; }
-  100% { top: 100%; }
+@keyframes scan {
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
 }
 
-/* STATUS INDICATORS */
 .status-indicators {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .status-light {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: rgba(225, 230, 255, 0.2);
-  position: relative;
-  transition: all 0.3s ease;
+  background: #333;
+  margin: 0 0.5rem;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .status-light.active {
-  background: #4cc9f0;
-  box-shadow: 0 0 10px #4cc9f0;
+  background: #2ecc71;
+  box-shadow: 0 0 10px #2ecc71;
 }
 
 /* LOGIN FORM */
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  align-items: center;
+  width: 100%;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  text-align: left;
 }
 
 .form-group label {
-  font-family: 'Orbitron', sans-serif;
+  display: block;
   font-size: 0.8rem;
-  font-weight: 500;
-  color: rgba(225, 230, 255, 0.7);
-  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .input-container {
   position: relative;
+  width: 100%;
 }
 
 .cosmic-input {
   width: 100%;
-  background: rgba(10, 20, 40, 0.6);
-  border: 1px solid rgba(76, 201, 240, 0.3);
-  border-radius: 8px;
-  padding: 1rem 2.5rem 1rem 1rem;
-  color: #e1e6ff;
-  font-family: 'Rajdhani', sans-serif;
+  padding: 0.8rem 1rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 5px;
+  color: #fff;
   font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.cosmic-input:focus {
+  transition: box-shadow 0.3s ease;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
   outline: none;
-  border-color: #4cc9f0;
-  box-shadow: 0 0 15px rgba(76, 201, 240, 0.3);
+  position: relative;
+  z-index: 2;
 }
 
 .cosmic-input::placeholder {
-  color: rgba(225, 230, 255, 0.3);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.cosmic-input:focus {
+  box-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
 }
 
 .input-effects {
@@ -829,6 +690,8 @@ export default {
   width: 100%;
   height: 100%;
   pointer-events: none;
+  border-radius: 5px;
+  overflow: hidden;
 }
 
 .glow-effect {
@@ -837,66 +700,62 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  border-radius: 8px;
+  background: rgba(52, 152, 219, 0.3);
   opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 5px;
 }
 
-.cosmic-input:focus ~ .input-effects .glow-effect {
+.cosmic-input:focus + .input-effects .glow-effect {
   opacity: 1;
-  box-shadow: 0 0 20px rgba(76, 201, 240, 0.3);
 }
 
 .scan-line {
   position: absolute;
-  top: 0;
+  top: 100%;
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(to right, transparent, #4cc9f0, transparent);
-  opacity: 0;
-  transform: translateY(-10px);
+  background: linear-gradient(to right, transparent, rgba(52, 152, 219, 0.8), transparent);
+  transform: translateY(-100%);
+  animation: scanLine 4s linear infinite;
+  border-radius: 2px;
 }
 
-.cosmic-input:focus ~ .input-effects .scan-line {
-  opacity: 1;
-  animation: inputScan 2s ease-in-out infinite;
-}
-
-@keyframes inputScan {
-  0% { top: 0; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
+@keyframes scanLine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .field-icon {
   position: absolute;
-  right: 1rem;
   top: 50%;
+  right: 1rem;
   transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 1.2rem;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .password-toggle {
   cursor: pointer;
-}
-
-/* Error styling */
-.form-group.error .cosmic-input {
-  border-color: #f34b8f;
-  box-shadow: 0 0 15px rgba(243, 75, 143, 0.3);
+  pointer-events: auto;
 }
 
 .error-message {
-  color: #f34b8f;
-  font-size: 0.85rem;
-  margin: 0.3rem 0 0;
-  animation: fadeIn 0.3s ease-in-out;
+  color: #e74c3c;
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+.form-group.error .cosmic-input {
+  border-color: #e74c3c;
+  box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
 }
 
 /* FORM OPTIONS */
@@ -904,317 +763,192 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
 }
 
 .remember-option {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
 }
 
 .cosmic-checkbox {
+  margin-right: 0.5rem;
   appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(76, 201, 240, 0.5);
-  border-radius: 4px;
-  background: rgba(10, 20, 40, 0.6);
-  position: relative;
+  width: 16px;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
-  vertical-align: middle;
+  position: relative;
+  outline: none;
 }
 
 .cosmic-checkbox:checked {
-  background: #4cc9f0;
-  border-color: #4cc9f0;
+  background: #3498db;
+  border-color: #3498db;
 }
 
-.cosmic-checkbox:checked::after {
-  content: '✓';
+.cosmic-checkbox:checked::before {
+  content: '✔';
   position: absolute;
-  color: white;
-  font-size: 12px;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-}
-
-.remember-option label {
+  color: #fff;
   font-size: 0.8rem;
-  color: rgba(225, 230, 255, 0.7);
-  cursor: pointer;
 }
 
 .forgot-btn {
-  background: transparent;
+  background: none;
   border: none;
-  color: #4cc9f0;
-  font-size: 0.8rem;
-  font-family: 'Rajdhani', sans-serif;
+  color: #3498db;
   cursor: pointer;
-  transition: all 0.3s ease;
+  padding: 0;
+  font-size: inherit;
+  outline: none;
+  transition: color 0.3s ease;
 }
 
 .forgot-btn:hover {
-  color: #8e2de2;
-  text-decoration: underline;
+  color: #5dade2;
 }
 
 /* LOGIN ERROR */
 .login-error {
-  background: rgba(243, 75, 143, 0.1);
-  border-left: 3px solid #f34b8f;
+  background: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  border-left: 3px solid #e74c3c;
   padding: 1rem;
+  margin-bottom: 1.5rem;
   border-radius: 5px;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  animation: fadeIn 0.5s ease-in-out;
+  font-size: 0.9rem;
 }
 
 .error-icon {
+  margin-right: 0.8rem;
   font-size: 1.2rem;
-}
-
-.login-error p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #f34b8f;
 }
 
 /* LOGIN BUTTON */
 .login-btn {
-  width: 100%;
-  background: linear-gradient(45deg, #4cc9f0, #8e2de2, #f34b8f);
-  background-size: 200% 200%;
-  color: white;
-  border: none;
-  border-radius: 30px;
   padding: 1rem 2rem;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 1px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(45deg, #3498db, #2980b9);
+  color: #fff;
+  font-size: 1.1rem;
   cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  font-weight: bold;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 
-    0 10px 20px rgba(0, 0, 0, 0.2), 
-    0 0 30px rgba(76, 201, 240, 0.3);
-  height: 55px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 1rem;
-}
-
-.login-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.2), 
-    transparent
-  );
-  transition: all 0.5s ease;
+  outline: none;
 }
 
 .login-btn:hover {
-  background-position: right center;
-  transform: translateY(-3px);
-  box-shadow: 
-    0 15px 30px rgba(0, 0, 0, 0.3), 
-    0 0 50px rgba(76, 201, 240, 0.5);
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5);
 }
 
-.login-btn:hover::before {
-  left: 100%;
-}
-
-.login-btn:active {
-  transform: translateY(1px);
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: linear-gradient(45deg, #777, #555);
+  box-shadow: none;
+  transform: none;
 }
 
 .btn-loading {
-  cursor: not-allowed;
-  background: linear-gradient(45deg, #4cc9f0, #8e2de2);
-  background-size: 200% 200%;
-  animation: gradientFlow 2s ease infinite;
-}
-
-.btn-activated {
-  animation: btnActivated 1s ease forwards;
-}
-
-@keyframes gradientFlow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes btnActivated {
-  0% { box-shadow: 0 0 20px rgba(76, 201, 240, 0.5); }
-  50% { box-shadow: 0 0 50px rgba(76, 201, 240, 0.8), 0 0 100px rgba(142, 45, 226, 0.5); }
-  100% { box-shadow: 0 0 20px rgba(76, 201, 240, 0.5); }
+  color: transparent;
 }
 
 .btn-loader {
-  width: 20px;
-  height: 20px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -12px 0 0 -12px;
+  width: 24px;
+  height: 24px;
   border: 3px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.btn-activated {
+  background: linear-gradient(45deg, #2ecc71, #27ae60);
 }
 
 /* CREATE ACCOUNT LINK */
 .create-account {
-  text-align: center;
-  margin-top: 1.5rem;
-}
-
-.create-account p {
+  margin-top: 2rem;
   font-size: 0.9rem;
-  color: rgba(225, 230, 255, 0.7);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .register-link {
-  color: #4cc9f0;
-  font-weight: 700;
+  color: #3498db;
   cursor: pointer;
-  margin-left: 0.3rem;
-  transition: all 0.3s ease;
+  font-weight: bold;
+  transition: color 0.3s ease;
 }
 
 .register-link:hover {
-  color: #f34b8f;
-  text-decoration: underline;
+  color: #5dade2;
 }
 
 /* SUCCESS PORTAL EFFECT */
 .portal-success {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100;
-  animation: successFadeIn 0.5s ease-in-out forwards;
+  flex-direction: column;
+  z-index: 4;
 }
 
 .warp-tunnel {
   position: absolute;
-  width: 100vmax;
-  height: 100vmax;
-  background: 
-    radial-gradient(circle at center, rgba(76, 201, 240, 0.8) 0%, transparent 5%),
-    repeating-radial-gradient(
-      circle at center,
-      rgba(142, 45, 226, 0.3) 0%,
-      rgba(142, 45, 226, 0.3) 5%,
-      transparent 5%,
-      transparent 10%
-    );
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) translateX(-100%);
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
-  animation: warpEffect 2s linear forwards;
-  transform-origin: center;
-}
-
-@keyframes warpEffect {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: scale(5);
-    opacity: 0;
-  }
+  background: url('https://i.imgur.com/5KkK3w1.gif') center/cover;
+  z-index: 5;
 }
 
 .success-message {
-  position: relative;
+  color: #fff;
   text-align: center;
-  z-index: 101;
+  margin-top: 2rem;
+  z-index: 5;
 }
 
 .success-message h2 {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 2rem;
-  color: white;
-  margin: 0 0 0.5rem;
-  animation: textPulse 2s ease-in-out infinite;
+  font-size: 2.5rem;
+  margin-bottom: 0.8rem;
 }
 
 .success-message p {
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-}
-
-@keyframes textPulse {
-  0%, 100% { text-shadow: 0 0 20px rgba(76, 201, 240, 0.7); }
-  50% { text-shadow: 0 0 40px rgba(76, 201, 240, 1), 0 0 80px rgba(142, 45, 226, 0.8); }
-}
-
-@keyframes successFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* RESPONSIVE DESIGN */
-@media (max-width: 768px) {
-  .portal-title {
-    font-size: 1.8rem;
-  }
-  
-  .cosmic-emblem {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .interface-screen {
-    padding: 1.5rem;
-  }
-  
-  .login-portal {
-    width: 90%;
-  }
-}
-
-@media (max-width: 480px) {
-  .portal-title {
-    font-size: 1.5rem;
-  }
-  
-  .cosmic-emblem {
-    width: 60px;
-    height: 60px;
-  }
-  
-  .form-options {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.8rem;
-  }
-  
-  .interface-screen {
-    padding: 1.2rem;
-  }
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.8);
 }
 </style>

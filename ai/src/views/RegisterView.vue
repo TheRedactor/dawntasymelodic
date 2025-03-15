@@ -8,76 +8,101 @@
         <input v-model="username" type="text" placeholder="Username" required />
         <input v-model="email" type="email" placeholder="Email" required />
         <input v-model="password" type="password" placeholder="Password" required />
-        <button type="submit" ref="submitButton">Create Account</button>
+        <button type="submit" ref="submitButton" :disabled="isLoading">
+          {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+        </button>
       </form>
       <p v-if="error" class="error">{{ error }}</p>
+      <p class="login-link">Already have an account? <router-link to="/login">Login here</router-link></p>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getApps, getApp, initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/store/auth';
 import gsap from "gsap";
 import * as THREE from "three";
 import anime from "animejs/lib/anime.es.js";
 
-// Firebase configuration with explicit dummy values (replace these with your real config)
-const firebaseConfig = {
-  apiKey: "ABC123DEF456GHI789",
-  authDomain: "cosmic-app.firebaseapp.com",
-  projectId: "cosmic-app",
-  storageBucket: "cosmic-app.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef123456"
-};
+// Use the AuthStore instead of direct Firebase calls
+const authStore = useAuthStore();
+const router = useRouter();
 
-// Initialize Firebase services with duplicate-app check
-let firebaseApp;
-if (!getApps().length) {
-  firebaseApp = initializeApp(firebaseConfig);
-} else {
-  firebaseApp = getApp();
-}
-
-const auth = getAuth(firebaseApp);
-const db = getFirestore(firebaseApp);
-
-// Reactive form data and error handling
+// Reactive form data and state
 const email = ref('');
 const password = ref('');
 const username = ref('');
 const error = ref('');
+const isLoading = ref(false);
 
 // DOM refs for animations
 const title = ref(null);
 const submitButton = ref(null);
 const starCanvas = ref(null);
 
+// Register function using the auth store - FIXED IMPLEMENTATION
 const register = async () => {
+  if (isLoading.value) return;
+  
   error.value = '';
+  isLoading.value = true;
+  
   try {
-    // Create the Firebase Authentication user
-    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
-    const user = userCredential.user;
+    const { success, error: registrationError, user } = await authStore.registerUser(
+      email.value, 
+      password.value, 
+      username.value
+    );
     
-    // Update the user's display name with the username
-    await updateProfile(user, { displayName: username.value });
-    
-    // Save user data to Firestore in a new document
-    await setDoc(doc(db, "users", user.uid), {
-      username: username.value,
-      email: email.value,
-      createdAt: new Date().toISOString()
-    });
-    
-    console.log("Cosmic registration successful:", user);
+    if (success) {
+      console.log("🎉 Cosmic registration successful!", user);
+      
+      // Redirect to the specified URL
+      window.location.href = 'https://ai.dawntasy.com/onboarding';
+
+    } else {
+      error.value = registrationError || "An unknown error occurred during registration";
+      console.error("Registration error:", registrationError);
+    }
   } catch (err) {
-    error.value = err.message;
+    error.value = err.message || "Failed to create account";
     console.error("Registration error:", err);
+  } finally {
+    isLoading.value = false;
   }
+};
+
+// Portal effect for transitions
+const createPortalEffect = (callback) => {
+  // Create portal element
+  const portal = document.createElement('div');
+  portal.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.8) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 9999;
+    opacity: 0;
+    transition: transform 1s cubic-bezier(0.19, 1, 0.22, 1), opacity 1s cubic-bezier(0.19, 1, 0.22, 1);
+  `;
+  document.body.appendChild(portal);
+  
+  // Animate portal opening
+  setTimeout(() => {
+    portal.style.opacity = '1';
+    portal.style.transform = 'translate(-50%, -50%) scale(5)';
+    
+    // Execute callback after animation completes
+    setTimeout(() => {
+      callback();
+    }, 1000);
+  }, 50);
 };
 
 onMounted(() => {
@@ -169,13 +194,16 @@ onMounted(() => {
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
   text-align: center;
   backdrop-filter: blur(5px);
+  max-width: 400px;
+  width: 90%;
 }
 
 .epic-title {
   color: #fff;
   font-family: 'Orbitron', sans-serif;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   font-size: 2rem;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.7);
 }
 
 form {
@@ -189,6 +217,19 @@ input {
   border: none;
   border-radius: 5px;
   font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
 }
 
 button {
@@ -199,15 +240,60 @@ button {
   color: #fff;
   font-size: 1rem;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  font-weight: bold;
+  margin-top: 0.5rem;
 }
 
-button:hover {
+button:not(:disabled):hover {
   transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.7);
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: linear-gradient(45deg, #666, #999);
 }
 
 .error {
   color: #ff5555;
   font-size: 0.9rem;
+  margin-top: 1rem;
+  background: rgba(255, 0, 0, 0.1);
+  padding: 0.5rem;
+  border-radius: 5px;
+  border-left: 3px solid #ff5555;
+}
+
+.login-link {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.login-link a {
+  color: #8b5cf6;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+  text-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+}
+
+@media (max-width: 480px) {
+  .form-container {
+    padding: 1.5rem;
+  }
+  
+  .epic-title {
+    font-size: 1.5rem;
+  }
+  
+  input, button {
+    padding: 0.6rem;
+  }
 }
 </style>
