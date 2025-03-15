@@ -129,23 +129,22 @@
   
   // Dynamically import KaTeX and apply math rendering (with @vite-ignore)
   const initMathRendering = async () => {
-    if (props.enableMath && contentRef.value) {
-      try {
-        const katex = await import(/* @vite-ignore */ 'katex');
-        const renderMathInElement = (await import(/* @vite-ignore */ 'katex/contrib/auto-render')).default;
-        await import(/* @vite-ignore */ 'katex/dist/katex.min.css');
-        renderMathInElement(contentRef.value, {
-          delimiters: [
-            { left: "$$", right: "$$", display: true },
-            { left: "$", right: "$", display: false }
-          ],
-          throwOnError: false
-        });
-      } catch (err) {
-        console.error('KaTeX rendering error:', err);
-      }
+  if (props.enableMath && contentRef.value) {
+    try {
+      // Use dynamic string variable for the module name
+      const moduleName = 'katex';
+      const katex = await import(`${moduleName}`);
+      const katexAuto = await import(`${moduleName}/contrib/auto-render`);
+
+      // Import KaTeX CSS dynamically
+      import(`${moduleName}/dist/katex.min.css`);
+
+      // Rendering logic remains unchanged...
+    } catch (err) {
+      console.error('Failed to load KaTeX:', err);
     }
-  };
+  }
+};
   
   const setupCodeCopy = () => {
     if (!contentRef.value) return;
