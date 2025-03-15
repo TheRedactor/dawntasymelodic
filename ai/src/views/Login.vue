@@ -1,900 +1,388 @@
 <template>
-  <div class="cosmic-login">
-    <!-- DYNAMIC STAR FIELD BACKGROUND -->
-    <div class="star-field">
-      <div
-        v-for="n in 100"
-        :key="`star-${n}`"
-        class="star"
-        :style="{
-          '--size': `${Math.random() * 3 + 1}px`,
-          '--x': `${Math.random() * 100}%`,
-          '--y': `${Math.random() * 100}%`,
-          '--duration': `${Math.random() * 50 + 20}s`
-        }"
-      ></div>
-    </div>
+  <div class="sidebar-container" :class="{ expanded: isExpanded }">
+    <!-- Close button for mobile -->
+    <button v-if="isExpanded" @click="toggleSidebar" class="close-sidebar-btn">
+      <i class="ri-close-line"></i>
+    </button>
 
-    <!-- ANIMATED GALAXY EFFECT -->
-    <div class="galaxy-spiral"></div>
-
-    <!-- ENERGY WAVES -->
-    <div class="energy-field">
-      <div class="energy-wave wave1"></div>
-      <div class="energy-wave wave2"></div>
-      <div class="energy-wave wave3"></div>
-    </div>
-
-    <!-- MAIN LOGIN PORTAL -->
-    <div class="login-portal" :class="{ 'portal-active': portalActive }">
-      <!-- PORTAL HEADER -->
-      <div class="portal-header">
-        <div class="cosmic-emblem">
-          <div class="emblem-core"></div>
-          <div class="emblem-ring"></div>
-          <div class="emblem-particles"></div>
-        </div>
-        <h1 class="portal-title">COSMIC VOYAGER</h1>
-        <p class="portal-subtitle">INTERDIMENSIONAL ACCESS PORTAL</p>
+    <!-- Sidebar header with logo -->
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-core"></div>
+        <div class="logo-orbit"></div>
       </div>
-
-      <!-- AUTHENTICATION INTERFACE -->
-      <div class="portal-interface">
-        <div class="interface-screen">
-          <div class="screen-scanner" :class="{ 'scanning': isScanning }"></div>
-
-          <!-- STATUS INDICATORS -->
-          <div class="status-indicators">
-            <div class="status-light" :class="{ 'active': loginStep >= 1 }"></div>
-            <div class="status-light" :class="{ 'active': loginStep >= 2 }"></div>
-            <div class="status-light" :class="{ 'active': loginStep >= 3 }"></div>
-          </div>
-
-          <!-- LOGIN FORM -->
-          <form @submit.prevent="handleLogin" class="login-form">
-            <div class="form-group" :class="{ 'error': errors.email }">
-              <label for="email">QUANTUM IDENTIFIER</label>
-              <div class="input-container">
-                <input
-                  id="email"
-                  v-model="credentials.email"
-                  type="email"
-                  required
-                  placeholder="your-id@cosmic-realm.com"
-                  autocomplete="email"
-                  @focus="activateField('email')"
-                  @blur="validateEmail"
-                  class="cosmic-input"
-                />
-                <div class="input-effects">
-                  <div class="glow-effect"></div>
-                  <div class="scan-line"></div>
-                </div>
-                <div class="field-icon">🌠</div>
-              </div>
-              <p v-if="errors.email" class="error-message">{{ errors.email }}</p>
-            </div>
-
-            <div class="form-group" :class="{ 'error': errors.password }">
-              <label for="password">DIMENSIONAL KEY</label>
-              <div class="input-container">
-                <input
-                  id="password"
-                  v-model="credentials.password"
-                  :type="showPassword ? 'text' : 'password'"
-                  required
-                  placeholder="••••••••••••"
-                  autocomplete="current-password"
-                  @focus="activateField('password')"
-                  @blur="validatePassword"
-                  class="cosmic-input"
-                />
-                <div class="input-effects">
-                  <div class="glow-effect"></div>
-                  <div class="scan-line"></div>
-                </div>
-                <div class="field-icon password-toggle" @click="showPassword = !showPassword">
-                  {{ showPassword ? '👁️' : '🔒' }}
-                </div>
-              </div>
-              <p v-if="errors.password" class="error-message">{{ errors.password }}</p>
-            </div>
-
-            <!-- REMEMBER ME & FORGOT PASSWORD -->
-            <div class="form-options">
-              <div class="remember-option">
-                <input id="remember" v-model="rememberMe" type="checkbox" class="cosmic-checkbox" />
-                <label for="remember">REMEMBER COORDINATES</label>
-              </div>
-              <button type="button" @click="forgotPassword" class="forgot-btn">LOST KEY?</button>
-            </div>
-
-            <!-- LOGIN ERROR MESSAGE -->
-            <div v-if="loginError" class="login-error">
-              <div class="error-icon">⚠️</div>
-              <p>{{ loginError }}</p>
-            </div>
-
-            <!-- LOGIN BUTTON -->
-            <button
-              type="submit"
-              class="login-btn"
-              :class="{ 'btn-loading': isLoading, 'btn-activated': isActivated }"
-              :disabled="isLoading"
-            >
-              <span v-if="!isLoading">{{ isLoading ? 'ACTIVATING...' : 'ACTIVATE PORTAL' }}</span>
-              <div v-else class="btn-loader"></div>
-            </button>
-
-            <!-- CREATE ACCOUNT LINK -->
-            <div class="create-account">
-              <p>NEED DIMENSIONAL ACCESS? <span @click="navigateToRegister" class="register-link">CREATE ACCOUNT</span></p>
-            </div>
-          </form>
-        </div>
-      </div>
+      <h1 v-if="isExpanded" class="sidebar-title">DawntasyAI</h1>
     </div>
 
-    <!-- SUCCESS PORTAL EFFECT -->
-    <div v-if="loginSuccess" class="portal-success">
-      <div class="warp-tunnel"></div>
-      <div class="success-message">
-        <h2>DIMENSION UNLOCKED</h2>
-        <p>Preparing for quantum transport...</p>
+    <!-- New chat button -->
+    <button @click="createNewChat" class="new-chat-btn">
+      <i class="ri-add-line"></i>
+      <span v-if="isExpanded">New Chat</span>
+    </button>
+
+    <!-- Chat list -->
+    <div class="chats-container">
+      <router-link
+        v-for="chat in chats"
+        :key="chat.id"
+        :to="`/chat/${chat.id}`"
+        class="chat-item"
+        :class="{ active: activeChatId === chat.id }"
+        :title="chat.title"
+      >
+        <i class="ri-chat-3-line chat-icon"></i>
+        <span v-if="isExpanded" class="chat-title">{{ chat.title }}</span>
+      </router-link>
+      <div v-if="chats.length === 0" class="empty-chats">
+        <i class="ri-chat-3-line empty-icon"></i>
+        <span v-if="isExpanded" class="empty-text">No chats yet</span>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import { ref, reactive, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { getApp, getApps, initializeApp } from 'firebase/app';
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  setPersistence,
-  browserLocalPersistence,
-  browserSessionPersistence,
-  sendPasswordResetEmail
-} from 'firebase/auth';
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  updateDoc,
-  serverTimestamp
-} from 'firebase/firestore';
-import gsap from 'gsap';
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useChatStore } from '../store/chat';
 
-export default {
-  name: 'LoginView',
-  setup() {
-    // Initialize Firebase with prevention of duplicate initialization
-    let app;
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    try {
-      if (getApps().length === 0) {
-        app = initializeApp(firebaseConfig);
-      } else {
-        app = getApp();
-      }
-    } catch (error) {
-      console.error("Firebase initialization error:", error);
-    }
-
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const router = useRouter();
-
-    // LOGIN STATE
-    const credentials = reactive({
-      email: '',
-      password: ''
-    });
-    const rememberMe = ref(false);
-    const showPassword = ref(false);
-    const isLoading = ref(false);
-    const loginError = ref('');
-    const loginSuccess = ref(false);
-    const portalActive = ref(false);
-    const isScanning = ref(false);
-    const isActivated = ref(false);
-    const loginStep = ref(0);
-
-    // FORM VALIDATION
-    const errors = reactive({
-      email: '',
-      password: ''
-    });
-
-    const validateEmail = () => {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      errors.email = emailRegex.test(credentials.email) ? '' : 'INVALID QUANTUM ID FORMAT';
-    };
-
-    const validatePassword = () => {
-      errors.password = credentials.password.length >= 8 ? '' : 'DIMENSIONAL KEY TOO SHORT (MIN. 8 CHARACTERS)';
-    };
-
-    const activateField = (field) => {
-      errors[field] = '';
-      isActivated.value = true;
-    };
-
-    // LOGIN FUNCTION
-    const handleLogin = async () => {
-      validateEmail();
-      validatePassword();
-      if (errors.email || errors.password) return;
-
-      isLoading.value = true;
-      loginError.value = '';
-      loginStep.value = 1;
-
-      try {
-        await setPersistence(auth, rememberMe.value ? browserLocalPersistence : browserSessionPersistence);
-        loginStep.value = 2;
-        await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
-        loginStep.value = 3;
-
-        isScanning.value = true;
-        setTimeout(() => {
-          isScanning.value = false;
-          loginSuccess.value = true;
-          portalActive.value = true;
-          setTimeout(() => {
-            window.location.href = 'https://ai.dawntasy.com/chat';
-          }, 2000);
-        }, 2000);
-      } catch (error) {
-        switch (error.code) {
-          case 'auth/user-not-found':
-            loginError.value = 'QUANTUM ID NOT FOUND. ENSURE CORRECT REALM.';
-            break;
-          case 'auth/wrong-password':
-            loginError.value = 'INCORRECT DIMENSIONAL KEY. VERIFY ACCESS CODE.';
-            break;
-          case 'auth/too-many-requests':
-            loginError.value = 'ACCESS PORTAL OVERLOADED. RETRY IN A MOMENT.';
-            break;
-          default:
-            loginError.value = 'FAILED TO ESTABLISH COSMIC CONNECTION. CHECK CREDENTIALS.';
-            break;
-        }
-      } finally {
-        isLoading.value = false;
-        loginStep.value = 0;
-      }
-    };
-
-    const forgotPassword = async () => {
-      try {
-        await sendPasswordResetEmail(auth, credentials.email);
-        alert('PASSWORD RESET INSTRUCTIONS SENT TO YOUR QUANTUM ID.');
-      } catch (error) {
-        console.error('Forgot Password Error', error);
-        alert('COULD NOT INITIATE PASSWORD RESET. ENSURE QUANTUM ID IS VALID.');
-      }
-    };
-
-    const navigateToRegister = () => {
-      router.push('/register');
-    };
-
-    onMounted(() => {
-      portalActive.value = true;
-      gsap.to(".energy-wave", {
-        duration: 2,
-        x: "100px",
-        yoyo: true,
-        repeat: -1,
-        ease: "sine.inOut",
-        stagger: 0.2,
-        opacity: 0.5
-      });
-      gsap.to(".galaxy-spiral", {
-        duration: 100,
-        rotation: 360,
-        repeat: -1,
-        ease: "linear"
-      });
-      // Warp tunnel timeline (if needed for later effects)
-      // Start subtle entrance animations
-      gsap.from(".login-portal", { duration: 1, opacity: 0, scale: 0.9, ease: "power3.out" });
-    });
-
-    return {
-      credentials,
-      rememberMe,
-      showPassword,
-      isLoading,
-      loginError,
-      loginSuccess,
-      portalActive,
-      isScanning,
-      isActivated,
-      loginStep,
-      errors,
-      validateEmail,
-      validatePassword,
-      activateField,
-      handleLogin,
-      forgotPassword,
-      navigateToRegister
-    };
+// Props
+const props = defineProps({
+  activeRoute: {
+    type: String,
+    default: ''
   }
-};
+});
+
+// Store references
+const chatStore = useChatStore();
+const route = useRoute();
+const router = useRouter();
+
+// State: Check localStorage for sidebar state; default to expanded if none set
+const isExpanded = ref(localStorage.getItem('sidebar-expanded') === 'true' || true);
+
+// Computed properties
+const chats = computed(() => chatStore.sortedChats);
+const activeChatId = computed(() => route.params.id);
+
+// Methods
+function toggleSidebar() {
+  isExpanded.value = !isExpanded.value;
+  localStorage.setItem('sidebar-expanded', isExpanded.value);
+}
+
+async function createNewChat() {
+  try {
+    const chatId = await chatStore.createChat();
+    if (chatId) {
+      router.push(`/chat/${chatId}`);
+    }
+  } catch (error) {
+    console.error('Failed to create chat:', error);
+  }
+}
+
+// Lifecycle hooks
+onMounted(() => {
+  // Fetch chats when component mounts
+  chatStore.fetchChats();
+
+  // For mobile: Close sidebar when navigating
+  if (window.innerWidth < 768) {
+    isExpanded.value = false;
+  }
+});
+
+// Watch for route changes to close sidebar on mobile
+watch(
+  () => route.path,
+  () => {
+    if (window.innerWidth < 768) {
+      isExpanded.value = false;
+    }
+  }
+);
 </script>
 
 <style scoped>
-/* GENERAL COSMIC STYLES */
-.cosmic-login {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(to bottom, #0b132b, #020c1b);
-  font-family: 'Roboto', sans-serif;
-}
-
-/* STAR FIELD BACKGROUND */
-.star-field {
-  position: absolute;
+/* Sidebar container */
+.sidebar-container {
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  width: 72px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: 1px solid rgba(139, 92, 246, 0.1);
+  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.2);
   overflow: hidden;
-  z-index: 0;
 }
 
-.star {
+.sidebar-container.expanded {
+  width: 260px;
+}
+
+/* Close button for mobile */
+.close-sidebar-btn {
   position: absolute;
-  background: #ffffff;
+  top: 1rem;
+  right: 1rem;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  width: var(--size);
-  height: var(--size);
-  top: var(--y);
-  left: var(--x);
-  animation: twinkle var(--duration) linear infinite;
-  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
 }
 
-@keyframes twinkle {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 0.3; }
+@media (max-width: 768px) {
+  .close-sidebar-btn {
+    display: flex;
+  }
 }
 
-/* GALAXY SPIRAL */
-.galaxy-spiral {
+/* Sidebar header */
+.sidebar-header {
+  padding: 1.5rem 1rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sidebar-logo {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.logo-core {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 400px;
-  height: 400px;
-  background: url('https://i.imgur.com/zKIW3wA.png') center/cover;
+  width: 16px;
+  height: 16px;
+  background: #8b5cf6;
   border-radius: 50%;
-  opacity: 0.35;
-  z-index: 1;
+  box-shadow: 0 0 20px #8b5cf6;
+  animation: corePulse 4s infinite ease-in-out;
 }
 
-/* ENERGY FIELD */
-.energy-field {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-  pointer-events: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.energy-wave {
-  position: absolute;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(ellipse at center, rgba(52,152,219,0.25) 0%, transparent 70%);
-  border-radius: 50%;
-  opacity: 0;
-}
-
-.wave1 { transform: translate(-50%, -50%) scale(1); }
-.wave2 { transform: translate(-50%, -50%) scale(1.2); }
-.wave3 { transform: translate(-50%, -50%) scale(1.4); }
-
-/* MAIN LOGIN PORTAL */
-.login-portal {
-  position: relative;
-  z-index: 3;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 15px;
-  padding: 3rem;
-  width: 100%;
-  max-width: 500px;
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 8px 32px rgba(31,38,135,0.37);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.login-portal.portal-active {
-  transform: scale(1.05);
-  box-shadow: 0 12px 48px rgba(31,38,135,0.5);
-}
-
-/* PORTAL HEADER */
-.portal-header {
-  margin-bottom: 2rem;
-  color: #fff;
-}
-
-.cosmic-emblem {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 1rem;
-}
-
-.emblem-core {
+.logo-orbit {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 30px;
   height: 30px;
-  background: linear-gradient(45deg, #6a5acd, #2e86ab);
+  border: 2px solid #8b5cf6;
   border-radius: 50%;
-  box-shadow: 0 0 15px rgba(106,90,205,0.8);
-  animation: corePulse 4s infinite ease-in-out;
+  animation: orbitRotate 10s infinite linear;
+}
+
+.logo-orbit::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #4cc9f0;
+  border-radius: 50%;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 0 10px #4cc9f0;
 }
 
 @keyframes corePulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -50%) scale(1.2); }
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+  }
 }
 
-.emblem-ring {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 3px dashed rgba(255,255,255,0.3);
-  animation: rotateRing 15s linear infinite;
+@keyframes orbitRotate {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
-@keyframes rotateRing {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.emblem-particles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.emblem-particles::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 150%;
-  height: 150%;
-  background: url('https://i.imgur.com/yTj2XyG.png') center/cover;
-  opacity: 0.4;
-  animation: floatParticles 20s linear infinite;
-}
-
-@keyframes floatParticles {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-.portal-title {
-  font-size: 2.2rem;
-  margin-bottom: 0.5rem;
-  text-shadow: 0 0 10px rgba(255,255,255,0.5);
-}
-
-.portal-subtitle {
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.7);
-}
-
-/* AUTHENTICATION INTERFACE */
-.portal-interface {
-  position: relative;
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
-
-.interface-screen {
-  position: relative;
-  background: rgba(0,0,0,0.8);
-  padding: 2rem;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.screen-scanner {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 5px;
-  background: rgba(52,152,219,0.7);
-  box-shadow: 0 0 20px rgba(52,152,219,0.8);
-  transform: translateY(-100%);
-  animation: scan 3s linear infinite;
-}
-
-.screen-scanner.scanning {
-  transform: translateY(0);
-}
-
-@keyframes scan {
-  0% { top: 0%; }
-  100% { top: 100%; }
-}
-
-.status-indicators {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-}
-
-.status-light {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #333;
-  margin: 0 0.5rem;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
-}
-
-.status-light.active {
-  background: #2ecc71;
-  box-shadow: 0 0 10px #2ecc71;
-}
-
-/* LOGIN FORM */
-.login-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.form-group {
-  width: 100%;
-  margin-bottom: 1.5rem;
-  text-align: left;
-}
-
-.form-group label {
-  display: block;
-  font-size: 0.8rem;
-  color: rgba(255,255,255,0.8);
-  margin-bottom: 0.4rem;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-.input-container {
-  position: relative;
-  width: 100%;
-}
-
-.cosmic-input {
-  width: 100%;
-  padding: 0.8rem 1rem;
-  background: rgba(0,0,0,0.5);
-  border: none;
-  border-radius: 5px;
-  color: #fff;
-  font-size: 1rem;
-  transition: box-shadow 0.3s ease;
-  box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
-  outline: none;
-  position: relative;
-  z-index: 2;
-}
-
-.cosmic-input::placeholder {
-  color: rgba(255,255,255,0.5);
-}
-
-.cosmic-input:focus {
-  box-shadow: 0 0 10px rgba(52,152,219,0.7);
-}
-
-.input-effects {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.glow-effect {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(52,152,219,0.3);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 5px;
-}
-
-.cosmic-input:focus + .input-effects .glow-effect {
-  opacity: 1;
-}
-
-.scan-line {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, transparent, rgba(52,152,219,0.8), transparent);
-  transform: translateY(-100%);
-  animation: scanLine 4s linear infinite;
-  border-radius: 2px;
-}
-
-@keyframes scanLine {
-  0% { left: -100%; }
-  100% { left: 100%; }
-}
-
-.field-icon {
-  position: absolute;
-  top: 50%;
-  right: 1rem;
-  transform: translateY(-50%);
-  color: rgba(255,255,255,0.6);
-  font-size: 1.2rem;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.password-toggle {
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-.error-message {
-  color: #e74c3c;
-  font-size: 0.8rem;
-  margin-top: 0.3rem;
-}
-
-.form-group.error .cosmic-input {
-  border-color: #e74c3c;
-  box-shadow: 0 0 8px rgba(231,76,60,0.5);
-}
-
-/* FORM OPTIONS */
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  color: rgba(255,255,255,0.7);
-  font-size: 0.85rem;
-}
-
-.remember-option {
-  display: flex;
-  align-items: center;
-}
-
-.cosmic-checkbox {
-  margin-right: 0.5rem;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  background: rgba(0,0,0,0.5);
-  border-radius: 3px;
-  border: 1px solid rgba(255,255,255,0.3);
-  cursor: pointer;
-  position: relative;
-  outline: none;
-}
-
-.cosmic-checkbox:checked {
-  background: #3498db;
-  border-color: #3498db;
-}
-
-.cosmic-checkbox:checked::before {
-  content: '✔';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #fff;
-  font-size: 0.8rem;
-}
-
-.forgot-btn {
-  background: none;
-  border: none;
-  color: #3498db;
-  cursor: pointer;
-  padding: 0;
-  font-size: inherit;
-  outline: none;
-  transition: color 0.3s ease;
-}
-
-.forgot-btn:hover {
-  color: #5dade2;
-}
-
-/* LOGIN ERROR */
-.login-error {
-  background: rgba(231,76,60,0.1);
-  color: #e74c3c;
-  border-left: 3px solid #e74c3c;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  font-size: 0.9rem;
-}
-
-.error-icon {
-  margin-right: 0.8rem;
-  font-size: 1.2rem;
-}
-
-/* LOGIN BUTTON */
-.login-btn {
-  padding: 1rem 2rem;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(45deg, #3498db, #2980b9);
-  color: #fff;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  font-weight: bold;
-  position: relative;
-  overflow: hidden;
-  outline: none;
-}
-
-.login-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 5px 15px rgba(52,152,219,0.5);
-}
-
-.login-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  background: linear-gradient(45deg, #777, #555);
-  box-shadow: none;
-  transform: none;
-}
-
-.btn-loading {
+.sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-left: 0.75rem;
+  color: white;
+  white-space: nowrap;
+  background: linear-gradient(to right, #fff, #8b5cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
 }
 
-.btn-loader {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin: -12px 0 0 -12px;
-  width: 24px;
-  height: 24px;
-  border: 3px solid rgba(255,255,255,0.3);
-  border-radius: 50%;
-  border-top-color: #fff;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.btn-activated {
-  background: linear-gradient(45deg, #2ecc71, #27ae60);
-}
-
-/* CREATE ACCOUNT LINK */
-.create-account {
-  margin-top: 2rem;
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.7);
-}
-
-.register-link {
-  color: #3498db;
-  cursor: pointer;
-  font-weight: bold;
-  transition: color 0.3s ease;
-}
-
-.register-link:hover {
-  color: #5dade2;
-}
-
-/* SUCCESS PORTAL EFFECT */
-.portal-success {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.9);
+/* New chat button */
+.new-chat-btn {
+  margin: 0 0.75rem 1.5rem;
+  padding: 0.625rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: #8b5cf6;
+  color: white;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.new-chat-btn i {
+  font-size: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.sidebar-container:not(.expanded) .new-chat-btn i {
+  margin-right: 0;
+}
+
+.new-chat-btn:hover {
+  background: #9333ea;
+  box-shadow: 0 4px 8px rgba(139, 92, 246, 0.5);
+}
+
+/* Chats container */
+.chats-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0.75rem;
+}
+
+/* Hide scrollbar */
+.chats-container::-webkit-scrollbar {
+  width: 0px;
+}
+
+/* Chat items */
+.chat-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-item:hover {
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.chat-item.active {
+  background: rgba(139, 92, 246, 0.2);
+  color: white;
+}
+
+.chat-icon {
+  font-size: 1.25rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.chat-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Empty chats state */
+.empty-chats {
+  display: flex;
   flex-direction: column;
-  z-index: 4;
-}
-
-.warp-tunnel {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) translateX(-100%);
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: url('https://i.imgur.com/5KkK3w1.gif') center/cover;
-  z-index: 5;
-}
-
-.success-message {
-  color: #fff;
+  align-items: center;
+  padding: 2rem 0;
+  color: rgba(255, 255, 255, 0.4);
   text-align: center;
-  margin-top: 2rem;
-  z-index: 5;
 }
 
-.success-message h2 {
-  font-size: 2.5rem;
-  margin-bottom: 0.8rem;
+.empty-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
 }
 
-.success-message p {
-  font-size: 1.2rem;
-  color: rgba(255,255,255,0.8);
+.empty-text {
+  font-size: 0.875rem;
+}
+
+/* Sidebar footer */
+.sidebar-footer {
+  padding: 1rem 0.75rem;
+  border-top: 1px solid rgba(139, 92, 246, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footer-link {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.footer-link:hover {
+  background: rgba(139, 92, 246, 0.1);
+  color: white;
+}
+
+.footer-link i {
+  font-size: 1.25rem;
+  margin-right: 0.75rem;
+}
+
+.sidebar-container:not(.expanded) .footer-link i {
+  margin-right: 0;
+}
+
+/* Toggle button specific styling */
+.toggle-btn {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .sidebar-container {
+    transform: translateX(-100%);
+  }
+  .sidebar-container.expanded {
+    width: 260px;
+    transform: translateX(0);
+  }
 }
 </style>

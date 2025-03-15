@@ -375,3 +375,6 @@ watch(
         <span v-if="isExpanded" class="empty-text">No chats yet</span>
       </div>
     </div>
+  </div>
+    </template>
+    
