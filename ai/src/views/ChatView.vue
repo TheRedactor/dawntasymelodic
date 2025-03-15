@@ -347,5 +347,5 @@ watch(() => route.params.id, async (newId) => {
 </script>
 
 <style scoped>
-@import '../ChatView.scss';
+@import '../../ChatView.scss';
 </style>
