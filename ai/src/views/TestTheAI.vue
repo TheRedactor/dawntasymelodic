@@ -46,7 +46,7 @@
           <div v-if="messages.length === 0" class="welcome-message">
             <div class="welcome-icon">✨</div>
             <h2>Welcome to the Cosmic Experience</h2>
-            <p>Hi, I'm DawntasyAI. Ask me anything!</p>
+            <p>Hi, I'm DawntasyAI. Ask me anything.</p>
             
             <!-- QUICK SUGGESTION CHIPS -->
             <div class="suggestion-chips">
@@ -125,7 +125,7 @@
           <textarea 
             ref="inputField"
             v-model="userInput"
-            @keydown.enter.prevent="onEnterPress"
+            @keyDown="handleKeyPress"
             @input="resizeTextarea"
             placeholder="Enter your message..."
             class="message-input"
@@ -187,8 +187,8 @@
           <p class="api-key-info">Your API key is stored only in your browser's local storage and is never sent to our servers.</p>
         </div>
         
-        <!-- DISCLAIMER -->
-        <div class="preview-disclaimer">
+        <!-- DISCLAMER -->
+        <div class="preview-disclaimers">
           <p>🔮 This is a preview environment. Your conversations will not be saved. Your API key is used only for this preview.</p>
         </div>
       </div>
@@ -202,12 +202,12 @@ import axios from 'axios';
 import { format } from 'date-fns';
 
 export default {
-  name: 'DawntasyPreview',
+  name: 'Dawntasy Preview',
   setup() {
     // STATE
     const userInput = ref('');
     const isLoading = ref(false);
-    const messages = ref([]);
+    const messages = ref([]); // Array of { role: 'user' | 'assistant', content: string, timestamp: number }
     const showScrollIndicator = ref(false);
     const messagesContainer = ref(null);
     const inputField = ref(null);
@@ -291,9 +291,9 @@ export default {
       return format(timestamp, 'h:mm a');
     };
     
-    const onEnterPress = (e) => {
-      // Ctrl+Enter for new line, Enter to send
-      if (!e.ctrlKey && !e.shiftKey) {
+    const handleKeyPress = (e) => {
+      if (e.key === 'Enter' && !e.shiftKey && !e.controlKey) {
+        e.preventDefault();
         sendMessage();
       }
     };
@@ -336,7 +336,7 @@ export default {
       const target = e.currentTarget;
       
       target.style.transform = 'scale(1.1) translateY(-5px)';
-      target.style.boxShadow = '0 8px 20px rgba(139, 92, 246, 0.6)';
+      target.style.boxShadow = '0 8px 20px rgb(139,92,246,.6)';
       
       // Add sparkle effect
       for (let i = 0; i < 3; i++) {
@@ -380,7 +380,7 @@ When answering questions, you:
 
 Your personality is engaging, slightly mysterious, and intellectually stimulating. You should occasionally reference Dawntasy elements when relevant, but never force them.
 
-Current mode: ${mode.value}`;
+Current mode: ${mode.value}`
     };
     
     // Send message to API 
@@ -431,18 +431,36 @@ Current mode: ${mode.value}`;
         });
         
         // Add assistant's response
-        const aiContent = response.data.choices[0].message.content;
-        messages.value.push({
-          role: 'assistant',
-          content: aiContent,
-          timestamp: Date.now()
-        });
+        if (response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message && response.data.choices[0].message.content) {
+          const aiContent = response.data.choices[0].message.content;
+          messages.value.push({
+            role: 'assistant',
+            content: aiContent,
+            timestamp: Date.now()
+          });
+        } else {
+          throw new Error("Invalid response from API");
+        }
         
       } catch (error) {
         console.error('Error sending message:', error);
+        let errorMessage = "⚠️ *The Rift appears to be unstable at the moment.* I'm having trouble connecting to the cosmic streams. Please try again when the quantum fluctuations stabilize.";
+        
+        if (error.response) {
+          if (error.response.status === 401) {
+            errorMessage += "\n\nIt seems like your API key might be invalid or expired. Please check and update your API key.";
+          } else if (error.response.data && error.response.data.error) {
+            errorMessage += "\n\nError: " + error.response.data.error.message;
+          } else {
+            errorMessage += "\n\nError: " + error.message;
+          }
+        } else {
+          errorMessage += "\n\nError: " + error.message;
+        }
+        
         messages.value.push({
           role: 'assistant',
-          content: "⚠️ *The Rift appears to be unstable at the moment.* I'm having trouble connecting to the cosmic streams. Please try again when the quantum fluctuations stabilize.\n\nError: " + (error.response?.data?.error?.message || error.message),
+          content: errorMessage,
           timestamp: Date.now()
         });
       } finally {
@@ -472,7 +490,7 @@ Current mode: ${mode.value}`;
       hasApiKey,
       formatMessage,
       formatTime,
-      onEnterPress,
+      handleKeyPress,
       resizeTextarea,
       scrollToBottom,
       handleScroll,
@@ -564,21 +582,21 @@ Current mode: ${mode.value}`;
 .ring1 {
   width: 80vw;
   height: 80vw;
-  border-color: rgba(157, 78, 221, 0.15);
+  border-color: rgb(157,78,221,.15);
   animation: pulsate 15s linear infinite;
 }
 
 .ring2 {
   width: 60vw;
   height: 60vw;
-  border-color: rgba(76, 201, 240, 0.1);
+  border-color: rgb(76,201,240,.1);
   animation: pulsate 12s linear infinite reverse;
 }
 
 .ring3 {
   width: 40vw;
   height: 40vw;
-  border-color: rgba(247, 37, 133, 0.08);
+  border-color: rgb(247,37,133,.08);
   animation: pulsate 10s linear infinite;
 }
 
@@ -684,12 +702,12 @@ Current mode: ${mode.value}`;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
+  text-shadow: 0 2px 10px rgb(139,92,246,.3);
 }
 
 .preview-description {
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgb(255,255,255,.8);
   max-width: 600px;
   margin: 1rem auto;
 }
@@ -697,15 +715,15 @@ Current mode: ${mode.value}`;
 /* MAIN INTERFACE */
 .preview-interface {
   position: relative;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgb(15,23,42,.6);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  border: 1px solid rgb(139,92,246,.2);
   width: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 80px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 20px 40px rgb(0,0,0,.4), 0 0 80px rgb(139,92,246,.1);
 }
 
 /* MESSAGES CONTAINER */
@@ -718,23 +736,23 @@ Current mode: ${mode.value}`;
   scroll-behavior: smooth;
 }
 
-/* Hide scrollbar but allow scrolling */
+/* Hide scroll bar but allow scrolling */
 .messages-container::-webkit-scrollbar {
   width: 8px;
 }
 
 .messages-container::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.3);
+  background: rgb(15,23,42,.3);
   border-radius: 4px;
 }
 
 .messages-container::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.5);
+  background: rgb(139,92,246,.5);
   border-radius: 4px;
 }
 
 .messages-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.7);
+  background: rgb(139,92,246,.7);
 }
 
 /* WELCOME MESSAGE */
@@ -742,9 +760,9 @@ Current mode: ${mode.value}`;
   text-align: center;
   padding: 2rem;
   margin: 1rem 0;
-  background: rgba(15, 23, 42, 0.3);
+  background: rgb(15,23,42,.3);
   border-radius: 16px;
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  border: 1px solid rgb(139,92,246,.2);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -928,5 +946,317 @@ Current mode: ${mode.value}`;
   width: 70%;
   height: 70%;
   animation: ringRotate 7s linear infinite reverse;
+}
+
+@keyframes ringRotate {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.message-content {
+  background: rgba(15, 23, 42, 0.8);
+  padding: 1rem;
+  border-radius: 12px;
+  max-width: 70%;
+  position: relative;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.user .message-content {
+  background: rgba(99, 102, 241, 0.2);
+}
+
+.message-sender {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
+  position: relative;
+  font-weight: 600;
+}
+
+.sender-underline {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #8b5cf6, transparent);
+  opacity: 0.5;
+}
+
+.message-text {
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+.message-text .cosmic-keyword {
+  color: #8b5cf6;
+  text-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+  animation: keywordGlow 2s infinite alternate;
+}
+
+@keyframes keywordGlow {
+  0% { text-shadow: 0 0 5px rgba(139, 92, 246, 0.5); }
+  100% { text-shadow: 0 0 10px rgba(139, 92, 246, 0.8); }
+}
+
+.message-time {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: right;
+  margin-top: 0.5rem;
+}
+
+/* THINKING INDICATOR */
+.thinking-indicator {
+  text-align: center;
+  padding: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.cosmic-thinking {
+  display: flex;
+  justify-content: center;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: #8b5cf6;
+  border-radius: 50%;
+  animation: dotPulse 1.4s infinite ease-in-out;
+}
+
+.dot-1 { animation-delay: -0.32s; }
+.dot-2 { animation-delay: -0.16s; }
+
+@keyframes dotPulse {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* SCROLL INDICATOR */
+.scroll-indicator {
+  position: sticky;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(139, 92, 246, 0.2);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.scroll-indicator:hover {
+  background: rgba(139, 92, 246, 0.3);
+}
+
+.scroll-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba(139, 92, 246, 0.5);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* INPUT CONTAINER */
+.input-container {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.9);
+  border-top: 1px solid rgba(139, 92, 246, 0.2);
+  position: relative;
+}
+
+.message-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  resize: none;
+  min-height: 40px;
+  max-height: 150px;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  outline: none;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.message-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.input-energy-field {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.input-energy-field.active {
+  opacity: 1;
+}
+
+.energy-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.energy-particle {
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  background: rgba(139, 92, 246, 0.6);
+  border-radius: 50%;
+  opacity: 0.7;
+  left: var(--x);
+  top: var(--y);
+  animation: energyFloat var(--duration) linear infinite;
+  animation-delay: var(--delay);
+}
+
+@keyframes energyFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(0, -100%) scale(2); opacity: 0; }
+}
+
+.send-button {
+  background: #8b5cf6;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1rem;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.3s;
+}
+
+.send-button:disabled {
+  background: rgba(139, 92, 246, 0.3);
+  cursor: not-allowed;
+}
+
+.send-button:hover:not(:disabled) {
+  background: #a78bfa;
+}
+
+.send-icon {
+  color: white;
+  font-size: 1.2rem;
+}
+
+.button-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba(167, 139, 250, 0.5);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+/* MODE SELECTOR */
+.mode-selector {
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.selector-label {
+  font-size: 0.9rem;
+}
+
+.selector-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mode-button {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  font-size: 0.9rem;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.mode-button.active {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+}
+
+.mode-button:hover:not(.active) {
+  background: rgba(139, 92, 246, 0.3);
+}
+
+/* API KEY INPUT */
+.api-key-container {
+  padding: 1rem;
+  text-align: center;
+}
+
+.api-key-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 0.5rem;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.8);
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.api-key-button {
+  background: #8b5cf6;
+  border: none;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.api-key-button:hover {
+  background: #a78bfa;
+}
+
+.api-key-info {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.5rem;
+}
+
+/* DISCLAIMER */
+.preview-disclaimer {
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
 }
 </style>

@@ -17,7 +17,7 @@
       ></div>
     </div>
 
-    <!-- Portal Transition (visible but subtle) -->
+    <!-- Portal Transition -->
     <div class="cosmic-portal-transition" ref="portalTransition">
       <div class="portal-rings">
         <div class="portal-ring ring1"></div>
@@ -235,9 +235,9 @@ const suggestions = [
 ];
 const userInitial = computed(() => authStore.displayName?.charAt(0).toUpperCase() || 'Y');
 const canSend = computed(() => userInput.value.trim().length > 0);
-const messagesCount = computed(() => messages.value.length || 0);
+const messagesCount = computed(() => messages.value.length);
 
-// THREE.js cosmic background variables
+// --- THREE.js cosmic background variables ---
 let scene: THREE.Scene, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer;
 let backgroundCanvas: HTMLCanvasElement, animationFrameId: number;
 let stars: THREE.Points, nebula: THREE.Mesh;
@@ -315,9 +315,12 @@ const scrollToBottom = async (animate = true) => {
 const handleScroll = () => {
   if (!messagesContainer.value) return;
   const { scrollTop, scrollHeight, clientHeight } = messagesContainer.value;
-  showScrollIndicator.value = scrollHeight - scrollTop - clientHeight >= 100;
+  showScrollIndicator.value = (scrollHeight - scrollTop - clientHeight) > 20;
 };
 
+// --- Revised sendMessage ---
+// Now it always scrolls to bottom, and if streamCompletion fails,
+// it falls back to a standard generateCompletion call.
 const sendMessage = async (text?: string) => {
   const messageText = text || userInput.value.trim();
   if (!messageText) return;
@@ -331,24 +334,19 @@ const sendMessage = async (text?: string) => {
     });
     createParticleBurst(sendButton.value);
   }
+  // Add user message locally
   messages.value.push({ role: 'user', content: messageText, timestamp: Date.now() });
-  try {
-    if (chatStore.currentChat?.id) {
-      await chatStore.sendMessage(messageText);
-    } else {
-      const chatId = await chatStore.createChat({ initialPrompt: messageText });
-      if (chatId) await chatStore.fetchChat(chatId);
-    }
-  } catch (err) {
-    console.error('Error saving message:', err);
-  }
+  // Clear input and scroll
   userInput.value = '';
   if (inputField.value) inputField.value.style.height = 'auto';
   await scrollToBottom();
   isLoading.value = true;
+  
   try {
     const chatHistory = messages.value.map(msg => ({ role: msg.role, content: msg.content }));
     let assistantResponse = '';
+    
+    // Attempt streaming call
     await openai.streamCompletion(messageText, chatHistory.slice(0, -1), {
       mode: mode.value,
       temperature: 0.7,
@@ -361,43 +359,34 @@ const sendMessage = async (text?: string) => {
         } else {
           messages.value.push({ role: 'assistant', content: assistantResponse, timestamp: Date.now() });
         }
-        if (messagesContainer.value &&
-            messagesContainer.value.scrollTop + messagesContainer.value.clientHeight >= messagesContainer.value.scrollHeight - 200) {
-          scrollToBottom(false);
-        }
+        scrollToBottom(false);
       }
     });
+    
+    // If streaming finishes without error, record the chat interaction
     await openai.recordChatInteraction(messages.value.map(msg => ({ role: msg.role, content: msg.content })));
+    
   } catch (error) {
-    console.error('Error sending message:', error);
-    messages.value.push({
-      role: 'assistant',
-      content: "⚠️ *The Rift appears unstable.* I’m having trouble connecting to the cosmic streams. Please try again later.",
-      timestamp: Date.now()
-    });
+    console.error('Streaming error:', error);
+    // Fallback: use non-streaming call if streaming fails
+    try {
+      const responseMessage = await openai.callOpenAI(messages.value);
+      if (responseMessage) {
+        messages.value.push({ role: 'assistant', content: responseMessage, timestamp: Date.now() });
+      }
+      await openai.recordChatInteraction(messages.value.map(msg => ({ role: msg.role, content: msg.content })));
+    } catch (fallbackError) {
+      console.error('Fallback error:', fallbackError);
+      messages.value.push({
+        role: 'assistant',
+        content: "⚠️ *The Rift appears unstable.* I'm having trouble connecting to the cosmic streams. Please try again later.",
+        timestamp: Date.now()
+      });
+    }
   } finally {
     isLoading.value = false;
     await nextTick();
-    const lastMessageIndex = messages.value.length - 1;
-    const messageEl = document.querySelector(`.message-bubble:nth-child(${lastMessageIndex + 1})`) as HTMLElement;
-    if (messageEl) {
-      gsap.from(messageEl, {
-        y: 30,
-        opacity: 0,
-        scale: 0.95,
-        duration: 0.7,
-        ease: "back.out(1.7)",
-        onComplete: () => {
-          scrollToBottom();
-          gsap.to(messageEl.querySelector('.message-content'), {
-            boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
-            duration: 1,
-            repeat: 1,
-            yoyo: true
-          });
-        }
-      });
-    }
+    scrollToBottom();
   }
 };
 
@@ -429,7 +418,6 @@ const resetChip = (e: MouseEvent) => {
 const animatePortalTransition = (callback: () => void) => {
   if (!portalTransition.value) return;
   const portal = portalTransition.value;
-  // Make sure portal is visible (remove display: none)
   portal.style.display = 'flex';
   gsap.timeline()
     .to(portal, { opacity: 1, duration: 0.3 })
@@ -596,29 +584,8 @@ watch(userInput, (newValue) => {
 });
 
 watch(messages, async (newMessages, oldMessages) => {
-  if (newMessages.length > oldMessages.length) {
-    await nextTick();
-    const latestIndex = newMessages.length - 1;
-    const messageElement = document.querySelector(`.message-bubble:nth-child(${latestIndex + 1})`) as HTMLElement;
-    if (messageElement) {
-      gsap.from(messageElement, {
-        y: 30,
-        opacity: 1,
-        scale: 1,
-        duration: 0.7,
-        ease: "back.out(1.7)",
-        onComplete: () => {
-          scrollToBottom();
-          gsap.to(messageElement.querySelector('.message-content'), {
-            boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)',
-            duration: 1,
-            repeat: 1,
-            yoyo: true
-          });
-        }
-      });
-    }
-  }
+  await nextTick();
+  scrollToBottom(false);
 });
 
 watch(mode, () => {
@@ -662,10 +629,8 @@ onMounted(async () => {
   initCosmicBackground();
   messagesContainer.value?.addEventListener('scroll', handleScroll);
   await loadChatData();
-  if (messages.value.length > 0) {
-    const messageElements = document.querySelectorAll('.message-bubble');
-    gsap.from(messageElements, { opacity: 1, y: 30, scale: 1, stagger: 0.1, duration: 0.7, ease: "back.out(1.7)" });
-  }
+  await nextTick();
+  scrollToBottom(false);
 });
 
 onUnmounted(() => {
@@ -713,7 +678,6 @@ onUnmounted(() => {
   top: var(--y);
   animation: float-particle var(--duration) linear infinite;
   animation-delay: var(--delay);
-  /* Removed paused state */
   filter: blur(1px);
 }
 @keyframes float-particle {
@@ -798,6 +762,7 @@ onUnmounted(() => {
   padding: 1.5rem;
   z-index: 3;
   background: rgba(15, 23, 42, 0.8);
+  scroll-behavior: smooth;
 }
 .message-list { display: flex; flex-direction: column; gap: 1.5rem; }
 .message-bubble {
