@@ -14,11 +14,13 @@ import './assets/css/main.css';
 // Import icons - explicitly import to prevent tree-shaking
 import 'remixicon/fonts/remixicon.css';
 
+// Create Pinia store FIRST
+const pinia = createPinia();
+
 // Create app instance
 const app = createApp(App);
 
-// Initialize Pinia store
-const pinia = createPinia();
+// Initialize Pinia store before anything else
 app.use(pinia);
 
 // Initialize router

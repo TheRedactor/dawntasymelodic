@@ -1178,7 +1178,7 @@ export const openaiService = {
   recordChatInteraction
 };
 
-// For backward compatibility
+// For backward compatibility - fixed to not depend on Pinia store
 export const useOpenAI = () => {
   return openaiService;
 };
