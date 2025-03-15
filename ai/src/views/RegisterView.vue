@@ -923,4 +923,383 @@ export default {
   height: 100%;
   transition: all 0.3s ease;
 }
+/* CONTINUING FROM WHERE IT CUT OFF */
+
+.strength-text {
+  font-size: 0.8rem;
+  color: #e2e2e2;
+}
+
+/* Terms checkbox */
+.terms-group {
+  margin-top: 0.5rem;
+}
+
+.cosmic-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cosmic-checkbox input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cosmic-checkbox input[type="checkbox"]:checked {
+  background: #4cc9f0;
+  border-color: #4cc9f0;
+}
+
+.cosmic-checkbox input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-size: 14px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.cosmic-checkbox label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.terms-link {
+  color: #4cc9f0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.terms-link:hover {
+  color: #9d4edd;
+}
+
+/* Auth error */
+.auth-error {
+  background: rgba(231, 76, 60, 0.1);
+  border-left: 3px solid #e74c3c;
+  padding: 1rem;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.error-icon {
+  font-size: 1.5rem;
+}
+
+.auth-error p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Button */
+.cosmic-btn {
+  background: linear-gradient(135deg, #9d4edd, #4cc9f0);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 1rem 2rem;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 0 0 5px rgba(76, 201, 240, 0.2);
+}
+
+.cosmic-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.2), 
+    transparent
+  );
+  transition: all 0.5s ease;
+}
+
+.cosmic-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3), 0 0 0 5px rgba(76, 201, 240, 0.3);
+}
+
+.cosmic-btn:hover::before {
+  left: 100%;
+}
+
+.cosmic-btn:active {
+  transform: translateY(1px);
+}
+
+.btn-loading {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.loader {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.register-btn {
+  width: 100%;
+  margin-top: 1rem;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Auth toggle */
+.auth-toggle {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.auth-toggle p {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.toggle-link {
+  color: #4cc9f0;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 0.3rem;
+  transition: all 0.3s ease;
+}
+
+.toggle-link:hover {
+  color: #9d4edd;
+  text-decoration: underline;
+}
+
+/* Terms Modal */
+.terms-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 2rem;
+  animation: modalFadeIn 0.3s ease-in-out;
+}
+
+.terms-content {
+  background: rgba(10, 10, 40, 0.9);
+  border: 1px solid rgba(157, 78, 221, 0.3);
+  border-radius: 15px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(76, 201, 240, 0.3);
+}
+
+.terms-content h3 {
+  font-family: 'Orbitron', sans-serif;
+  color: #4cc9f0;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.terms-body {
+  margin-bottom: 2rem;
+}
+
+.terms-body p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.terms-body ul {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.terms-body li {
+  margin-bottom: 0.5rem;
+}
+
+.close-terms-btn {
+  display: block;
+  margin: 0 auto;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Success Animation */
+.success-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 40, 0.9);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: successFadeIn 0.5s ease-in-out;
+}
+
+.success-animation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.checkmark-circle {
+  width: 150px;
+  height: 150px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: circleScale 0.5s ease-in-out forwards;
+}
+
+.checkmark {
+  width: 60px;
+  height: 120px;
+  border-right: 8px solid #4cc9f0;
+  border-bottom: 8px solid #4cc9f0;
+  transform: rotate(45deg) scale(0);
+  transform-origin: center;
+  animation: checkmarkDraw 0.8s ease-in-out 0.5s forwards;
+}
+
+@keyframes circleScale {
+  from {
+    transform: scale(0);
+    box-shadow: none;
+  }
+  to {
+    transform: scale(1);
+    box-shadow: 0 0 50px rgba(76, 201, 240, 0.5);
+  }
+}
+
+@keyframes checkmarkDraw {
+  from {
+    transform: rotate(45deg) scale(0);
+  }
+  to {
+    transform: rotate(45deg) scale(1);
+  }
+}
+
+.success-animation h2 {
+  font-family: 'Orbitron', sans-serif;
+  color: #4cc9f0;
+  margin: 0;
+  animation: textFadeIn 0.5s ease-in-out 1s forwards;
+  opacity: 0;
+}
+
+.success-animation p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  animation: textFadeIn 0.5s ease-in-out 1.5s forwards;
+  opacity: 0;
+}
+
+@keyframes textFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes successFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .register-container {
+    padding: 1rem;
+  }
+  
+  .register-card {
+    padding: 1.5rem;
+  }
+  
+  .logo-text {
+    font-size: 1.5rem;
+  }
+  
+  .register-title {
+    font-size: 1.2rem;
+  }
+}
 </style>
