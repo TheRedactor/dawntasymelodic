@@ -3,7 +3,6 @@
     <!-- Logo and Toggle -->
     <div class="sidebar-header">
       <div class="logo-container">
-        <img src="@/assets/logo.svg" alt="DawntasyAI Logo" class="logo" />
         <span v-if="!isCollapsed" class="logo-text">DawntasyAI</span>
       </div>
       <button class="toggle-btn" @click="toggleSidebar">

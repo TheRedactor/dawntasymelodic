@@ -147,6 +147,7 @@ async function initApp() {
     }
   }
 }
+console.log("API Key:", import.meta.env.VITE_OPENAI_API_KEY);
 
 // Start the application
 initApp();
